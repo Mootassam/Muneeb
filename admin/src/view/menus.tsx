@@ -71,4 +71,13 @@ export default [
     className: 'menu-li side-menue',
     permissionRequired: permissions.categoryRead,
   },
+  {
+    id: '0',
+    path: '/worker',
+    exact: true,
+    icon: 'fas fa-user-tie',
+    label: i18n('dashboard.worker'),
+    className: 'menu-li side-menue',
+    permissionRequired: permissions.workerRead,
+  },
 ].filter(Boolean);

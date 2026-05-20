@@ -371,6 +371,13 @@ const privateRoutes = [
   },
 
   {
+    path: '/worker',
+    loader: () => import('src/view/worker/list/WorkerPage'),
+    permissionRequired: permissions.workerRead,
+    exact: true,
+  },
+
+  {
     path: '/user/new',
     loader: () => import('src/view/user/new/UserNewPage'),
     permissionRequired: permissions.userCreate,

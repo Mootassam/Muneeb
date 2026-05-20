@@ -6,6 +6,7 @@ class Roles {
       admin: 'admin',
       member: 'member',
       agent: 'agent',
+      supervisor: 'supervisor',
     };
   }
 

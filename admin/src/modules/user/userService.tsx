@@ -172,6 +172,27 @@ export default class UserService {
     return response.data;
   }
 
+  static async fetchWorkers(emailFilter, orderBy, limit, offset) {
+    const params = {
+      filter: {
+        roles: ['agent', 'supervisor'],
+        ...(emailFilter ? { email: emailFilter } : {}),
+      },
+      orderBy,
+      limit,
+      offset,
+    };
+
+    const tenantId = AuthCurrentTenant.get();
+
+    const response = await authAxios.get(
+      `/tenant/${tenantId}/user`,
+      { params },
+    );
+
+    return response.data;
+  }
+
   static async fetchUsers(filter, orderBy, limit, offset) {
     const params = {
       filter,

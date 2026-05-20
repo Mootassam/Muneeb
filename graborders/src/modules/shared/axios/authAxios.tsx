@@ -15,7 +15,7 @@ const authAxios = Axios.create({
   // baseURL: "http://162.0.228.113:8088/api/",
 
   //Randthis
-  baseURL: "https://eclicks-digital.com/api",
+  baseURL: "https://eclicks-digital.com/api", 
 
   paramsSerializer: function (params) {
     return Qs.stringify(params, {

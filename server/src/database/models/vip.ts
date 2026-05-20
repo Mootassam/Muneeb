@@ -36,9 +36,10 @@ export default (database) => {
       commissionmergedata: {
         type: String,
       },
-      isFixedAmount: { type: Boolean, default: true }, // ✅ new field
+      isFixedAmount: { type: Boolean, default: true },
       min: { type: String },
       max: { type: String },
+      targetProfit: { type: Number, default: 0 },
 
 
       handlingfee: { type: String },

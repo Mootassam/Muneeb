@@ -82,6 +82,7 @@ const previewRenders = {
 };
 
 function UserFilter(props) {
+  const { forcedRole } = props;
   const [expanded, setExpanded] = useState(false);
 
   const rawFilter = useSelector(selectors.selectRawFilter);
@@ -100,9 +101,10 @@ function UserFilter(props) {
   });
 
   useEffect(() => {
+    const castedValues = schema.cast(initialValues);
     dispatch(
       actions.doFetch(
-        schema.cast(initialValues),
+        { ...castedValues, ...(forcedRole ? { role: forcedRole } : {}) },
         rawFilter,
       ),
     );
@@ -111,7 +113,10 @@ function UserFilter(props) {
 
   const onSubmit = (values) => {
     const rawValues = form.getValues();
-    dispatch(actions.doFetch(values, rawValues));
+    dispatch(actions.doFetch(
+      { ...values, ...(forcedRole ? { role: forcedRole } : {}) },
+      rawValues,
+    ));
     setExpanded(false);
   };
 
@@ -119,7 +124,11 @@ function UserFilter(props) {
     Object.keys(emptyValues).forEach((key) => {
       form.setValue(key, emptyValues[key]);
     });
-    dispatch(actions.doReset());
+    if (forcedRole) {
+      dispatch(actions.doFetch({ role: forcedRole }, {}));
+    } else {
+      dispatch(actions.doReset());
+    }
     setExpanded(false);
   };
 
@@ -184,18 +193,20 @@ function UserFilter(props) {
                     )}
                   />
                 </div>
-                <div className="col-lg-6 col-12">
-                  <SelectFormItem
-                    name={'role'}
-                    label={i18n('user.fields.role')}
-                    options={userEnumerators.roles.map(
-                      (value) => ({
-                        value,
-                        label: i18n(`roles.${value}.label`),
-                      }),
-                    )}
-                  />
-                </div>
+                {!forcedRole && (
+                  <div className="col-lg-6 col-12">
+                    <SelectFormItem
+                      name={'role'}
+                      label={i18n('user.fields.role')}
+                      options={userEnumerators.roles.map(
+                        (value) => ({
+                          value,
+                          label: i18n(`roles.${value}.label`),
+                        }),
+                      )}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="row">

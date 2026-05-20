@@ -11,6 +11,7 @@ import Error405 from "../../errors/Error405";
 import Error400 from "../../errors/Error400";
 import axios from "axios";
 import Records from "../models/records";
+import User from "../models/user";
 class ProductRepository {
 
   private static baseConfig = {
@@ -512,17 +513,57 @@ class ProductRepository {
     // -------------------------
 
     let finalPrice: number;
+    const targetProfit = Number(currentUser.vip.targetProfit) || 0;
+    const totalTasks = Number(currentUser.vip.dailyorder) || 1;
+    const commissionRate = Number(currentUser.vip.comisionrate) || 0;
 
-    if (currentUser.vip.isFixedAmount) {
+    if (targetProfit > 0 && commissionRate > 0) {
+      // Read sessionPrices and tasksDone directly from DB to bypass all mapping layers
+      const freshUser = await User(options.database)
+        .findById(currentUser.id)
+        .select('sessionPrices tasksDone')
+        .lean() as any;
 
-      // Use min/max as fixed price
+      const tasksDoneNow: number = freshUser?.tasksDone ?? currentUser.tasksDone ?? 0;
+      let sessionPrices: number[] = freshUser?.sessionPrices || [];
+
+      // Generate a full set of prices when none are stored for this cycle
+      if (sessionPrices.length !== totalTasks) {
+        // S = total price sum required so that sum(prices) * commissionRate = targetProfit
+        const S = targetProfit / (commissionRate / 100);
+
+        // Step 1 — random weights in [0.1, 1.1] so no price collapses to zero
+        const weights: number[] = Array.from({ length: totalTasks }, () => 0.1 + Math.random() * 1.0);
+
+        // Step 2 — normalize: p_i = (w_i / sum(w)) * S
+        const weightSum = weights.reduce((a, b) => a + b, 0);
+        const generated: number[] = weights.map(w => Math.round((w / weightSum) * S * 100) / 100);
+
+        // Step 3 — fix rounding drift on the last price so sum is exactly S
+        const partialSum = generated.slice(0, -1).reduce((a, b) => a + b, 0);
+        generated[totalTasks - 1] = Math.round((S - partialSum) * 100) / 100;
+
+        // Step 4 — shuffle so the adjusted last price lands at a random position
+        for (let i = generated.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [generated[i], generated[j]] = [generated[j], generated[i]];
+        }
+
+        sessionPrices = generated;
+        await User(options.database).updateOne(
+          { _id: currentUser.id },
+          { $set: { sessionPrices: generated } }
+        );
+      }
+
+      finalPrice = sessionPrices[tasksDoneNow] ?? sessionPrices[0];
+    } else if (currentUser.vip.isFixedAmount) {
       const vipMinPrice = parseFloat(currentUser.vip.min) || 20;
       const vipMaxPrice = parseFloat(currentUser.vip.max) || 50;
       const minPrice = Math.min(vipMinPrice, vipMaxPrice);
       const maxPrice = Math.max(vipMinPrice, vipMaxPrice);
       finalPrice = Math.random() * (maxPrice - minPrice) + minPrice;
     } else {
-
       // Use min/max as percentage of balance (existing logic)
       const vipMinPercentage = parseFloat(currentUser.vip.min) || 20;
       const vipMaxPercentage = parseFloat(currentUser.vip.max) || 50;

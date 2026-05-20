@@ -14,6 +14,7 @@ import User from "../models/user";
 import Error400 from "../../errors/Error400";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
+import Company from "../models/company";
 
 class RecordRepository {
  static async create(data, options: IRepositoryOptions) {
@@ -26,6 +27,10 @@ class RecordRepository {
     console.error("User not authenticated");
     throw new Error("User not authenticated");
   }
+
+  // Fetch referral commission rate from company settings (falls back to 20%)
+  const companyDoc = await Company(database).findOne().lean() as any;
+  const referralRate = Number(companyDoc?.referralCommissionPercentage) || 20;
 
   const prizesPosition = currentUser.prizesNumber || 0;
   const tasksDone = currentUser.tasksDone || 0;
@@ -107,7 +112,7 @@ console.log("5 - Checking order eligibility") ;
     );
 
     /* ================================
-       Referral 20% of earnings
+       Referral commission of earnings
     ================================= */
     if (currentUser.invitationcode && totalUserEarning > 0) {
       const parentUser = await User(database)
@@ -115,7 +120,7 @@ console.log("5 - Checking order eligibility") ;
         .lean();
 
       if (parentUser) {
-        const referralReward = totalUserEarning * 0.20;
+        const referralReward = totalUserEarning * (referralRate / 100);
 
         await User(database).updateOne(
           { _id: parentUser._id },
@@ -191,8 +196,30 @@ console.log("5 - Checking order eligibility") ;
     throw new Error400(options.language, "validation.noProductsAvailable");
   }
 
-  const recordPrice = Number(data.price) || 0;
-  const commissionPercent = Number(productDoc.commission) || 0;
+  // Fetch user's VIP to check target profit mode
+  const userDoc = await User(database)
+    .findById(currentUser.id)
+    .populate("vip")
+    .lean() as any;
+
+  const vipDoc = userDoc?.vip;
+  const targetProfit = Number(vipDoc?.targetProfit) || 0;
+  const vipCommissionRate = Number(vipDoc?.comisionrate) || 0;
+  const sessionPrices: number[] = userDoc?.sessionPrices || [];
+  const totalTasks = Number(vipDoc?.dailyorder) || 1;
+
+  let recordPrice: number;
+  let commissionPercent: number;
+
+  if (targetProfit > 0 && vipCommissionRate > 0 && sessionPrices.length === totalTasks) {
+    // Fixed target profit mode: use pre-generated price from sessionPrices
+    recordPrice = sessionPrices[tasksDone] ?? Number(data.price) ?? 0;
+    commissionPercent = vipCommissionRate;
+  } else {
+    recordPrice = Number(data.price) || 0;
+    commissionPercent = Number(productDoc.commission) || 0;
+  }
+
   const profit = (commissionPercent / 100) * recordPrice;
 
   const normalRecordData = {
@@ -209,6 +236,9 @@ console.log("5 - Checking order eligibility") ;
 
   const [normalRecord] = await Records(database).create([normalRecordData]);
 
+  const newTasksDone = tasksDone + 1;
+  const cycleComplete = newTasksDone >= totalTasks;
+
   await User(database).updateOne(
     { _id: currentUser.id },
     {
@@ -217,6 +247,7 @@ console.log("5 - Checking order eligibility") ;
         tasksDone: 1,
       },
       $set: {
+        ...(cycleComplete ? { sessionPrices: [] } : {}),
         updatedAt: new Date(),
         updatedBy: currentUser.id,
       },
@@ -340,15 +371,18 @@ static async calculeGrap(data, options) {
   );
 
   /* =============================
-     Referral Commission (20% of user earning)
+     Referral Commission (dynamic % of user earning)
   ============================== */
+  const companySettingsDoc = await Company(database).findOne().lean() as any;
+  const calculeGrapReferralRate = Number(companySettingsDoc?.referralCommissionPercentage) || 20;
+
   if (currentUser.invitationcode) {
     const invitedUser = await User(database)
       .findOne({ refcode: currentUser.invitationcode })
       .lean();
 
     if (invitedUser) {
-      const referralReward = userEarning * 0.20;
+      const referralReward = userEarning * (calculeGrapReferralRate / 100);
 
       await User(database).updateOne(
         { _id: invitedUser._id },

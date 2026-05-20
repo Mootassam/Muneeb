@@ -13,6 +13,7 @@ import transaction from 'src/modules/transaction/transactionReducers'
 import product from 'src/modules/product/productReducers'
 import record from 'src/modules/record/recordReducers'
 import company from 'src/modules/company/companyReducers';
+import worker from 'src/modules/worker/workerReducers';
 import { combineReducers } from 'redux';
 export default (history) =>
   combineReducers({
@@ -28,6 +29,7 @@ export default (history) =>
     tenant,
     user,
     company,
+    worker,
     auditLog,
     settings,
     numbers,

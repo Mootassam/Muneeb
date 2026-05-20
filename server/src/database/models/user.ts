@@ -122,6 +122,8 @@ export default (database) => {
        }],
 
 
+       sessionPrices: [{ type: Number }],
+
        giftPosition: {
         type: Number,
       },

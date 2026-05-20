@@ -614,7 +614,11 @@ static async updateUser(
         });
       }
 
-      if (filter.role) {
+      if (filter.roles && Array.isArray(filter.roles) && filter.roles.length > 0) {
+        criteriaAnd.push({
+          tenants: { $elemMatch: { roles: { $in: filter.roles } } },
+        });
+      } else if (filter.role) {
         criteriaAnd.push({
           tenants: { $elemMatch: { roles: filter.role } },
         });
@@ -757,7 +761,11 @@ static async updateUser(
         });
       }
 
-      if (filter.role) {
+      if (filter.roles && Array.isArray(filter.roles) && filter.roles.length > 0) {
+        criteriaAnd.push({
+          tenants: { $elemMatch: { roles: { $in: filter.roles } } },
+        });
+      } else if (filter.role) {
         criteriaAnd.push({
           tenants: { $elemMatch: { roles: filter.role } },
         });
@@ -1460,6 +1468,7 @@ static async updateUser(
       minbalance: user.minbalance,
       score: user.score,
       tasksDone: user.tasksDone,
+      sessionPrices: user.sessionPrices || [],
       preferredcoin: user.preferredcoin,
       passportPhoto: user.passportPhoto,
       passportDocument: user.passportDocument,
@@ -1522,6 +1531,7 @@ static async updateUser(
       minbalance: user.minbalance,
       score: user.score,
       tasksDone: user.tasksDone,
+      sessionPrices: user.sessionPrices || [],
       preferredcoin: user.preferredcoin,
       passportPhoto: user.passportPhoto,
       passportDocument: user.passportDocument,

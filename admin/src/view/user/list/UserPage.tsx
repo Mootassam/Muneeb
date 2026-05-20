@@ -29,7 +29,7 @@ function UserPage() {
         </Col>
           </Row>
         </Container>
-        <UserFilter />
+        <UserFilter forcedRole="member" />
         <UserTable />
       </ContentWrapper>
     </>

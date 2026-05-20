@@ -123,7 +123,8 @@ const en = {
         photo: "photo",
         isFixedAmount: "Use fixed amount (checked = price, unchecked = % of balance)",
         min: "Minimum product price for this VIP ",
-        max: "Maximum product price for this VIP"
+        max: "Maximum product price for this VIP",
+        targetProfit: "Target Profit (USDT) — leave 0 to disable"
       },
 
       new: {
@@ -230,6 +231,7 @@ const en = {
         trc20: 'TRC20',
         defaultBalance: "Default balance",
         eth: 'ETH',
+        referralCommissionPercentage: 'Referral Commission %',
         metaKeywords: 'MetaKeywords',
         metaDescriptions: 'MetaDescriptions',
         status: 'Status',
@@ -2650,6 +2652,10 @@ const en = {
       label: 'Agent',
       description: 'Agent role access',
     },
+    supervisor: {
+      label: 'Supervisor',
+      description: 'Supervisor role access',
+    },
   },
 
   user: {
@@ -2931,6 +2937,7 @@ const en = {
     company: 'Company',
     record: 'record',
     product: 'Product',
+    worker: 'Workers',
     transaction: 'transaction',
     online: 'Online',
     Level: 'Level',

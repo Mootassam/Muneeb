@@ -23,6 +23,10 @@ export default (database) => {
         type: String,
         default: 50
       },
+      referralCommissionPercentage: {
+        type: Number,
+        default: 20,
+      },
       tc: {
         type: String,
       },

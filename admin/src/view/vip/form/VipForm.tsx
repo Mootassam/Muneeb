@@ -88,6 +88,10 @@ const schema = yup.object().shape({
       required: true,
     },
   ),
+  targetProfit: yupFormSchemas.decimal(
+    i18n('entities.vip.fields.targetProfit'),
+    {},
+  ),
 });
 
 function VipForm(props) {
@@ -104,6 +108,7 @@ function VipForm(props) {
       isFixedAmount:record.isFixedAmount,
       min: record.min,
       max: record.max,
+      targetProfit: record.targetProfit,
       handlingfee: record.handlingfee,
       setperday: record.setperday,
       withdrawperday: record.withdrawperday,
@@ -253,6 +258,16 @@ function VipForm(props) {
                 )}
                 required={true}
                 autoFocus
+              />
+            </div>
+
+            <div className="col-lg-7 col-md-8 col-12">
+              <InputNumberFormItem
+                name="targetProfit"
+                label={i18n(
+                  'entities.vip.fields.targetProfit',
+                )}
+                required={false}
               />
             </div>
             <div className="col-lg-7 col-md-8 col-12">
