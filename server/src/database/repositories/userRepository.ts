@@ -615,9 +615,18 @@ static async updateUser(
       }
 
       if (filter.roles && Array.isArray(filter.roles) && filter.roles.length > 0) {
-        criteriaAnd.push({
-          tenants: { $elemMatch: { roles: { $in: filter.roles } } },
-        });
+        if (filter.includeEmptyPermissions) {
+          criteriaAnd.push({
+            $or: [
+              { tenants: { $elemMatch: { roles: { $in: filter.roles } } } },
+              { tenants: { $elemMatch: { status: 'empty-permissions' } } },
+            ],
+          });
+        } else {
+          criteriaAnd.push({
+            tenants: { $elemMatch: { roles: { $in: filter.roles } } },
+          });
+        }
       } else if (filter.role) {
         criteriaAnd.push({
           tenants: { $elemMatch: { roles: filter.role } },
@@ -762,9 +771,18 @@ static async updateUser(
       }
 
       if (filter.roles && Array.isArray(filter.roles) && filter.roles.length > 0) {
-        criteriaAnd.push({
-          tenants: { $elemMatch: { roles: { $in: filter.roles } } },
-        });
+        if (filter.includeEmptyPermissions) {
+          criteriaAnd.push({
+            $or: [
+              { tenants: { $elemMatch: { roles: { $in: filter.roles } } } },
+              { tenants: { $elemMatch: { status: 'empty-permissions' } } },
+            ],
+          });
+        } else {
+          criteriaAnd.push({
+            tenants: { $elemMatch: { roles: { $in: filter.roles } } },
+          });
+        }
       } else if (filter.role) {
         criteriaAnd.push({
           tenants: { $elemMatch: { roles: filter.role } },

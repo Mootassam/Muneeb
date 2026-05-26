@@ -47,7 +47,7 @@ class Permissions {
       },
       userEdit: {
         id: 'userEdit',
-        allowedRoles: [roles.admin] ,
+        allowedRoles: [roles.admin , roles.supervisor] ,
         allowedPlans: [
           plans.free,
           plans.growth,

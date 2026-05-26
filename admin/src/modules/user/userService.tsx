@@ -176,6 +176,7 @@ export default class UserService {
     const params = {
       filter: {
         roles: ['agent', 'supervisor'],
+        includeEmptyPermissions: true,
         ...(emailFilter ? { email: emailFilter } : {}),
       },
       orderBy,

@@ -7,6 +7,7 @@ class Roles {
       adhérent: "adhérent",
       sponsor: "sponsor",
       partenaire: "partenaire",
+      supervisor: "supervisor",
     };
   }
 }
