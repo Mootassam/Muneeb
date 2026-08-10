@@ -19,7 +19,7 @@ services:
   web:
     build: ./admin
     ports:
-      - 3077:80
+      - 3073:80
     restart: unless-stopped
     volumes:
       - "./admin:/app"

@@ -40,7 +40,11 @@
       "Bash(sed -i 's/#23262c/rgba\\(255, 255, 255, 0.06\\)/g' Signin.tsx Signup.tsx)",
       "Bash(sed -i 's/#0b0e11/#06070b/g' Order.tsx)",
       "Bash(sed -i 's/#23262c/rgba\\(255, 255, 255, 0.06\\)/g' Order.tsx)",
-      "Bash(sed -i 's/#1e2329/#1a1c26/g' Order.tsx)"
+      "Bash(sed -i 's/#1e2329/#1a1c26/g' Order.tsx)",
+      "Bash(git ls-remote *)",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(git remote *)",
+      "Bash(git push *)"
     ]
   }
 }
