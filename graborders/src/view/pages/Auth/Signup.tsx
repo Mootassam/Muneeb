@@ -45,9 +45,9 @@ const selectControlStyles = {
   control: (provided, state) => ({
     ...provided,
     minHeight: 46,
-    borderRadius: 8,
-    border: `1px solid ${state.isFocused ? "#f0b90b" : "#2b3139"}`,
-    backgroundColor: "#1e2329",
+    borderRadius: 12,
+    border: `1px solid ${state.isFocused ? "#f0b90b" : "rgba(255, 255, 255, 0.08)"}`,
+    backgroundColor: "#1a1c26",
     boxShadow: "none",
     outline: "none",
     fontFamily: "Poppins, sans-serif",
@@ -59,20 +59,20 @@ const selectControlStyles = {
   input: (provided) => ({ ...provided, color: "#eaecef" }),
   menu: (provided) => ({
     ...provided,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: "hidden",
     zIndex: 20,
-    backgroundColor: "#1e2329",
-    border: "1px solid #2b3139",
+    backgroundColor: "#1a1c26",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
   }),
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isSelected
       ? "#f0b90b"
       : state.isFocused
-      ? "#2b3139"
-      : "#1e2329",
-    color: state.isSelected ? "#181a20" : "#eaecef",
+      ? "#21232e"
+      : "#1a1c26",
+    color: state.isSelected ? "#0b0e11" : "#eaecef",
     fontFamily: "Poppins, sans-serif",
     fontSize: 14,
   }),
@@ -169,12 +169,6 @@ function Signup() {
   return (
     <div className="bnc__page">
       <div className="bnc__glow" />
-
-      <div className="bnc__topbar">
-        <div className="bnc__brand">
-          <img src="/images/home/logo.png" alt="logo" className="bnc__brandLogo" />
-        </div>
-      </div>
 
       <div className="bnc__wrap">
         <div className="bnc__card">
@@ -414,10 +408,9 @@ function Signup() {
           min-height: 100dvh;
           overflow-x: hidden;
           overflow-y: auto;
-          background: #0b0e11;
+          background: #06070b;
           background-image:
-            radial-gradient(circle at 50% 0%, rgba(240, 185, 11, 0.08), transparent 45%),
-            linear-gradient(180deg, #0b0e11 0%, #0d1015 100%);
+            radial-gradient(circle at 50% 0%, rgba(240, 185, 11, 0.08), transparent 45%);
           display: flex;
           flex-direction: column;
         }
@@ -435,26 +428,6 @@ function Signup() {
           z-index: 0;
         }
 
-        .bnc__topbar {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          align-items: center;
-          padding: 22px 24px 0;
-        }
-
-        .bnc__brand {
-          display: flex;
-          align-items: center;
-        }
-
-        .bnc__brandLogo {
-          height: 30px;
-          width: auto;
-          object-fit: contain;
-          border-radius: 6px;
-        }
-
         .bnc__wrap {
           position: relative;
           z-index: 2;
@@ -469,9 +442,9 @@ function Signup() {
         .bnc__card {
           width: 100%;
           max-width: 400px;
-          background: #181a20;
-          border: 1px solid #23262c;
-          border-radius: 14px;
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 22px;
           padding: 34px 28px 28px;
           box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.65);
         }
@@ -522,7 +495,8 @@ function Signup() {
         .bnc__icon {
           position: absolute;
           left: 13px;
-          top: 13px;
+          top: 50%;
+          transform: translateY(-50%);
           display: flex;
           align-items: center;
           color: #5e6673;
@@ -533,7 +507,9 @@ function Signup() {
         .bnc__eye {
           position: absolute;
           right: 12px;
-          top: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          margin: 0;
           background: none;
           border: none;
           padding: 4px;
@@ -550,9 +526,9 @@ function Signup() {
         .bnc__field input.bnc__input {
           width: 100%;
           padding: 13px 14px 13px 40px;
-          border-radius: 8px;
-          border: 1px solid #2b3139;
-          background-color: #1e2329;
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background-color: #1a1c26;
           color: #eaecef;
           font-size: 14px;
           font-family: "Poppins", sans-serif;
@@ -570,7 +546,7 @@ function Signup() {
         .bnc__field .bnc__input:focus {
           outline: none;
           border-color: #f0b90b;
-          background-color: #1e2329;
+          background-color: #1a1c26;
         }
 
         .bnc__field:focus-within .bnc__icon {
@@ -598,12 +574,12 @@ function Signup() {
         .bnc__button {
           width: 100%;
           border: none;
-          border-radius: 8px;
+          border-radius: 14px;
           padding: 14px;
           font-family: "Poppins", sans-serif;
           font-weight: 600;
           font-size: 15px;
-          color: #181a20;
+          color: #0b0e11;
           background: #f0b90b;
           display: flex;
           align-items: center;

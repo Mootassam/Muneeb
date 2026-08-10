@@ -59,7 +59,6 @@ const en = {
       welcome: "Welcome back",
       welcomeGuest: "Welcome",
       heroTagline: "Shop smarter, earn faster",
-      announcement: "Your account is fully active. Explore VIP levels and start earning today.",
       viewAllVIP: "View All VIP",
       showLess: "Show Less",
       // Action Buttons
@@ -76,6 +75,16 @@ const en = {
       profitNormal: "profit on normal products",
       profitPremium: "profit on premium products",
       maxOrders: "Max orders per day",
+
+      // Section eyebrows
+      eyebrow: {
+        platform: "Platform",
+        membership: "Membership",
+        marketplace: "Marketplace",
+        company: "Company"
+      },
+      trending: "Trending",
+      trustedBy: "Trusted By",
 
       // Trust section
       whyChooseUs: "Why Choose Us",
@@ -101,7 +110,8 @@ const en = {
       // Live activity toast
       liveToast: {
         congrats: "Congratulations:",
-        withdraw: "Withdraw:"
+        withdraw: "Withdraw:",
+        justWithdrew: "just withdrew"
       },
 
       // Modal
@@ -245,7 +255,7 @@ const en = {
 
     online: {
       title: "Customer Service",
-      description: "If you have any questions or encounter issues, please email us or chat with our online customer support team.",
+      description: "If you have any questions or encounter issues, please chat with our online customer support team.",
       contactWhatsApp: "Contact on WhatsApp",
       contactTelegram: "Contact on Telegram"
     },

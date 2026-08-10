@@ -29,7 +29,18 @@
       "Bash(pkill -f \"npx vite\")",
       "Bash(xargs grep -l \"settings\")",
       "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\Home.tsx\")",
-      "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\LiveActivityToast.tsx\")"
+      "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\LiveActivityToast.tsx\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\AnnouncementTicker.tsx\")",
+      "Bash(grep *)",
+      "Bash(sed -i 's/#0b0e11/#06070b/g' Signin.tsx Signup.tsx)",
+      "Bash(sed -i 's/#0d1015/#06070b/g' Signin.tsx Signup.tsx)",
+      "Bash(sed -i 's/#1e2329/#1a1c26/g' Signin.tsx Signup.tsx)",
+      "Bash(sed -i 's/#23262c/rgba\\(255, 255, 255, 0.06\\)/g' Signin.tsx Signup.tsx)",
+      "Bash(sed -i 's/#0b0e11/#06070b/g' Order.tsx)",
+      "Bash(sed -i 's/#23262c/rgba\\(255, 255, 255, 0.06\\)/g' Order.tsx)",
+      "Bash(sed -i 's/#1e2329/#1a1c26/g' Order.tsx)"
     ]
   }
 }

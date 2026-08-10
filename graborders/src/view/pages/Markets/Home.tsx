@@ -11,7 +11,7 @@ import companySelectors from "src/modules/company/list/companyListSelectors";
 import { i18n } from "../../../i18n";
 import logos from "src/shared/data/logos";
 import productImages from "src/shared/data/images";
-import LiveActivityToast from "./LiveActivityToast";
+import AnnouncementTicker from "./AnnouncementTicker";
 
 interface DataItem {
   id: string;
@@ -174,7 +174,15 @@ function Home() {
 
         <div className="home__heroOverlay">
           <div className="home__heroText">
-            <div className="home__heroGreeting">{greeting}</div>
+            <div className="home__heroGreetingRow">
+              <div className="home__heroGreeting">{greeting}</div>
+              {currentUser?.vip?.title && (
+                <span className="home__heroVipChip">
+                  <i className="fa-solid fa-crown"></i>
+                  {currentUser.vip.title}
+                </span>
+              )}
+            </div>
             <div className="home__heroTagline">{i18n("pages.home.heroTagline")}</div>
           </div>
           <Link to="/vip" className="home__heroCta">
@@ -196,12 +204,31 @@ function Home() {
         </div>
       </div>
 
+      {/* Account snapshot */}
+      <div className="home__snapshot">
+        <Link to="/profile" className="home__snapshotItem">
+          <div className="home__snapshotValue">
+            {currentUser?.balance?.toFixed(2) || "0.00"}
+          </div>
+          <div className="home__snapshotLabel">{i18n("pages.profile.balance")}</div>
+        </Link>
+        <span className="home__snapshotDivider"></span>
+        <Link to="/vip" className="home__snapshotItem">
+          <div className="home__snapshotValue">
+            {currentUser?.vip?.title || "—"}
+          </div>
+          <div className="home__snapshotLabel">{i18n("pages.home.levels")}</div>
+        </Link>
+        <span className="home__snapshotDivider"></span>
+        <Link to="/profile" className="home__snapshotItem">
+          <div className="home__snapshotValue">{currentUser?.score || 100}%</div>
+          <div className="home__snapshotLabel">{i18n("pages.profile.creditScore")}</div>
+        </Link>
+      </div>
+
       <div className="home__body">
         {/* Announcement */}
-        <div className="home__announcement">
-          <i className="fa-solid fa-volume-high"></i>
-          <span>{i18n("pages.home.announcement")}</span>
-        </div>
+        <AnnouncementTicker />
 
         {/* Quick actions */}
         <div className="home__actionsGrid">
@@ -216,6 +243,7 @@ function Home() {
         </div>
 
         {/* Trust section */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.platform")}</div>
         <div className="home__sectionTitle">{i18n("pages.home.whyChooseUs")}</div>
         <div className="home__trustGrid">
           {TRUST_ITEMS.map((item) => (
@@ -236,6 +264,7 @@ function Home() {
         {/* VIP levels */}
         <div className="home__sectionHeader">
           <div>
+            <div className="home__eyebrow">{i18n("pages.home.eyebrow.membership")}</div>
             <div className="home__sectionTitle home__sectionTitle--noMargin">
               {i18n("pages.home.levels")}
             </div>
@@ -261,19 +290,27 @@ function Home() {
         )}
 
         {/* Featured products */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.marketplace")}</div>
         <div className="home__sectionTitle">{i18n("pages.home.featuredTitle")}</div>
         <div className="home__sectionSubtitle home__sectionSubtitle--block">
           {i18n("pages.home.featuredSubtitle")}
         </div>
         <div className="home__productsScroll">
-          {FEATURED_PRODUCTS.map((product) => (
+          {FEATURED_PRODUCTS.map((product, index) => (
             <div className="home__productCard" key={product.url}>
+              {index === 0 && (
+                <span className="home__productBadge">
+                  <i className="fa-solid fa-fire"></i>
+                  {i18n("pages.home.trending")}
+                </span>
+              )}
               <img src={product.url} alt="" loading="lazy" />
             </div>
           ))}
         </div>
 
         {/* About us */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.company")}</div>
         <div className="home__aboutCard">
           <div className="home__sectionTitle home__sectionTitle--noMargin">
             {company?.name || i18n("pages.home.aboutTitle")}
@@ -289,6 +326,7 @@ function Home() {
         </div>
 
         {/* Trusted partners */}
+        <div className="home__trustedLabel">{i18n("pages.home.trustedBy")}</div>
         <div className="home__logoSlider">
           <div className="home__logoTrack">
             {logos.map((logo, index) => (
@@ -377,8 +415,6 @@ function Home() {
         </div>
       )}
 
-      <LiveActivityToast />
-
       <style>{`
         .home__page {
           background: #06070b;
@@ -389,9 +425,9 @@ function Home() {
         /* Hero */
         .home__hero {
           position: relative;
-          height: 220px;
+          height: 244px;
           overflow: hidden;
-          border-radius: 0 0 22px 22px;
+          border-radius: 0 0 26px 26px;
         }
 
         .home__heroSlide {
@@ -410,21 +446,42 @@ function Home() {
         .home__heroOverlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(6, 7, 11, 0.25) 0%, rgba(6, 7, 11, 0.92) 100%);
+          background: linear-gradient(180deg, rgba(6, 7, 11, 0.15) 0%, rgba(6, 7, 11, 0.55) 55%, rgba(6, 7, 11, 0.96) 100%);
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
-          padding: 16px;
+          padding: 18px 16px 32px;
           gap: 12px;
         }
 
+        .home__heroGreetingRow {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
         .home__heroGreeting {
-          font-size: 17px;
+          font-size: 18px;
           font-weight: 700;
           color: #f5f6f8;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+
+        .home__heroVipChip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(240, 185, 11, 0.16);
+          border: 1px solid rgba(240, 185, 11, 0.35);
+          color: #f0b90b;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 20px;
+          flex-shrink: 0;
         }
 
         .home__heroTagline {
@@ -472,27 +529,53 @@ function Home() {
           border-radius: 4px;
         }
 
+        /* Account snapshot */
+        .home__snapshot {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: stretch;
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 18px;
+          margin: -30px 14px 20px;
+          padding: 14px 6px;
+          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .home__snapshotItem {
+          flex: 1;
+          text-align: center;
+          text-decoration: none;
+          padding: 0 4px;
+        }
+
+        .home__snapshotValue {
+          font-size: 15px;
+          font-weight: 700;
+          color: #f5f6f8;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .home__snapshotLabel {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+          color: #848e9c;
+          margin-top: 4px;
+        }
+
+        .home__snapshotDivider {
+          width: 1px;
+          background: rgba(255, 255, 255, 0.08);
+          margin: 2px 0;
+        }
+
         /* Body */
         .home__body {
-          padding: 16px 14px 24px;
-        }
-
-        .home__announcement {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #14151d;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 11px 14px;
-          font-size: 12px;
-          color: #848e9c;
-          margin-bottom: 16px;
-        }
-
-        .home__announcement i {
-          color: #f0b90b;
-          flex-shrink: 0;
+          padding: 0 14px 24px;
         }
 
         .home__actionsGrid {
@@ -527,6 +610,7 @@ function Home() {
         .home__actionIcon i {
           color: #f0b90b;
           font-size: 15px;
+          filter: drop-shadow(0 0 8px rgba(240, 185, 11, 0.35));
         }
 
         .home__actionLabel {
@@ -534,6 +618,15 @@ function Home() {
           font-weight: 600;
           color: #c7cad1;
           text-align: center;
+        }
+
+        .home__eyebrow {
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #f0b90b;
+          margin-bottom: 5px;
         }
 
         .home__sectionTitle {
@@ -586,6 +679,11 @@ function Home() {
           border: 1px solid rgba(255, 255, 255, 0.06);
           border-radius: 14px;
           padding: 14px;
+          transition: border-color 0.2s ease;
+        }
+
+        .home__trustCard:hover {
+          border-color: rgba(14, 203, 129, 0.3);
         }
 
         .home__trustIcon {
@@ -602,6 +700,7 @@ function Home() {
         .home__trustIcon i {
           color: #0ecb81;
           font-size: 15px;
+          filter: drop-shadow(0 0 8px rgba(14, 203, 129, 0.35));
         }
 
         .home__trustTitle {
@@ -638,10 +737,12 @@ function Home() {
           border-radius: 16px;
           padding: 12px;
           cursor: pointer;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
         }
 
         .home__vipCard--current {
           border-color: rgba(240, 185, 11, 0.4);
+          box-shadow: 0 10px 24px rgba(240, 185, 11, 0.12);
         }
 
         .home__vipBadge {
@@ -726,6 +827,7 @@ function Home() {
         }
 
         .home__productCard {
+          position: relative;
           flex: 0 0 100px;
           width: 100px;
           height: 100px;
@@ -739,6 +841,24 @@ function Home() {
           width: 100%;
           height: 100%;
           object-fit: contain;
+        }
+
+        .home__productBadge {
+          position: absolute;
+          top: 6px;
+          left: 6px;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          background: #f0b90b;
+          color: #0b0e11;
+          font-size: 8.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          padding: 2px 6px;
+          border-radius: 20px;
+          z-index: 1;
         }
 
         /* About */
@@ -758,6 +878,16 @@ function Home() {
         }
 
         /* Logo slider */
+        .home__trustedLabel {
+          text-align: center;
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #5e6673;
+          margin-bottom: 10px;
+        }
+
         .home__logoSlider {
           background: #14151d;
           border: 1px solid rgba(255, 255, 255, 0.06);

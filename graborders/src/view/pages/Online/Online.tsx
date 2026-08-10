@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
-import "../styles/styles.css";
 import { useSelector, useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import actions from "src/modules/category/list/categoryListActions";
 import selector from "src/modules/category/list/categoryListSelectors";
 import LoadingModal from "src/shared/LoadingModal";
 import SubHeader from "src/view/shared/Header/SubHeader";
 import { i18n } from "../../../i18n";
-import { Link } from 'react-router-dom'
+
 function Online() {
   const dispatch = useDispatch();
 
@@ -18,492 +18,293 @@ function Online() {
     // eslint-disable-next-line
   }, [dispatch]);
 
-  const handleLiveChatClick = () => {
-    // navigate("/LiveChat");
-  }; 
-
   return (
-    <div className="customer-service-container">
-      <SubHeader title={i18n('pages.online.title')} path="/" />
+    <div>
+      <SubHeader title={i18n("pages.online.title")} path="/" />
 
-      {/* Live Chat Button */}
-      <div className="live-chat-button-container">
-
-        <Link to="/LiveChat" style={{
-          textDecoration: 'none',
-          color: 'inherit'
-        }} >
-          <button className="live-chat-button" onClick={handleLiveChatClick}>
-            <div className="live-chat-icon">
-              <i className="fa-solid fa-comment-dots"></i>
-            </div>
-            <div className="live-chat-text">
-              <span className="live-chat-title">Live Chat Support</span>
-              <span className="live-chat-subtitle">Get instant help from our team</span>
-            </div>
-            <div className="live-chat-arrow">
-              <i className="fa-solid fa-arrow-right"></i>
-            </div>
-          </button>
-        </Link>
-      </div>
-
-      <div className="service-description-card">
-        <div className="description-content">
-          <i className="fa-solid fa-comments description-icon"></i>
-          <p className="description-text">
-            {i18n('pages.online.description')}
-          </p>
+      <div className="hlp__page">
+        {/* Hero */}
+        <div className="hlp__hero">
+          <span className="hlp__heroIcon">
+            <i className="fa-solid fa-headset"></i>
+          </span>
+          <div className="hlp__heroTitle">We're here to help</div>
+          <p className="hlp__heroText">{i18n("pages.online.description")}</p>
         </div>
-      </div>
 
-      <div className="support-agents-list">
+        {/* Live chat, elevated as the primary channel */}
+        <Link to="/LiveChat" className="hlp__liveChat">
+          <span className="hlp__liveChatPulse">
+            <i className="fa-solid fa-comment-dots"></i>
+          </span>
+          <span className="hlp__liveChatBody">
+            <span className="hlp__liveChatTitle">
+              Live Chat
+              <span className="hlp__onlineDot"></span>
+            </span>
+            <span className="hlp__liveChatSubtitle">Fastest way to reach our team</span>
+          </span>
+          <i className="fa-solid fa-chevron-right hlp__liveChatArrow"></i>
+        </Link>
+
         {loading && <LoadingModal />}
-        {!loading && record && record.map((item, index) => (
-          <div className="support-agent-card" key={index}>
-            <div className="agent-header">
-              <h3 className="agent-title">{item?.name}</h3>
-              <div className={`platform-badge ${item.type}`}>
-                {item.type === "whatsApp" ? (
-                  <i className="fa-brands fa-whatsapp"></i>
-                ) : (
-                  <i className="fa-brands fa-telegram"></i>
-                )}
-              </div>
-            </div>
 
-            <div className="agent-profile">
-              <img
-                src={item?.photo[0]?.downloadUrl}
-                alt={`${item?.name}`}
-                className="agent-photo"
-              />
-              <div className="status-indicator"></div>
-            </div>
+        {!loading && record && record.length > 0 && (
+          <>
+            <div className="hlp__eyebrow">Support</div>
+            <div className="hlp__sectionTitle">Contact a Specialist</div>
 
-            <div className="agent-actions">
-              {item.type === "whatsApp" ? (
-                <a
-                  href={`https://wa.me/${item.number}`}
-                  className="contact-button whatsapp-button"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <i className="fa-brands fa-whatsapp button-icon"></i>
-                  <span>{i18n('pages.online.contactWhatsApp')}</span>
-                  <i className="fa-solid fa-external-link action-arrow"></i>
-                </a>
-              ) : (
-                <a
-                  href={`https://t.me/${item.number}`}
-                  className="contact-button telegram-button"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <i className="fa-brands fa-telegram button-icon"></i>
-                  <span>{i18n('pages.online.contactTelegram')}</span>
-                  <i className="fa-solid fa-external-link action-arrow"></i>
-                </a>
-              )}
+            <div className="hlp__agentGrid">
+              {record.map((item, index) => {
+                const photoUrl = item?.photo?.[0]?.downloadUrl;
+                const isWhatsApp = item.type === "whatsApp";
+                const href = isWhatsApp
+                  ? `https://wa.me/${item.number}`
+                  : `https://t.me/${item.number}`;
+
+                return (
+                  <a
+                    href={href}
+                    key={index}
+                    className="hlp__agentTile"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div className="hlp__agentAvatar">
+                      {photoUrl ? (
+                        <img src={photoUrl} alt={item?.name} />
+                      ) : (
+                        <i className="fa-solid fa-user"></i>
+                      )}
+                      <span
+                        className={`hlp__agentPlatform hlp__agentPlatform--${item.type}`}
+                      >
+                        <i className={isWhatsApp ? "fa-brands fa-whatsapp" : "fa-brands fa-telegram"}></i>
+                      </span>
+                    </div>
+                    <div className="hlp__agentName">{item?.name}</div>
+                    <div className="hlp__agentAction">
+                      {isWhatsApp
+                        ? i18n("pages.online.contactWhatsApp")
+                        : i18n("pages.online.contactTelegram")}
+                    </div>
+                  </a>
+                );
+              })}
             </div>
-          </div>
-        ))}
+          </>
+        )}
       </div>
 
       <style>{`
-        .customer-service-container {
-          max-width: 1000px;
-          margin: 0 auto;
-          background: #EDF1F7;
+        .hlp__page {
           min-height: 100vh;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          padding-bottom: 20px;
+          background: #06070b;
+          color: #eaecef;
+          padding: 18px 14px 100px;
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* Live Chat Button */
-        .live-chat-button-container {
-          padding: 0 20px;
-          margin: 20px 0;
+        .hlp__hero {
+          display: none;
+          text-align: center;
+          padding: 26px 16px;
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 20px;
+          margin-bottom: 14px;
         }
 
-        .live-chat-button {
-          width: 100%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border: none;
-          border-radius: 16px;
-          padding: 20px;
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .live-chat-button::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-          transition: left 0.5s ease;
-        }
-
-        .live-chat-button:hover::before {
-          left: 100%;
-        }
-
-        .live-chat-button:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .live-chat-button:active {
-          transform: translateY(-1px);
-        }
-
-        .live-chat-icon {
-          width: 50px;
-          height: 50px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 12px;
+        .hlp__heroIcon {
+          width: 56px;
+          height: 56px;
+          margin: 0 auto 14px;
+          border-radius: 50%;
+          background: rgba(240, 185, 11, 0.12);
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .hlp__heroIcon i {
+          color: #f0b90b;
           font-size: 22px;
-          color: white;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .live-chat-text {
+        .hlp__heroTitle {
+          font-size: 18px;
+          font-weight: 700;
+          color: #f5f6f8;
+          margin-bottom: 8px;
+        }
+
+        .hlp__heroText {
+          font-size: 12.5px;
+          color: #848e9c;
+          line-height: 1.6;
+          margin: 0;
+          max-width: 300px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .hlp__liveChat {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #17150f;
+          border: 1px solid rgba(240, 185, 11, 0.4);
+          border-radius: 16px;
+          padding: 14px;
+          text-decoration: none;
+          margin-bottom: 24px;
+        }
+
+        .hlp__liveChatPulse {
+          flex-shrink: 0;
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          background: #f0b90b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .hlp__liveChatPulse i {
+          color: #0b0e11;
+          font-size: 19px;
+        }
+
+        .hlp__liveChatBody {
           flex: 1;
-          text-align: left;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+          min-width: 0;
         }
 
-        .live-chat-title {
-          color: white;
-          font-size: 16px;
-          font-weight: 700;
-          line-height: 1.2;
-        }
-
-        .live-chat-subtitle {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 13px;
-          font-weight: 400;
-          line-height: 1.2;
-        }
-
-        .live-chat-arrow {
-          width: 40px;
-          height: 40px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
+        .hlp__liveChatTitle {
           display: flex;
           align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          color: white;
-          transition: all 0.3s ease;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .live-chat-button:hover .live-chat-arrow {
-          transform: translateX(3px);
-          background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Service Description */
-        .service-description-card {
-          background: #FFFFFF;
-          margin: 20px;
-          padding: 25px 20px;
-          border-radius: 16px;
-          border: 1px solid #E2E8F0;
-          text-align: center;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .description-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .description-icon {
-          font-size: 32px;
-          color: #4299E1;
-          background: rgba(66, 153, 225, 0.1);
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid #4299E1;
-        }
-
-        .description-text {
-          color: #4A5568;
+          gap: 7px;
           font-size: 15px;
-          line-height: 1.5;
-          margin: 0;
-          text-align: center;
-          font-weight: 400;
-        }
-
-        /* Support Agents List */
-        .support-agents-list {
-          padding: 0 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .support-agent-card {
-          background: #FFFFFF;
-          border-radius: 16px;
-          padding: 25px;
-          border: 1px solid #E2E8F0;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .support-agent-card:hover {
-          border-color: #4299E1;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .support-agent-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: linear-gradient(135deg, #4299E1, #3182CE);
-        }
-
-        /* Agent Header */
-        .agent-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .agent-title {
-          font-size: 18px;
           font-weight: 700;
-          color: #1A202C;
-          margin: 0;
+          color: #f5f6f8;
         }
 
-        .platform-badge {
-          width: 40px;
-          height: 40px;
+        .hlp__onlineDot {
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
+          background: #0ecb81;
+          box-shadow: 0 0 0 3px rgba(14, 203, 129, 0.18);
+        }
+
+        .hlp__liveChatSubtitle {
+          display: block;
+          font-size: 11.5px;
+          color: #848e9c;
+          margin-top: 2px;
+        }
+
+        .hlp__liveChatArrow {
+          flex-shrink: 0;
+          color: #f0b90b;
+          font-size: 13px;
+        }
+
+        .hlp__eyebrow {
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #f0b90b;
+          margin-bottom: 5px;
+        }
+
+        .hlp__sectionTitle {
+          font-size: 15px;
+          font-weight: 700;
+          color: #f5f6f8;
+          margin-bottom: 14px;
+        }
+
+        .hlp__agentGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .hlp__agentTile {
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 16px 12px;
+          text-align: center;
+          text-decoration: none;
+        }
+
+        .hlp__agentAvatar {
+          position: relative;
+          width: 58px;
+          height: 58px;
+          margin: 0 auto 10px;
+          border-radius: 50%;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
-          color: white;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          overflow: hidden;
         }
 
-        .platform-badge.whatsApp {
-          background: linear-gradient(135deg, #25D366, #128C7E);
-        }
-
-        .platform-badge.telegram {
-          background: linear-gradient(135deg, #0088cc, #005c8a);
-        }
-
-        /* Agent Profile */
-        .agent-profile {
-          position: relative;
-          width: 100px;
-          height: 100px;
-          margin: 0 auto 25px;
-        }
-
-        .agent-photo {
+        .hlp__agentAvatar img {
           width: 100%;
           height: 100%;
-          border-radius: 50%;
           object-fit: cover;
-          border: 3px solid #E2E8F0;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        .status-indicator {
+        .hlp__agentAvatar i {
+          font-size: 22px;
+          color: #5e6673;
+        }
+
+        .hlp__agentPlatform {
           position: absolute;
-          bottom: 5px;
-          right: 5px;
-          width: 16px;
-          height: 16px;
-          background: #48BB78;
-          border: 2px solid #FFFFFF;
+          bottom: -2px;
+          right: -2px;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Contact Buttons */
-        .agent-actions {
-          display: flex;
-          justify-content: center;
-        }
-
-        .contact-button {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 14px 20px;
-          border: none;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 14px;
-          text-decoration: none;
-          transition: all 0.3s ease;
-          cursor: pointer;
-          flex: 1;
           justify-content: center;
-          max-width: 250px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          font-size: 11px;
+          color: #0b0e11;
+          border: 2px solid #14151d;
         }
 
-        .whatsapp-button {
-          background: linear-gradient(135deg, #25D366, #128C7E);
-          color: white;
+        .hlp__agentPlatform--whatsApp {
+          background: #25d366;
         }
 
-        .telegram-button {
-          background: linear-gradient(135deg, #0088cc, #005c8a);
-          color: white;
+        .hlp__agentPlatform--telegram {
+          background: #38bdf8;
         }
 
-        .contact-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        .hlp__agentName {
+          font-size: 13px;
+          font-weight: 700;
+          color: #eaecef;
+          margin-bottom: 4px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .button-icon {
-          font-size: 18px;
+        .hlp__agentAction {
+          font-size: 11px;
+          font-weight: 600;
+          color: #848e9c;
         }
-
-        .action-arrow {
-          font-size: 12px;
-          opacity: 0.8;
-        }
-
-        .contact-button span {
-          flex: 1;
-          text-align: center;
-        }
-
-        /* Loading State */
-        :global(.loading-modal) {
-          background: rgba(237, 241, 247, 0.9);
-          backdrop-filter: blur(10px);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 400px) {
-          .customer-service-container {
-            border-radius: 0;
-          }
-          
-          .live-chat-button-container {
-            padding: 0 15px;
-            margin: 15px 0;
-          }
-          
-          .live-chat-button {
-            padding: 16px;
-            gap: 12px;
-          }
-          
-          .live-chat-icon {
-            width: 45px;
-            height: 45px;
-            font-size: 20px;
-          }
-          
-          .live-chat-title {
-            font-size: 15px;
-          }
-          
-          .live-chat-subtitle {
-            font-size: 12px;
-          }
-          
-          .live-chat-arrow {
-            width: 35px;
-            height: 35px;
-            font-size: 12px;
-          }
-          
-          .service-description-card {
-            margin: 15px;
-            padding: 20px 15px;
-          }
-          
-          .support-agents-list {
-            padding: 0 15px;
-            gap: 15px;
-          }
-          
-          .support-agent-card {
-            padding: 20px;
-          }
-          
-          .agent-profile {
-            width: 80px;
-            height: 80px;
-          }
-          
-          .contact-button {
-            padding: 12px 16px;
-            font-size: 13px;
-          }
-        }
-
-        /* Animation for cards */
-        @keyframes cardSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .live-chat-button {
-          animation: cardSlideIn 0.6s ease-out;
-        }
-
-        .support-agent-card {
-          animation: cardSlideIn 0.5s ease-out;
-        }
-
-        .support-agent-card:nth-child(1) { animation-delay: 0.1s; }
-        .support-agent-card:nth-child(2) { animation-delay: 0.2s; }
-        .support-agent-card:nth-child(3) { animation-delay: 0.3s; }
-        .support-agent-card:nth-child(4) { animation-delay: 0.4s; }
       `}</style>
     </div>
   );

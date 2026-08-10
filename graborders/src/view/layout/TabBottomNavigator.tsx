@@ -27,7 +27,7 @@ function TabBottomNavigator() {
     },
     {
       icon: "fas fa-phone-alt",
-      path: "/Chat",
+      path: "/Online",
       name: i18n('pages.tabBottomNavigator.customerService'),
     },
     {

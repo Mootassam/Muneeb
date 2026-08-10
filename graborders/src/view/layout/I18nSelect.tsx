@@ -90,7 +90,7 @@ function I18nSelect() {
           max-width: 400px;
           width: 100%;
           background: #14151d;
-          padding: 18px;
+          padding: 22px 18px 26px;
           border-radius: 22px;
           border: 1px solid rgba(255, 255, 255, 0.06);
           color: #eaecef;

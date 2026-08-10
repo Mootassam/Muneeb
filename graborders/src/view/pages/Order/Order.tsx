@@ -155,14 +155,14 @@ function Portfolio() {
           {!loading && records && renderRecords()}
         </div>
 
-        {!selectHasRows && <Nodata />}
+        {!loading && !selectHasRows && <Nodata />}
       </div>
 
       <style>{`
         .ord__page {
           position: relative;
           min-height: 100vh;
-          background: #0b0e11;
+          background: #06070b;
           padding: 20px 0 40px;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -183,7 +183,7 @@ function Portfolio() {
         .ord__wrap {
           position: relative;
           z-index: 1;
-          max-width: 1000px;
+          max-width: 400px;
           margin: 0 auto;
           padding: 0 16px;
         }
@@ -191,8 +191,8 @@ function Portfolio() {
         .ord__tabs {
           display: flex;
           gap: 6px;
-          background: #181a20;
-          border: 1px solid #23262c;
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
           border-radius: 12px;
           padding: 5px;
           margin-bottom: 18px;
@@ -200,6 +200,7 @@ function Portfolio() {
 
         .ord__tab {
           flex: 1;
+          margin: 0;
           border: none;
           background: transparent;
           color: #848e9c;
@@ -214,7 +215,7 @@ function Portfolio() {
 
         .ord__tab--active {
           background: #f0b90b;
-          color: #181a20;
+          color: #0b0e11;
         }
 
         .ord__list {
@@ -225,8 +226,8 @@ function Portfolio() {
 
         .ord__card {
           position: relative;
-          background: #181a20;
-          border: 1px solid #23262c;
+          background: #14151d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
           border-radius: 14px;
           padding: 16px;
           display: flex;
@@ -276,8 +277,8 @@ function Portfolio() {
           gap: 14px;
           align-items: center;
           padding: 12px;
-          background: #101317;
-          border: 1px solid #23262c;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
           border-radius: 12px;
         }
 
@@ -286,7 +287,7 @@ function Portfolio() {
           height: 60px;
           border-radius: 10px;
           overflow: hidden;
-          background: #1e2329;
+          background: #1a1c26;
           flex-shrink: 0;
         }
 
@@ -346,11 +347,12 @@ function Portfolio() {
 
         .ord__submitBtn {
           width: 100%;
+          margin: 0;
           border: none;
-          border-radius: 10px;
+          border-radius: 14px;
           padding: 11px;
           background: #f0b90b;
-          color: #181a20;
+          color: #0b0e11;
           font-family: "Poppins", sans-serif;
           font-size: 14px;
           font-weight: 700;
