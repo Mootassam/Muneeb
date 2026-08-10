@@ -56,8 +56,10 @@ const en = {
     home: {
       levels: "VIP Levels",
       chooseLevel: "Choose your level to maximize your earnings",
-      welcome: "Welcome",
-      announcement: "Dear users, the E-clicks Digital platform is back to the best and normal, continue to earn as much as you can from the platform",
+      welcome: "Welcome back",
+      welcomeGuest: "Welcome",
+      heroTagline: "Shop smarter, earn faster",
+      announcement: "Your account is fully active. Explore VIP levels and start earning today.",
       viewAllVIP: "View All VIP",
       showLess: "Show Less",
       // Action Buttons
@@ -74,6 +76,33 @@ const en = {
       profitNormal: "profit on normal products",
       profitPremium: "profit on premium products",
       maxOrders: "Max orders per day",
+
+      // Trust section
+      whyChooseUs: "Why Choose Us",
+      trust: {
+        secureTitle: "Secure Payments",
+        secureText: "Your funds and data are protected end-to-end",
+        fastTitle: "Fast Withdrawals",
+        fastText: "Requests are reviewed and processed quickly",
+        supportTitle: "24/7 Support",
+        supportText: "Our team is always here to help you",
+        verifiedTitle: "Verified Platform",
+        verifiedText: "Trusted by members across every VIP level"
+      },
+
+      // Featured products
+      featuredTitle: "Trending Products",
+      featuredSubtitle: "A look at items members are grabbing right now",
+
+      // About us
+      aboutTitle: "About Us",
+      aboutFallback: "We connect members with everyday products and reward opportunities, backed by a secure and transparent platform.",
+
+      // Live activity toast
+      liveToast: {
+        congrats: "Congratulations:",
+        withdraw: "Withdraw:"
+      },
 
       // Modal
       modal: {
@@ -112,10 +141,12 @@ const en = {
       upgrading: "Upgrading..."
     },
     tabBottomNavigator: {
-      home: "home",
-      grap: "grap",
-      records: "records",
-      starting: "starting"
+      home: "Home",
+      grap: "Start Task",
+      records: "Orders",
+      starting: "starting",
+      customerService: "Customer Service",
+      myProfile: "My Profile"
     },
     profile: {
       title: "Profile",
@@ -134,6 +165,8 @@ const en = {
       // Financial Items
       recharge: "Deposit",
       withdraw: "Withdraw",
+      wallet: "Wallet",
+      history: "History",
 
       // Details Items
       contactUs: "Contact us",
@@ -190,6 +223,7 @@ const en = {
       choosePreferred: "Choose your preferred language",
       searchPlaceholder: "Search languages...",
       currentLanguage: "Current Language",
+      noResults: "No languages found",
 
       // Language names (if needed for dynamic content)
       languages: {
@@ -224,6 +258,7 @@ const en = {
         withdraw: "Withdraw"
       },
       unreadCount: "{0} unread",
+      totalCount: "{0} notifications",
       emptyState: {
         title: "No notifications found",
         description: "You don't have any {0} notifications yet."
@@ -274,6 +309,7 @@ const en = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Submit",
 
       // Status Labels
       status: {
@@ -287,12 +323,35 @@ const en = {
     changePassword: {
       title: "Change Password",
       header: "Change Password",
+      subtitle: "Update your password to keep your account secure",
       oldPassword: "Old Password",
       newPassword: "New Password",
       confirmPassword: "Confirm Password",
       submit: "Submit",
       note: "Please fill out this information carefully",
       requiredField: "*"
+    },
+
+
+    deposit: {
+      title: "Deposit",
+      chooseCurrency: "Choose Currency",
+      depositAddress: "Deposit Address",
+      addressUnavailable: "This address hasn't been configured yet. Please contact customer service.",
+      copy: "Copy",
+      copied: "Address copied",
+      scanQr: "Scan the QR code or copy the address below",
+      warning: "Send only {0} to this address. Sending any other asset may result in permanent loss.",
+      amount: "Amount Deposited",
+      amountPlaceholder: "Enter the amount you sent",
+      submit: "Submit",
+      note: "After sending your payment, enter the amount and submit. Your balance will be credited once an admin confirms the transaction.",
+      success: "Deposit request submitted, awaiting confirmation.",
+      reviewModal: {
+        title: "Submitted for Review",
+        message: "We've received your deposit request. Your balance will be updated once an admin confirms the transaction on-chain.",
+        confirm: "Got it"
+      }
     },
 
 
@@ -303,6 +362,7 @@ const en = {
       withdrawPassword: "Withdraw Password",
       availableBalance: "Available balance",
       confirm: "Confirm",
+      disabledNote: "Withdrawals are currently disabled for your account. Please contact customer service for assistance.",
       rulesDescription: "Rules Description",
       rules: {
         minimum: "(1) Minimum withdraw is 100 USD",

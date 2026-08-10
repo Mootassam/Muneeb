@@ -48,7 +48,7 @@ const transactionFormActions = {
     }
   },
 
-  doCreate: (values) => async (dispatch) => {
+  doCreate: (values, redirectTo = '/withdraw') => async (dispatch) => {
     try {
       dispatch({
         type: transactionFormActions.CREATE_STARTED,
@@ -64,7 +64,7 @@ const transactionFormActions = {
         i18n('entities.transaction.create.success'),
       );
 
-      getHistory().push('/withdraw ');
+      getHistory().push(redirectTo);
     } catch (error) {
       Errors.handle(error);
 

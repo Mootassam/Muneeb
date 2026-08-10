@@ -117,6 +117,12 @@ const screenRoutes = [
     exact: true,
   },
   {
+    path: "/deposit",
+    loader: () => import("src/view/pages/Deposit/Deposit"),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
     path: "/security",
     loader: () => import("src/view/pages/Auth/ChangePassword"),
     permissionRequired: permissions.categoryRead,

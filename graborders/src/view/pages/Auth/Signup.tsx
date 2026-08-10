@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import axios from "axios";
 
 import actions from "src/modules/auth/authActions";
 import selectors from "src/modules/auth/authSelectors";
@@ -16,7 +15,7 @@ import ButtonIcon from "src/shared/ButtonIcon";
 import userEnumerators from "src/modules/user/userEnumerators";
 import CsPage from "./CsPage";
 
-// ✅ Validation Schema
+// Validation Schema
 const schema = yup.object().shape({
   email: yupFormSchemas.string(i18n("user.fields.username"), {
     required: true,
@@ -42,16 +41,58 @@ const schema = yup.object().shape({
   rememberMe: yupFormSchemas.boolean(i18n("user.fields.rememberMe")),
 });
 
+const selectControlStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    minHeight: 46,
+    borderRadius: 8,
+    border: `1px solid ${state.isFocused ? "#f0b90b" : "#2b3139"}`,
+    backgroundColor: "#1e2329",
+    boxShadow: "none",
+    outline: "none",
+    fontFamily: "Poppins, sans-serif",
+    fontSize: 14,
+    paddingLeft: 4,
+  }),
+  placeholder: (provided) => ({ ...provided, color: "#5e6673" }),
+  singleValue: (provided) => ({ ...provided, color: "#eaecef" }),
+  input: (provided) => ({ ...provided, color: "#eaecef" }),
+  menu: (provided) => ({
+    ...provided,
+    borderRadius: 8,
+    overflow: "hidden",
+    zIndex: 20,
+    backgroundColor: "#1e2329",
+    border: "1px solid #2b3139",
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isSelected
+      ? "#f0b90b"
+      : state.isFocused
+      ? "#2b3139"
+      : "#1e2329",
+    color: state.isSelected ? "#181a20" : "#eaecef",
+    fontFamily: "Poppins, sans-serif",
+    fontSize: 14,
+  }),
+  indicatorSeparator: () => ({ display: "none" }),
+  dropdownIndicator: (provided) => ({ ...provided, color: "#5e6673" }),
+};
+
 function Signup() {
   const dispatch = useDispatch();
   const loading = useSelector(selectors.selectLoading);
   const externalErrorMessage = useSelector(selectors.selectErrorMessage);
 
-  const [countries, setCountries] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const dropdownRef = useRef(null);
+  const [visibility, setVisibility] = useState({
+    withdrawPassword: false,
+    password: false,
+    newPasswordConfirmation: false,
+  });
+
+  const toggleVisibility = (field) =>
+    setVisibility((v) => ({ ...v, [field]: !v[field] }));
 
   const [initialValues] = useState({
     email: "",
@@ -59,81 +100,13 @@ function Signup() {
     phoneNumber: "",
     withdrawPassword: "",
     invitationcode: "",
-    gender: '',
+    gender: "",
     rememberMe: true,
   });
 
-  // ✅ Fetch countries + IP country detection
   useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        const response = await axios.get(
-          "https://restcountries.com/v3.1/all?fields=name,flags,idd,cca2"
-        );
-
-        const countriesData = response.data
-          .filter((c) => c.idd?.root)
-          .map((country) => {
-            // For countries with multiple suffixes, use only the root
-            // Special handling for US to ensure it's +1, not +1201
-            let dialCode = country.idd.root;
-            
-            // For US, Canada, and other countries that should use root only
-            const rootOnlyCountries = ['US', 'CA', 'RU', 'KZ', 'AU'];
-            if (rootOnlyCountries.includes(country.cca2)) {
-              dialCode = country.idd.root;
-            } else if (country.idd.suffixes && country.idd.suffixes.length > 0) {
-              // For other countries, use root + first suffix if available
-              dialCode = country.idd.root + (country.idd.suffixes[0] || "");
-            }
-            
-            return {
-              value: dialCode,
-              label: country.name.common,
-              code: country.cca2,
-              flag: country.flags.svg,
-            };
-          })
-          .sort((a, b) => a.label.localeCompare(b.label));
-
-        setCountries(countriesData);
-
-        try {
-          const ipResponse = await axios.get("https://ip2c.org/s");
-          const countryCode = ipResponse.data.split(";")[1];
-          const defaultCountry = countriesData.find(
-            (c) => c.code === countryCode
-          );
-          setSelectedCountry(defaultCountry || countriesData[0]);
-        } catch {
-          setSelectedCountry(countriesData[0]);
-        }
-      } catch (error) {
-        console.error("Error fetching countries:", error);
-      }
-    };
-
-    fetchCountries();
     dispatch(actions.doClearErrorMessage());
   }, [dispatch]);
-
-  // ✅ Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current?.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // ✅ Filter countries based on search term
-  const filteredCountries = countries.filter(country =>
-    country.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    country.value.includes(searchTerm) ||
-    country.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const form = useForm({
     resolver: yupResolver(schema),
@@ -149,12 +122,11 @@ function Signup() {
     invitationcode,
     gender,
   }) => {
-    const fullPhoneNumber = `${selectedCountry?.value || "+1"}${phoneNumber}`;
     dispatch(
       actions.doRegisterEmailAndPassword(
         email,
         password,
-        fullPhoneNumber,
+        phoneNumber,
         withdrawPassword,
         invitationcode,
         gender
@@ -162,389 +134,537 @@ function Signup() {
     );
   };
 
+  const EyeToggle = ({ field }) => (
+    <button
+      type="button"
+      className="bnc__eye"
+      tabIndex={-1}
+      onClick={() => toggleVisibility(field)}
+      aria-label="toggle password visibility"
+    >
+      {visibility[field] ? (
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 3l18 18M10.6 10.7a2.5 2.5 0 003.5 3.5M6.6 6.7C4.5 8.1 3 10 2 12c1.6 3.6 5.4 7 10 7 1.6 0 3.1-.4 4.4-1.1M9.9 4.2A10.4 10.4 0 0112 4c4.6 0 8.4 3.4 10 7-.5 1.2-1.3 2.5-2.3 3.6"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M2 12c1.6-3.6 5.4-7 10-7s8.4 3.4 10 7c-1.6 3.6-5.4 7-10 7s-8.4-3.4-10-7z"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          <circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.6" />
+        </svg>
+      )}
+    </button>
+  );
+
   return (
-    <div className="auth__page">
-      <div className="header__signup">
-        <h1 className="auth__title">{i18n('pages.auth.signup.createAccount')}</h1>
-        <span className="auth__description __v2">
-          {i18n('pages.auth.signup.signupForAccount')}
-        </span>
+    <div className="bnc__page">
+      <div className="bnc__glow" />
+
+      <div className="bnc__topbar">
+        <div className="bnc__brand">
+          <img src="/images/home/logo.png" alt="logo" className="bnc__brandLogo" />
+        </div>
       </div>
 
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="auth__form">
-            <InputFormItem
-              type="text"
-              name="email"
-              placeholder={i18n("user.fields.username")}
-              className="auth__input"
-              externalErrorMessage={externalErrorMessage}
-            />
+      <div className="bnc__wrap">
+        <div className="bnc__card">
+          <div className="bnc__head">
+            <h1 className="bnc__title">{i18n("pages.auth.signup.createAccount")}</h1>
+            <p className="bnc__subtitle">
+              {i18n("pages.auth.signup.signupForAccount")}
+            </p>
+          </div>
 
-            {/* ✅ Improved Phone Number Input with Integrated Country Selector */}
-            <div className="phone-input-wrapper">
-              <div
-                className={`phone-input-container ${dropdownOpen ? 'dropdown-open' : ''}`}
-                ref={dropdownRef}
-              >
-                <div className="phone-input-inner">
-                  {/* Country Selector */}
-                  <div
-                    className="country-selector"
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                  >
-                    {selectedCountry && (
-                      <div className="country-selected">
-                        <img
-                          src={selectedCountry.flag}
-                          alt={selectedCountry.label}
-                          className="country-flag"
+          <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="bnc__form">
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.username")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M4 6.5C4 5.67 4.67 5 5.5 5h13c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13A1.5 1.5 0 014 17.5v-11z"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinejoin="round"
                         />
-                        <span className="country-code">{selectedCountry.value}</span>
-                        <span className="dropdown-arrow">▾</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Phone Number Input */}
-                  <div className="phone-number-input">
+                        <path
+                          d="M5 6.5l7 6 7-6"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
                     <InputFormItem
-                      type="tel"
-                      name="phoneNumber"
-                      placeholder={i18n('pages.auth.signup.phonePlaceholder')}
-                      className="auth__input phone-input"
+                      type="text"
+                      name="email"
+                      placeholder={i18n("user.fields.username")}
+                      className="bnc__input"
+                      externalErrorMessage={externalErrorMessage}
                     />
                   </div>
                 </div>
 
-                {/* Country Dropdown */}
-                {dropdownOpen && (
-                  <div className="country-dropdown">
-                    <div className="dropdown-search">
-                      <input
-                        type="text"
-                        placeholder={i18n('pages.auth.signup.searchCountries')}
-                        className="search-input"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                    <div className="dropdown-list">
-                      {filteredCountries.map((country) => (
-                        <div
-                          key={country.code}
-                          className={`country-option ${selectedCountry?.code === country.code ? "selected" : ""
-                            }`}
-                          onClick={() => {
-                            setSelectedCountry(country);
-                            setDropdownOpen(false);
-                            setSearchTerm(""); // Clear search when country is selected
-                          }}
-                        >
-                          <img
-                            src={country.flag}
-                            alt={country.label}
-                            className="country-flag"
-                          />
-                          <span className="country-name">{country.label}</span>
-                          <span className="country-dial-code">{country.value}</span>
-                        </div>
-                      ))}
-                      {filteredCountries.length === 0 && (
-                        <div className="no-results">
-                          {i18n('pages.auth.signup.noCountriesFound')}
-                        </div>
-                      )}
-                    </div>
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.phoneNumber")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M7 3.5h4.2c.4 0 .77.27.88.66l1 3.55c.1.35-.02.72-.3.95l-1.7 1.4a12.3 12.3 0 005.6 5.6l1.4-1.7c.23-.28.6-.4.95-.3l3.55 1c.4.11.66.48.66.88V20a1.5 1.5 0 01-1.62 1.5A16.5 16.5 0 015.5 5.12 1.5 1.5 0 017 3.5z"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <InputFormItem
+                      type="tel"
+                      name="phoneNumber"
+                      placeholder={i18n("pages.auth.signup.phonePlaceholder")}
+                      className="bnc__input"
+                    />
                   </div>
-                )}
+                </div>
+
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.withdrawPassword")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <circle cx="8.5" cy="8" r="4" stroke="currentColor" strokeWidth="1.6" />
+                        <path
+                          d="M11.6 10.9L20 19.3M15.5 15l3-3"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                    <InputFormItem
+                      type={visibility.withdrawPassword ? "text" : "password"}
+                      name="withdrawPassword"
+                      placeholder={i18n("user.fields.withdrawPassword")}
+                      className="bnc__input bnc__input--pw"
+                    />
+                    <EyeToggle field="withdrawPassword" />
+                  </div>
+                </div>
+
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.password")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <rect
+                          x="5"
+                          y="10.5"
+                          width="14"
+                          height="9.5"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                        />
+                        <path
+                          d="M7.5 10.5V7.8a4.5 4.5 0 019 0v2.7"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                    <InputFormItem
+                      type={visibility.password ? "text" : "password"}
+                      name="password"
+                      placeholder={i18n("user.fields.password")}
+                      className="bnc__input bnc__input--pw"
+                    />
+                    <EyeToggle field="password" />
+                  </div>
+                </div>
+
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.confirmPassword")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <rect
+                          x="5"
+                          y="10.5"
+                          width="14"
+                          height="9.5"
+                          rx="2"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                        />
+                        <path
+                          d="M7.5 10.5V7.8a4.5 4.5 0 019 0v2.7"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M9.7 15.2l1.6 1.6 3-3"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <InputFormItem
+                      type={visibility.newPasswordConfirmation ? "text" : "password"}
+                      name="newPasswordConfirmation"
+                      autoComplete="new-password"
+                      placeholder={i18n("user.fields.confirmPassword")}
+                      className="bnc__input bnc__input--pw"
+                    />
+                    <EyeToggle field="newPasswordConfirmation" />
+                  </div>
+                </div>
+
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.gender")}</label>
+                  <SelectFormItem
+                    name="gender"
+                    placeholder={i18n("user.fields.gender")}
+                    options={userEnumerators.genre.map((value) => ({
+                      value,
+                      label: i18n(`user.enumerators.gender.${value}`),
+                    }))}
+                    selectStyles={selectControlStyles}
+                    required
+                  />
+                </div>
+
+                <div className="bnc__group">
+                  <label className="bnc__label">{i18n("user.fields.invitationcode")}</label>
+                  <div className="bnc__field">
+                    <span className="bnc__icon">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M4 9.5a2 2 0 002 2v1a2 2 0 01-2 2V17a1.5 1.5 0 001.5 1.5h13A1.5 1.5 0 0020 17v-2.5a2 2 0 010-4V8A1.5 1.5 0 0018.5 6.5h-13A1.5 1.5 0 004 8v1.5z"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M13.5 6.5v11"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeDasharray="2.2 2.2"
+                        />
+                      </svg>
+                    </span>
+                    <InputFormItem
+                      type="text"
+                      name="invitationcode"
+                      placeholder={i18n("user.fields.invitationcode")}
+                      className="bnc__input"
+                      externalErrorMessage={externalErrorMessage}
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <InputFormItem
-              type="password"
-              name="withdrawPassword"
-              placeholder={i18n("user.fields.withdrawPassword")}
-              className="auth__input"
-            />
+              <div className="bnc__bottom">
+                <button className="bnc__button" disabled={loading} type="submit">
+                  <ButtonIcon loading={loading} />
+                  <span>{i18n("pages.auth.signup.signupButton")}</span>
+                </button>
 
-            <InputFormItem
-              type="password"
-              name="password"
-              placeholder={i18n("user.fields.password")}
-              className="auth__input"
-            />
+                <div className="bnc__trust">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <rect x="5" y="10.5" width="14" height="9.5" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                    <path d="M7.5 10.5V7.8a4.5 4.5 0 019 0v2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                  <span>Secured by 256-bit encryption</span>
+                </div>
 
-            <InputFormItem
-              type="password"
-              name="newPasswordConfirmation"
-              autoComplete="new-password"
-              placeholder={i18n("user.fields.confirmPassword")}
-              className="auth__input"
-            />
+                <Link to="/auth/signin" className="bnc__linkWrap">
+                  <span className="bnc__link">{i18n("pages.auth.signup.alreadyHaveAccount")}</span>
+                </Link>
+              </div>
+            </form>
+          </FormProvider>
+        </div>
 
-            <SelectFormItem
-              name="gender"
-              placeholder={i18n("user.fields.gender")}
-              options={userEnumerators.genre.map((value) => ({
-                value,
-                label: i18n(`user.enumerators.gender.${value}`),
-              }))}
-              required
-            />
-
-            <InputFormItem
-              type="text"
-              name="invitationcode"
-              placeholder={i18n("user.fields.invitationcode")}
-              className="auth__input"
-              externalErrorMessage={externalErrorMessage}
-            />
-          </div>
-
-          <div className="auth__bottom">
-            <button className="auth__button" disabled={loading} type="submit">
-              <ButtonIcon loading={loading} />
-              <span>{i18n('pages.auth.signup.signupButton')}</span>
-            </button>
-
-            <Link to="/auth/signin" className="remove__ligne">
-              <span className="auth__link">{i18n('pages.auth.signup.alreadyHaveAccount')}</span>
-            </Link>
-          </div>
-        </form>
-      </FormProvider>
+        <p className="bnc__footer">© {new Date().getFullYear()} All rights reserved.</p>
+      </div>
 
       <CsPage />
+
       <style>{`
-/* Phone Input Styles */
-.phone-input-wrapper {
-  margin-bottom: 1rem;
-}
+        .bnc__page {
+          position: relative;
+          width: 100%;
+          min-height: 100dvh;
+          overflow-x: hidden;
+          overflow-y: auto;
+          background: #0b0e11;
+          background-image:
+            radial-gradient(circle at 50% 0%, rgba(240, 185, 11, 0.08), transparent 45%),
+            linear-gradient(180deg, #0b0e11 0%, #0d1015 100%);
+          display: flex;
+          flex-direction: column;
+        }
 
-.phone-input-wrapper .form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #333;
-  font-size: 0.9rem;
-}
+        .bnc__glow {
+          position: absolute;
+          top: -120px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 640px;
+          height: 320px;
+          background: radial-gradient(ellipse at center, rgba(240, 185, 11, 0.14), transparent 70%);
+          filter: blur(20px);
+          pointer-events: none;
+          z-index: 0;
+        }
 
-.phone-input-container {
-  position: relative;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: #fff;
-  transition: all 0.2s ease;
-}
+        .bnc__topbar {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          padding: 22px 24px 0;
+        }
 
-.phone-input-container:focus-within,
-.phone-input-container.dropdown-open {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
+        .bnc__brand {
+          display: flex;
+          align-items: center;
+        }
 
-.phone-input-inner {
-  display: flex;
-  align-items: stretch;
-  min-height: 48px;
-}
+        .bnc__brandLogo {
+          height: 30px;
+          width: auto;
+          object-fit: contain;
+          border-radius: 6px;
+        }
 
-.country-selector {
-  flex: 0 0 auto;
-  border-right: 1px solid #eee;
-  background: #f8f9fa;
-  border-radius: 6px 0 0 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
+        .bnc__wrap {
+          position: relative;
+          z-index: 2;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 30px 20px 40px;
+        }
 
-.country-selector:hover {
-  background: #e9ecef;
-}
+        .bnc__card {
+          width: 100%;
+          max-width: 400px;
+          background: #181a20;
+          border: 1px solid #23262c;
+          border-radius: 14px;
+          padding: 34px 28px 28px;
+          box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.65);
+        }
 
-.country-selected {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  height: 100%;
-  min-width: 100px;
-}
+        .bnc__head {
+          margin-bottom: 22px;
+        }
 
-.country-flag {
-  width: 20px;
-  height: 15px;
-  object-fit: cover;
-  border-radius: 2px;
-  margin-right: 8px;
-}
+        .bnc__title {
+          font-family: "Poppins", sans-serif;
+          font-weight: 600;
+          font-size: 22px;
+          color: #eaecef;
+          margin: 0 0 8px;
+          letter-spacing: -0.2px;
+        }
 
-.country-code {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
-  margin-right: 8px;
-}
+        .bnc__subtitle {
+          font-family: "Poppins", sans-serif;
+          font-size: 13.5px;
+          color: #848e9c;
+          margin: 0;
+        }
 
-.dropdown-arrow {
-  color: #666;
-  font-size: 12px;
-  transition: transform 0.2s ease;
-}
+        .bnc__form {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
 
-.phone-input-container.dropdown-open .dropdown-arrow {
-  transform: rotate(180deg);
-}
+        .bnc__group {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+        }
 
-.phone-number-input {
-  flex: 1;
-}
+        .bnc__label {
+          font-family: "Poppins", sans-serif;
+          font-size: 12.5px;
+          font-weight: 500;
+          color: #848e9c;
+        }
 
-.phone-input {
-  border: none !important;
-  border-radius: 0 6px 6px 0 !important;
-  padding-left: 12px !important;
-  height: 100% !important;
-  box-shadow: none !important;
-}
+        .bnc__field {
+          position: relative;
+        }
 
-.phone-input:focus {
-  outline: none;
-  box-shadow: none !important;
-}
+        .bnc__icon {
+          position: absolute;
+          left: 13px;
+          top: 13px;
+          display: flex;
+          align-items: center;
+          color: #5e6673;
+          z-index: 1;
+          pointer-events: none;
+        }
 
-/* Country Dropdown */
-.country-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  margin-top: 4px;
-  max-height: 300px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+        .bnc__eye {
+          position: absolute;
+          right: 12px;
+          top: 10px;
+          background: none;
+          border: none;
+          padding: 4px;
+          display: flex;
+          color: #5e6673;
+          cursor: pointer;
+        }
 
-.dropdown-search {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-}
+        .bnc__eye:hover {
+          color: #f0b90b;
+        }
 
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
+        .bnc__field .bnc__input,
+        .bnc__field input.bnc__input {
+          width: 100%;
+          padding: 13px 14px 13px 40px;
+          border-radius: 8px;
+          border: 1px solid #2b3139;
+          background-color: #1e2329;
+          color: #eaecef;
+          font-size: 14px;
+          font-family: "Poppins", sans-serif;
+          transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
 
-.search-input:focus {
-  outline: none;
-  border-color: #007bff;
-}
+        .bnc__field input.bnc__input--pw {
+          padding-right: 40px;
+        }
 
-.dropdown-list {
-  flex: 1;
-  overflow-y: auto;
-  max-height: 250px;
-}
+        .bnc__field .bnc__input::placeholder {
+          color: #5e6673;
+        }
 
-.country-option {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  border-bottom: 1px solid #f5f5f5;
-}
+        .bnc__field .bnc__input:focus {
+          outline: none;
+          border-color: #f0b90b;
+          background-color: #1e2329;
+        }
 
-.country-option:last-child {
-  border-bottom: none;
-}
+        .bnc__field:focus-within .bnc__icon {
+          color: #f0b90b;
+        }
 
-.country-option:hover {
-  background: #f8f9fa;
-}
+        .bnc__field .bnc__input.__danger {
+          border-color: #f6465d !important;
+          outline: none;
+        }
 
-.country-option.selected {
-  background: #e3f2fd;
-}
+        .bnc__field .invalid-feedback {
+          color: #f6465d;
+          font-size: 12.5px;
+        }
 
-.country-option .country-flag {
-  margin-right: 10px;
-  flex-shrink: 0;
-}
+        .bnc__bottom {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          margin-top: 26px;
+        }
 
-.country-option .country-name {
-  flex: 1;
-  font-size: 0.9rem;
-  color: #333;
-}
+        .bnc__button {
+          width: 100%;
+          border: none;
+          border-radius: 8px;
+          padding: 14px;
+          font-family: "Poppins", sans-serif;
+          font-weight: 600;
+          font-size: 15px;
+          color: #181a20;
+          background: #f0b90b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: background-color 0.15s ease, transform 0.1s ease;
+        }
 
-.country-option .country-dial-code {
-  font-size: 0.85rem;
-  color: #666;
-  font-weight: 500;
-  margin-left: 8px;
-}
+        .bnc__button:hover:not(:disabled) {
+          background: #f8d12f;
+        }
 
-.no-results {
-  padding: 12px;
-  text-align: center;
-  color: #666;
-  font-style: italic;
-}
+        .bnc__button:active:not(:disabled) {
+          transform: translateY(1px);
+        }
 
-/* Scrollbar Styling */
-.dropdown-list::-webkit-scrollbar {
-  width: 6px;
-}
+        .bnc__button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
 
-.dropdown-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
+        .bnc__trust {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #5e6673;
+          font-family: "Poppins", sans-serif;
+          font-size: 11.5px;
+        }
 
-.dropdown-list::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
+        .bnc__linkWrap {
+          text-decoration: none;
+        }
 
-.dropdown-list::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
+        .bnc__link {
+          font-family: "Poppins", sans-serif;
+          font-size: 13.5px;
+          color: #848e9c;
+        }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .phone-input-inner {
-    flex-direction: column;
-    min-height: auto;
-  }
-  
-  .country-selector {
-    border-right: none;
-    border-bottom: 1px solid #eee;
-    border-radius: 6px 6px 0 0;
-  }
-  
-  .phone-number-input .auth__input {
-    border-radius: 0 0 6px 6px !important;
-  }
-  
-  .country-selected {
-    min-width: auto;
-    justify-content: space-between;
-    padding: 8px 12px;
-  }
-}
+        .bnc__linkStrong {
+          color: #f0b90b;
+          font-weight: 600;
+        }
+
+        .bnc__footer {
+          position: relative;
+          z-index: 2;
+          font-family: "Poppins", sans-serif;
+          font-size: 11.5px;
+          color: #474d57;
+          margin: 24px 0 0;
+          text-align: center;
+        }
+
+        @media (max-width: 380px) {
+          .bnc__card {
+            padding: 28px 20px 24px;
+          }
+        }
       `}</style>
     </div>
   );

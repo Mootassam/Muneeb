@@ -27,6 +27,7 @@ export default class TransactionService {
         type: data.type,
         amount: data.amount,
         photo: data.photo,
+        currency: data.currency,
       };
 
       const record = await TransactionRepository.create(values, {
@@ -34,14 +35,17 @@ export default class TransactionService {
         session,
       });
 
-      // For deposit transactions, create deposit_success notification
-      if (data.type === 'deposit') {
+      // Deposits only credit the balance when they're created already-approved
+      // (status "success", e.g. an admin manually confirming a payment). A
+      // customer-submitted deposit is created "pending" and only gets credited
+      // once an admin approves it via updateTransactionStatus, same as withdrawals.
+      if (data.type === 'deposit' && data.status === 'success') {
         await this.updateUserBalance(data.user, data.amount, session, 'inc');
 
         await this.createNotification(
           data.user,
           record._id,
-          'deposit_success', // Changed to deposit_success
+          'deposit_success',
           data.amount,
           { ...this.options, session }
         );
@@ -180,6 +184,15 @@ export default class TransactionService {
           transaction.amount,
           { ...this.options, session }
         );
+      } else if (transaction.type === 'deposit' && newStatus === 'success' && oldStatus !== 'success') {
+        // Deposit is approved here (not on create) unless it was created already-approved
+        await this.createNotification(
+          transaction.user._id,
+          transactionId,
+          'deposit_success',
+          transaction.amount,
+          { ...this.options, session }
+        );
       } else if (transaction.type === 'deposit' && newStatus === 'canceled') {
         // Create deposit_canceled notification for canceled deposits
         await this.createNotification(
@@ -190,7 +203,6 @@ export default class TransactionService {
           { ...this.options, session }
         );
       }
-      // Note: deposit_success is already created in the create method
 
       // Handle withdrawal transactions - only return money if canceled
       if (transaction.type === 'withdraw') {
@@ -205,6 +217,24 @@ export default class TransactionService {
 
         // Case: Status changed from 'canceled' to 'success' - deduct again
         else if (oldStatus === 'canceled' && newStatus === 'success') {
+          await User.findByIdAndUpdate(
+            transaction.user._id,
+            { $inc: { balance: -amount } },
+            { session }
+          );
+        }
+      }
+
+      // Handle deposit transactions - credit the balance only once, when the
+      // transaction reaches 'success'; reverse it if a success is later undone.
+      if (transaction.type === 'deposit') {
+        if (newStatus === 'success' && oldStatus !== 'success') {
+          await User.findByIdAndUpdate(
+            transaction.user._id,
+            { $inc: { balance: amount } },
+            { session }
+          );
+        } else if (oldStatus === 'success' && newStatus !== 'success') {
           await User.findByIdAndUpdate(
             transaction.user._id,
             { $inc: { balance: -amount } },

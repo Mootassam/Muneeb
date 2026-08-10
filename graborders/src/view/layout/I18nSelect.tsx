@@ -1,287 +1,237 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getLanguages, getLanguageCode, i18n } from '../../i18n';
 import actions from 'src/modules/layout/layoutActions';
 
 function I18nSelect() {
+  const [search, setSearch] = useState('');
+  const currentCode = getLanguageCode();
+
   const doChangeLanguage = (language) => {
+    if (language === currentCode) {
+      return;
+    }
     actions.doChangeLanguage(language);
   };
 
-  return (
-    
-    <div className="i18n-container">
-      <div className="language-header">
-        <i className="fa-solid fa-language"></i>
-        <h2>{i18n('pages.language.selectLanguage')}</h2>
-        <p>{i18n('pages.language.choosePreferred')}</p>
-      </div>
+  const query = search.trim().toLowerCase();
+  const languages = getLanguages().filter((language) =>
+    !query || language.label.toLowerCase().includes(query)
+  );
 
-      <div className="languages-grid">
-        {getLanguages().map((language) => (
-          <div
-            key={language.id}
-            onClick={() => doChangeLanguage(language.id)}
-            className={`language-card ${
-              getLanguageCode() === language.id ? 'active' : ''
-            }`}
-          >
-            <div className="language-flag">
-              <img src={language.flag} alt={language.label} />
+  return (
+    <div className="i18n__page">
+      <div className="i18n__card">
+        <div className="i18n__header">
+          <span className="i18n__headerIcon">
+            <i className="fa-solid fa-language"></i>
+          </span>
+          <div>
+            <div className="i18n__headerTitle">
+              {i18n('pages.language.selectLanguage')}
             </div>
-            <div className="language-info">
-              <span className="language-name">{language.label}</span>
-              <span className="language-native">
-                {language.nativeName || language.label}
-              </span>
+            <div className="i18n__headerSubtitle">
+              {i18n('pages.language.choosePreferred')}
             </div>
-            {getLanguageCode() === language.id && (
-              <div className="selected-indicator">
-                <i className="fa-solid fa-check"></i>
-              </div>
-            )}
           </div>
-        ))}
+        </div>
+
+        <div className="i18n__searchBox">
+          <i className="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={i18n('pages.language.searchPlaceholder')}
+          />
+        </div>
+
+        <div className="i18n__list">
+          {languages.map((language) => {
+            const isActive = currentCode === language.id;
+
+            return (
+              <div
+                key={language.id}
+                onClick={() => doChangeLanguage(language.id)}
+                className={`i18n__row ${isActive ? 'i18n__row--active' : ''}`}
+              >
+                <span className="i18n__flag">
+                  <img src={language.flag} alt={language.label} />
+                </span>
+                <span className="i18n__name">{language.label}</span>
+                {isActive && (
+                  <span className="i18n__check">
+                    <i className="fa-solid fa-check"></i>
+                  </span>
+                )}
+              </div>
+            );
+          })}
+
+          {languages.length === 0 && (
+            <div className="i18n__noResults">
+              {i18n('pages.language.noResults')}
+            </div>
+          )}
+        </div>
       </div>
 
       <style>{`
-        .i18n-container {
-          max-width: 440px;
-          margin: 0 auto;
-          padding: 20px;
-          background: #FFFFFF;
+        .i18n__page {
           min-height: 100vh;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .language-header {
-          text-align: center;
-          margin-bottom: 30px;
-          padding: 20px 0;
-        }
-
-        .language-header i {
-          font-size: 48px;
-          color: #4299E1;
-          margin-bottom: 15px;
-          display: block;
-        }
-
-        .language-header h2 {
-          font-size: 24px;
-          font-weight: 700;
-          color: #1A202C;
-          margin: 0 0 8px 0;
-        }
-
-        .language-header p {
-          font-size: 14px;
-          color: #718096;
-          margin: 0;
-        }
-
-        .languages-grid {
+          background: #06070b;
           display: flex;
-          flex-direction: column;
-          gap: 12px;
+          justify-content: center;
+          padding: 20px 14px 100px;
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .language-card {
+        .i18n__card {
+          max-width: 400px;
+          width: 100%;
+          background: #14151d;
+          padding: 18px;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: #eaecef;
+        }
+
+        .i18n__header {
           display: flex;
           align-items: center;
-          padding: 16px 20px;
-          background: #F7FAFC;
-          border: 2px solid #E2E8F0;
+          gap: 12px;
+          margin-bottom: 18px;
+          padding: 0 2px;
+        }
+
+        .i18n__headerIcon {
+          width: 42px;
+          height: 42px;
           border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .language-card:hover {
-          transform: translateY(-2px);
-          border-color: #4299E1;
-          box-shadow: 0 8px 25px rgba(66, 153, 225, 0.15);
-        }
-
-        .language-card.active {
-          background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
-          border-color: #4299E1;
-          color: white;
-        }
-
-        .language-card.active::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, #48BB78, #4299E1);
-        }
-
-        .language-flag {
-          width: 44px;
-          height: 44px;
-          border-radius: 8px;
-          overflow: hidden;
-          margin-right: 16px;
-          border: 2px solid #E2E8F0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          background: rgba(240, 185, 11, 0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
         }
 
-        .language-card.active .language-flag {
-          border-color: rgba(255, 255, 255, 0.3);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        .i18n__headerIcon i {
+          color: #f0b90b;
+          font-size: 17px;
         }
 
-        .language-flag img {
+        .i18n__headerTitle {
+          font-size: 16px;
+          font-weight: 700;
+          color: #f5f6f8;
+        }
+
+        .i18n__headerSubtitle {
+          font-size: 12px;
+          color: #848e9c;
+          margin-top: 2px;
+        }
+
+        .i18n__searchBox {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 11px 14px;
+          margin-bottom: 14px;
+        }
+
+        .i18n__searchBox i {
+          color: #5e6673;
+          font-size: 13px;
+        }
+
+        .i18n__searchBox input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          color: #eaecef;
+          font-size: 14px;
+          min-width: 0;
+        }
+
+        .i18n__searchBox input::placeholder {
+          color: #5e6673;
+        }
+
+        .i18n__list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .i18n__row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 11px 14px;
+          cursor: pointer;
+        }
+
+        .i18n__row--active {
+          border-color: rgba(240, 185, 11, 0.4);
+          background: rgba(240, 185, 11, 0.06);
+        }
+
+        .i18n__flag {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex-shrink: 0;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .i18n__flag img {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
-        .language-info {
+        .i18n__name {
           flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .language-name {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 600;
-          color: #2D3748;
+          color: #eaecef;
         }
 
-        .language-native {
-          font-size: 13px;
-          color: #718096;
-          font-weight: 500;
+        .i18n__row--active .i18n__name {
+          color: #f5f6f8;
+          font-weight: 700;
         }
 
-        .language-card.active .language-name,
-        .language-card.active .language-native {
-          color: white;
-        }
-
-        .selected-indicator {
-          width: 24px;
-          height: 24px;
-          background: rgba(255, 255, 255, 0.2);
+        .i18n__check {
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
+          background: #f0b90b;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-left: 12px;
           flex-shrink: 0;
         }
 
-        .selected-indicator i {
-          font-size: 12px;
-          color: white;
+        .i18n__check i {
+          color: #0b0e11;
+          font-size: 11px;
         }
 
-        /* Loading animation for language change */
-        .language-card.loading {
-          pointer-events: none;
-          opacity: 0.7;
-        }
-
-        .language-card.loading::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          right: 20px;
-          width: 16px;
-          height: 16px;
-          border: 2px solid transparent;
-          border-top: 2px solid #4299E1;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          0% { transform: translateY(-50%) rotate(0deg); }
-          100% { transform: translateY(-50%) rotate(360deg); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 480px) {
-          .i18n-container {
-            padding: 16px;
-          }
-          
-          .language-header {
-            margin-bottom: 24px;
-          }
-          
-          .language-header i {
-            font-size: 40px;
-          }
-          
-          .language-header h2 {
-            font-size: 20px;
-          }
-          
-          .language-card {
-            padding: 14px 16px;
-          }
-          
-          .language-flag {
-            width: 40px;
-            height: 40px;
-            margin-right: 14px;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .language-card {
-            padding: 12px 14px;
-          }
-          
-          .language-flag {
-            width: 36px;
-            height: 36px;
-            margin-right: 12px;
-          }
-          
-          .language-name {
-            font-size: 15px;
-          }
-          
-          .language-native {
-            font-size: 12px;
-          }
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .i18n-container {
-            background: #1A202C;
-          }
-          
-          .language-header h2 {
-            color: #F7FAFC;
-          }
-          
-          .language-header p {
-            color: #A0AEC0;
-          }
-          
-          .language-card:not(.active) {
-            background: #2D3748;
-            border-color: #4A5568;
-          }
-          
-          .language-card:not(.active) .language-name {
-            color: #E2E8F0;
-          }
-          
-          .language-card:not(.active) .language-native {
-            color: #A0AEC0;
-          }
+        .i18n__noResults {
+          text-align: center;
+          padding: 30px 10px;
+          color: #5e6673;
+          font-size: 13px;
         }
       `}</style>
     </div>

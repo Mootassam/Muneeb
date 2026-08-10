@@ -16,6 +16,7 @@ function SelectFormItem(props) {
     placeholder,
     isClearable,
     externalErrorMessage,
+    selectStyles,
   } = props;
 
   const {
@@ -118,23 +119,19 @@ function SelectFormItem(props) {
     props.onChange && props.onChange(data.value);
   };
 
-  const controlStyles = Boolean(errorMessage)
-    ? {
-        container: (provided) => ({
-          ...provided,
-          color: 'hsl(0,0%,20%)',
-        }),
-        control: (provided) => ({
-          ...provided,
-          borderColor: 'red',
-        }),
-      }
-    : {
-        container: (provided) => ({
-          ...provided,
-          color: 'hsl(0,0%,20%)',
-        }),
-      };
+  const controlStyles = {
+    ...selectStyles,
+    container: (provided, state) => ({
+      ...provided,
+      color: 'hsl(0,0%,20%)',
+      ...(selectStyles?.container ? selectStyles.container(provided, state) : {}),
+    }),
+    control: (provided, state) => ({
+      ...provided,
+      ...(selectStyles?.control ? selectStyles.control(provided, state) : {}),
+      ...(errorMessage ? { borderColor: 'red' } : {}),
+    }),
+  };
 
   return (
     <div className="form-group">
@@ -195,6 +192,7 @@ SelectFormItem.propTypes = {
   mode: PropTypes.string,
   isClearable: PropTypes.bool,
   placeholder: PropTypes.string,
+  selectStyles: PropTypes.object,
 };
 
 export default SelectFormItem;

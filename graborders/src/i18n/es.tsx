@@ -65,7 +65,9 @@ const es = {
       home: "Inicio",
       grap: "Capturar",
       records: "Registros",
-      starting: "Comenzar"
+      starting: "Comenzar",
+      customerService: "Servicio al Cliente",
+      myProfile: "Mi Perfil"
     },
     transaction: {
       title: "Historial de Transacciones",
@@ -109,6 +111,8 @@ const es = {
       // Financial Items
       recharge: "Recargar",
       withdraw: "Retirar",
+      wallet: "Billetera",
+      history: "Historial",
 
       // Details Items
       contactUs: "Contáctenos",
@@ -247,6 +251,7 @@ const es = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Enviar",
 
       // Status Labels
       status: {

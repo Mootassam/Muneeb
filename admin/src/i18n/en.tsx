@@ -2909,6 +2909,12 @@ const en = {
       theme: 'Theme',
       logos: 'Logo',
       backgroundImages: 'Background Image',
+      usdtWalletAddress: 'USDT Deposit Wallet Address',
+      usdtWalletAddressHint: 'Shown to customers on the Deposit page when they choose USDT.',
+      ethWalletAddress: 'ETH Deposit Wallet Address',
+      ethWalletAddressHint: 'Shown to customers on the Deposit page when they choose ETH.',
+      btcWalletAddress: 'BTC Deposit Wallet Address',
+      btcWalletAddressHint: 'Shown to customers on the Deposit page when they choose BTC.',
     },
     colors: {
       default: 'Dark',

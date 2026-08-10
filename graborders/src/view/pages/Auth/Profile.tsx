@@ -11,7 +11,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { FormProvider, useForm } from "react-hook-form";
 import * as yup from "yup";
 import yupFormSchemas from "src/modules/shared/yup/yupFormSchemas";
-import { i18n } from "../../../i18n";
+import { i18n, i18nExists } from "../../../i18n";
 import ImagesFormItem from "src/shared/form/ImagesFormItems";
 import Storage from "src/security/storage";
 
@@ -27,8 +27,6 @@ function Profile() {
   const totalperday = useSelector(selectors.selectTotalPerday);
   const currentUser = useSelector(authSelectors.selectCurrentUser);
 
-  const [recharge, setRecharge] = useState(false);
-  const [deposit, setDeposit] = useState(false);
   const referenceCodeRef = useRef<any>(null);
 
   useEffect(() => {
@@ -76,592 +74,612 @@ function Profile() {
     }
   };
 
-  const menuItems = {
-    financial: [
-      {
-        icon: "fa-solid fa-dollar-sign",
-        name: i18n('pages.profile.recharge'),
-        action: () => setRecharge(true)
-      },
-      {
-        icon: "fa-solid fa-money-check",
-        name: i18n('pages.profile.withdraw'),
-        action: () => goto("/withdraw")
-      }
-    ],
-    details: [
-      {
-        icon: "fa-solid fa-headphones",
-        name: i18n('pages.profile.contactUs'),
-        url: "/online"
-      },
-      {
-        icon: "fa-solid fa-user",
-        name: i18n('pages.profile.profile'),
-        url: "/myprofile"
-      },
-      {
-        icon: "fa-solid fa-wallet",
-        name: i18n('pages.profile.updateWithdrawal'),
-        url: "/wallet"
-      }
-    ],
-    other: [
-      {
-        icon: "fa-solid fa-arrow-right-arrow-left",
-        name: i18n('pages.profile.transaction'),
-        url: "/transacation"
-      },
-      {
-        icon: "fa-solid fa-clock-rotate-left",
-        name: i18n('pages.profile.tasksHistory'),
-        url: "/order"
-      },
-      {
-        icon: "fa-solid fa-lock",
-        name: i18n('pages.profile.security'),
-        url: "/security"
-      },
-      {
-        icon: "fa-solid fa-bell",
-        name: i18n('pages.profile.notifications'),
-        url: "/notifications"
-      },
-      {
-        icon: "fa-solid fa-language",
-        name: i18n('pages.profile.languages'),
-        url: "/languages"
-      }
-    ]
-  };
+  const links = [
+    {
+      icon: "fa-solid fa-clock-rotate-left",
+      name: i18n('pages.profile.history'),
+      url: "/transacation"
+    },
+    {
+      icon: "fa-solid fa-headset",
+      name: i18n('pages.profile.contactUs'),
+      url: "/online"
+    },
+    {
+      icon: "fa-solid fa-user",
+      name: i18n('pages.profile.profile'),
+      url: "/myprofile"
+    },
+    {
+      icon: "fa-solid fa-list-check",
+      name: i18n('pages.profile.tasksHistory'),
+      url: "/order"
+    },
+    {
+      icon: "fa-solid fa-shield",
+      name: i18n('pages.profile.security'),
+      url: "/security"
+    },
+    {
+      icon: "fa-solid fa-bell",
+      name: i18n('pages.profile.notifications'),
+      url: "/notifications"
+    },
+    {
+      icon: "fa-solid fa-globe",
+      name: i18n('pages.profile.languages'),
+      url: "/languages"
+    }
+  ];
+
+  const scorePct = currentUser?.score || 100;
+  const balance = currentUser?.balance?.toFixed(2) || "0.00";
 
   return (
-    <div className="profile-container">
-      {/* Header Section */}
-      <div className="profile-header">
-        <div className="header-background"></div>
-        <div className="profile-card">
-          <div className="profile-top">
-            <FormProvider {...form}>
-              <form>
-                <ImagesFormItem
-                  name="passportPhoto"
-                  storage={Storage.values.userAvatarsProfiles}
-                  max={1}
-                />
-              </form>
-            </FormProvider>
-            <div className="profile-info">
-              <div className="user-name">{currentUser?.fullName}</div>
-              <div className="invitation-code">
-                <span>{i18n('pages.profile.invitationCode')}</span>
-                <span ref={referenceCodeRef} className="code-text">
-                  {currentUser?.refcode}
-                </span>
-                <i
-                  className="fa-regular fa-copy copy-icon"
-                  onClick={copyToClipboardCoupon}
-                />
-              </div>
+    <div className="prf__page">
+      <div className="prf__card">
+        {/* User head */}
+        <div className="prf__userHead">
+          <div className="prf__avatarRing">
+            <div className="prf__avatarInner">
+              <FormProvider {...form}>
+                <form>
+                  <ImagesFormItem
+                    name="passportPhoto"
+                    storage={Storage.values.userAvatarsProfiles}
+                    max={1}
+                  />
+                </form>
+              </FormProvider>
             </div>
+            {currentUser?.vip?.title && (
+              <span className="prf__vipBadge">
+                <i className="fa-solid fa-crown"></i>
+                {currentUser.vip.title}
+              </span>
+            )}
           </div>
 
-          {/* Credit Score */}
-          <div className="credit-score">
-            <div className="score-label">{i18n('pages.profile.creditScore')}</div>
-            <div className="score-bar-container">
-              <div className="score-bar">
-                <div
-                  className="score-progress"
-                  style={{ width: `${currentUser?.score || 100}%` }}
-                ></div>
-              </div>
-              <div className="score-value">{currentUser?.score || 100}%</div>
+          <div className="prf__userMeta">
+            <div className="prf__emailText">
+              {currentUser?.email || currentUser?.fullName}
             </div>
+            <span className="prf__inviteChip" onClick={copyToClipboardCoupon}>
+              <span className="prf__inviteLabel">{i18n('pages.profile.invitationCode')}</span>
+              <span className="prf__inviteCode" ref={referenceCodeRef}>{currentUser?.refcode}</span>
+              <i className="fa-regular fa-copy"></i>
+            </span>
           </div>
+        </div>
 
-          {/* Stats */}
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-label">{i18n('pages.profile.balance')}</div>
-              <div className="stat-amount">
-                {currentUser?.balance?.toFixed(2) || 0.0} {i18n('pages.profile.usd')}
-              </div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-label">{i18n('pages.profile.todayProfit')}</div>
-              <div className="stat-amount">{totalperday} {i18n('pages.profile.usd')}</div>
-            </div>
-            <div className="stat-divider"></div>
-            <div className="stat-item">
-              <div className="stat-label">{i18n('pages.profile.frozenAmount')}</div>
-              <div className="stat-amount">
-                {currentUser?.freezeblance?.toFixed(2)} {i18n('pages.profile.usd')}
-              </div>
+        {/* Balance + credit */}
+        <div className="prf__balanceCard">
+          <div className="prf__balanceLeft">
+            <div className="prf__label">{i18n('pages.profile.balance')}</div>
+            <div className="prf__amount">
+              {balance} <span className="prf__amountUnit">{i18n('pages.profile.usd')}</span>
             </div>
           </div>
+          <div className="prf__scoreRing">
+            <div className="prf__scoreRingInner">
+              <div className="prf__scoreValue">{scorePct}%</div>
+              <div className="prf__scoreLabel">{i18n('pages.profile.creditScore')}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Profit + frozen */}
+        <div className="prf__statsRow">
+          <div className="prf__statBlock">
+            <div className="prf__statLabel">
+              <i className="fa-solid fa-chart-line prf__iconGreen"></i>
+              {i18n('pages.profile.todayProfit')}
+            </div>
+            <div className="prf__statValue">{totalperday} {i18n('pages.profile.usd')}</div>
+          </div>
+          <div className="prf__statBlock">
+            <div className="prf__statLabel">
+              <i className="fa-solid fa-snowflake prf__iconBlue"></i>
+              {i18n('pages.profile.frozenAmount')}
+            </div>
+            <div className="prf__statValue">
+              {currentUser?.freezeblance?.toFixed(2) || "0.00"} {i18n('pages.profile.usd')}
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="prf__actionRow">
+          <div className="prf__actionBtn" onClick={() => goto("/deposit")}>
+            <span className="prf__actionIcon">
+              <i className="fa-solid fa-dollar-sign"></i>
+            </span>
+            {i18n('pages.profile.recharge')}
+          </div>
+          <div className="prf__actionBtn" onClick={() => goto("/withdraw")}>
+            <span className="prf__actionIcon">
+              <i className="fa-solid fa-money-check"></i>
+            </span>
+            {i18n('pages.profile.withdraw')}
+          </div>
+        </div>
+
+        {/* Quick links */}
+        <div className="prf__sectionTitle">{i18n('pages.profile.myDetails')}</div>
+        <div className="prf__linkList">
+          {links.map((item, index) => (
+            <Link key={index} to={item.url} className="prf__linkRow">
+              <span className="prf__linkIcon">
+                <i className={item.icon}></i>
+              </span>
+              <span className="prf__linkName">{item.name}</span>
+              <i className="fa-solid fa-chevron-right prf__linkArrow"></i>
+            </Link>
+          ))}
+        </div>
+
+        <div className="prf__divider" />
+
+        {/* Logout */}
+        <div className="prf__logoutRow" onClick={doSignout}>
+          <i className="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>{i18n('pages.profile.logout')}</span>
+        </div>
+
+        <div className="prf__footerNote">
+          <i className="fa-solid fa-shield-halved"></i>
+          {i18nExists('pages.profile.secureNote') ? i18n('pages.profile.secureNote') : 'Secured · 256-bit encryption'}
         </div>
       </div>
 
-      {/* Menu Sections */}
-      <div className="menu-sections">
-        {/* Financial Section */}
-        <div className="menu-section">
-          <div className="section-title">{i18n('pages.profile.myFinancial')}</div>
-          <div className="section-items">
-            {menuItems.financial.map((item, index) => (
-              <div
-                key={index}
-                className="menu-item"
-                onClick={item.action}
-              >
-                <div className="item-left">
-                  <i className={item.icon}></i>
-                  <span>{item.name}</span>
-                </div>
-                <i className="fa fa-arrow-right item-arrow"></i>
-              </div>
-            ))}
-          </div>
-        </div>
+      <style>{`
+        .prf__page {
+          min-height: 100vh;
+          background:
+            radial-gradient(circle at 15% 0%, rgba(240, 185, 11, 0.10), transparent 42%),
+            radial-gradient(circle at 85% 8%, rgba(139, 92, 246, 0.14), transparent 45%),
+            #06070b;
+          display: flex;
+          justify-content: center;
+          padding: 20px 14px 100px;
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
-        {/* Details Section */}
-        <div className="menu-section">
-          <div className="section-title">{i18n('pages.profile.myDetails')}</div>
-          <div className="section-items">
-            {menuItems.details.map((item, index) => (
-              <Link key={index} to={item.url} className="menu-link">
-                <div className="menu-item">
-                  <div className="item-left">
-                    <i className={item.icon}></i>
-                    <span>{item.name}</span>
-                  </div>
-                  <i className="fa fa-arrow-right item-arrow"></i>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+        .prf__card {
+          max-width: 400px;
+          width: 100%;
+          background: #14151d;
+          padding: 22px 18px 26px;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+          color: #eaecef;
+        }
 
-        {/* Other Section */}
-        <div className="menu-section">
-          <div className="section-title">{i18n('pages.profile.other')}</div>
-          <div className="section-items">
-            {menuItems.other.map((item, index) => (
-              <Link key={index} to={item.url} className="menu-link">
-                <div className="menu-item">
-                  <div className="item-left">
-                    <i className={item.icon}></i>
-                    <span>{item.name}</span>
-                  </div>
-                  <i className="fa fa-arrow-right item-arrow"></i>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
+        /* user head */
+        .prf__userHead {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 22px;
+        }
 
-      {/* Logout Button */}
-      <div className="logout-button" onClick={doSignout}>
-        <i className="fa-solid fa-arrow-right-from-bracket"></i>
-        {i18n('pages.profile.logout')}
-      </div>
+        .prf__avatarRing {
+          position: relative;
+          width: 76px;
+          height: 76px;
+          border-radius: 50%;
+          padding: 3px;
+          background: conic-gradient(from 180deg, #f0b90b, #a855f7, #38bdf8, #f0b90b);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
 
-      {/* Recharge Modal */}
-      {recharge && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <div className="modal-title">{i18n('pages.profile.rechargeModal.title')}</div>
-              <i
-                className="fa fa-close modal-close"
-                onClick={() => setRecharge(false)}
-              />
-            </div>
-            <p className="modal-text">
-              {i18n('pages.profile.rechargeModal.text')}
-            </p>
-            <div
-              className="modal-confirm"
-              onClick={() => goto("/Online")}
-            >
-              {i18n('pages.profile.confirm')}
-            </div>
-          </div>
-        </div>
-      )}
+        .prf__avatarInner {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: #14151d;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
 
-      {/* Deposit Modal */}
-      {deposit && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <div className="modal-title">{i18n('pages.profile.withdrawModal.title')}</div>
-              <i
-                className="fa fa-close modal-close"
-                onClick={() => setDeposit(false)}
-              />
-            </div>
-            <p className="modal-text">
-              {i18n('pages.profile.withdrawModal.text')}
-            </p>
-            <div
-              className="modal-confirm"
-              onClick={() => goto("/Online")}
-            >
-              {i18n('pages.profile.confirm')}
-            </div>
-          </div>
-        </div>
-      )}
+        .profile-avatar {
+          display: flex;
+        }
 
+        .avatar-placeholder {
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 50% !important;
+          background: #1e2029 !important;
+          border: none !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 30px;
+          font-weight: 700;
+          color: #6b7280;
+          transition: opacity 0.15s ease;
+        }
 
-      <style>{`.profile-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  background: #EDF1F7;
-  min-height: 100vh;
-  color: #2D3748;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+        .avatar-placeholder:hover {
+          opacity: 0.85;
+        }
 
-.profile-header {
-  position: relative;
-  padding: 20px;
-}
+        .prf__avatarInner .img-card {
+          width: 100% !important;
+          height: 100% !important;
+          border: none !important;
+          border-radius: 50% !important;
+        }
 
-.header-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%);
-  border-radius: 0 0 20px 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-}
+        .prf__avatarInner .header__profile__image {
+          width: 100% !important;
+          height: 100% !important;
+          border-radius: 50% !important;
+        }
 
-.profile-card {
-  position: relative;
-  background: #0d3e55;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #E2E8F0;
-}
+        .prf__vipBadge {
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, #ffd668, #f0a500);
+          border: 3px solid #14151d;
+          color: #1a1200;
+          font-weight: 800;
+          font-size: 10px;
+          padding: 2px 10px 2px 8px;
+          border-radius: 20px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          white-space: nowrap;
+          box-shadow: 0 2px 6px rgba(240, 185, 11, 0.45);
+        }
 
-.profile-top {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
+        .prf__vipBadge i {
+          font-size: 9px;
+        }
 
-.avatar-placeholder {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #F7FAFC;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  color: #4A5568;
-  border: 2px solid #E2E8F0;
-}
+        .prf__userMeta {
+          flex: 1;
+          min-width: 0;
+        }
 
-.profile-info {
-  flex: 1;
-}
+        .prf__emailText {
+          font-size: 15px;
+          font-weight: 700;
+          color: #f5f6f8;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-bottom: 8px;
+        }
 
-.user-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 5px;
-}
+        .prf__inviteChip {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+          max-width: 100%;
+        }
 
-.invitation-code {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #718096;
-  background: #F7FAFC;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid #E2E8F0;
-}
+        .prf__inviteLabel {
+          color: #848e9c;
+        }
 
-.code-text {
-  color: #2D3748;
-  font-weight: 500;
-}
+        .prf__inviteCode {
+          color: #f0b90b;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+        }
 
-.copy-icon {
-  cursor: pointer;
-  color: #4299E1;
-  font-size: 14px;
-}
+        .prf__inviteChip i {
+          color: #848e9c;
+          font-size: 11px;
+        }
 
-.copy-icon:hover {
-  color: #3182CE;
-}
+        /* balance card */
+        .prf__balanceCard {
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 18px;
+          padding: 18px 18px;
+          margin-bottom: 14px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
 
-.credit-score {
-  margin-bottom: 20px;
-}
+        .prf__label {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: #848e9c;
+          letter-spacing: 0.6px;
+          margin-bottom: 6px;
+        }
 
-.score-label {
-  font-size: 14px;
-  color: #fff;
-  margin-bottom: 8px;
-}
+        .prf__amount {
+          font-size: 30px;
+          font-weight: 800;
+          color: #f7c948;
+          line-height: 1;
+        }
 
-.score-bar-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+        .prf__amountUnit {
+          font-size: 13px;
+          font-weight: 700;
+          color: #848e9c;
+        }
 
-.score-bar {
-  flex: 1;
-  height: 6px;
-  background: #E2E8F0;
-  border-radius: 3px;
-  overflow: hidden;
-}
+        .prf__scoreRing {
+          width: 68px;
+          height: 68px;
+          border-radius: 50%;
+          padding: 3px;
+          background: conic-gradient(from 180deg, #f0b90b, #a855f7, #38bdf8, #f0b90b);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
 
-.score-progress {
-  height: 100%;
-  background: linear-gradient(90deg, #4299E1 0%, #3182CE 100%);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
+        .prf__scoreRingInner {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: #1a1c26;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+        }
 
-.score-value {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4299E1;
-  min-width: 35px;
-}
+        .prf__scoreValue {
+          font-size: 15px;
+          font-weight: 800;
+          color: #f5f6f8;
+        }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  align-items: center;
-  gap: 15px;
-}
+        .prf__scoreLabel {
+          font-size: 6px;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          color: #848e9c;
+          margin-top: 1px;
+        }
 
-.stat-item {
-  text-align: center;
-}
+        /* stats row */
+        .prf__statsRow {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
 
-.stat-label {
-  font-size: 12px;
-  color: #fff;
-  margin-bottom: 4px;
-}
+        .prf__statBlock {
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 12px 10px;
+          text-align: center;
+        }
 
-.stat-amount {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-}
+        .prf__statLabel {
+          font-size: 11px;
+          color: #848e9c;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+        }
 
-.stat-divider {
-  width: 1px;
-  height: 30px;
-  background: #E2E8F0;
-}
+        .prf__iconGreen { color: #0ecb81; }
+        .prf__iconBlue { color: #38bdf8; }
 
-.menu-sections {
-  padding: 20px;
-}
+        .prf__statValue {
+          font-size: 16px;
+          font-weight: 700;
+          margin-top: 4px;
+          color: #f5f6f8;
+        }
 
-.menu-section {
-  margin-bottom: 25px;
-}
+        /* action buttons */
+        .prf__actionRow {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 22px;
+        }
 
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1A202C;
-  margin-bottom: 12px;
-  padding-left: 5px;
-}
+        .prf__actionBtn {
+          flex: 1;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 12px 14px;
+          font-weight: 700;
+          font-size: 14px;
+          color: #eaecef;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: background-color 0.15s ease, border-color 0.15s ease;
+          cursor: pointer;
+          text-decoration: none;
+        }
 
-.section-items {
-  background: #FFFFFF;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
+        .prf__actionIcon {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: rgba(240, 185, 11, 0.14);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
 
-.menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: #FFFFFF;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border-bottom: 1px solid #F7FAFC;
-}
+        .prf__actionIcon i {
+          color: #f0b90b;
+          font-size: 14px;
+        }
 
-.menu-item:last-child {
-  border-bottom: none;
-}
+        .prf__actionBtn:hover {
+          background: #21232e;
+          border-color: rgba(255, 255, 255, 0.1);
+        }
 
-.menu-item:hover {
-  background: #F7FAFC;
-  transform: translateX(2px);
-}
+        /* details list */
+        .prf__sectionTitle {
+          font-size: 15px;
+          font-weight: 700;
+          color: #b7bdc6;
+          margin-bottom: 10px;
+        }
 
-.menu-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
+        .prf__linkList {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: 6px;
+        }
 
-.item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  color: #2D3748;
-}
+        .prf__linkRow {
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 12px 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          text-decoration: none;
+          transition: background-color 0.1s ease, border-color 0.1s ease;
+        }
 
-.item-left i {
-  width: 20px;
-  text-align: center;
-  color: #4299E1;
-}
+        .prf__linkIcon {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          background: linear-gradient(160deg, rgba(240, 185, 11, 0.22), rgba(240, 185, 11, 0.05) 65%);
+          border: 1px solid rgba(240, 185, 11, 0.18);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
 
-.item-arrow {
-  color: #A0AEC0;
-  font-size: 12px;
-}
+        .prf__linkIcon i {
+          font-size: 14px;
+          color: #f0b90b;
+          background: linear-gradient(135deg, #ffe27a, #f0b90b 55%, #d68e00);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
 
-.logout-button {
-  margin: 30px 20px 90px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: white;
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.2);
-}
+        .prf__linkName {
+          flex: 1;
+          font-size: 13.5px;
+          color: #eaecef;
+          font-weight: 500;
+        }
 
-.logout-button:hover {
-  background: #C53030;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
-}
+        .prf__linkArrow {
+          font-size: 11px;
+          color: #5e6673;
+        }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 1000;
-}
+        .prf__linkRow:hover {
+          background: #21232e;
+          border-color: rgba(255, 255, 255, 0.1);
+        }
 
-.modal-content {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 320px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
+        /* divider */
+        .prf__divider {
+          height: 1px;
+          background: rgba(255, 255, 255, 0.06);
+          margin: 16px 0;
+        }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
+        /* logout */
+        .prf__logoutRow {
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 12px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: background-color 0.1s ease, border-color 0.1s ease;
+        }
 
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1A202C;
-}
+        .prf__logoutRow:hover {
+          background: #21232e;
+          border-color: rgba(255, 255, 255, 0.1);
+        }
 
-.modal-close {
-  color: #A0AEC0;
-  cursor: pointer;
-  font-size: 18px;
-  transition: color 0.2s ease;
-}
+        .prf__logoutRow i {
+          color: #f6465d;
+          font-size: 15px;
+        }
 
-.modal-close:hover {
-  color: #718096;
-}
+        .prf__logoutRow span {
+          color: #f6465d;
+          font-size: 13px;
+          font-weight: 600;
+        }
 
-.modal-text {
-  color: #718096;
-  font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  text-align: center;
-}
+        /* footer */
+        .prf__footerNote {
+          margin-top: 12px;
+          text-align: center;
+          font-size: 10px;
+          color: #5e6673;
+          letter-spacing: 0.3px;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          padding-top: 14px;
+        }
 
-.modal-confirm {
-  background: #4299E1;
-  color: white;
-  padding: 14px;
-  border-radius: 10px;
-  text-align: center;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.2);
-}
+        .prf__footerNote i {
+          color: #f0b90b;
+          margin-right: 4px;
+        }
 
-.modal-confirm:hover {
-  background: #3182CE;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
-}
-
-/* Responsive adjustments */
-@media (max-width: 400px) {
-  .profile-container {
-    max-width: 100%;
-  }
-  
-  .profile-header,
-  .menu-sections {
-    padding: 15px;
-  }
-  
-  .stats-grid {
-    gap: 10px;
-  }
-  
-  .stat-amount {
-    font-size: 13px;
-  }
-}`}</style>
+        /* responsive */
+        @media (max-width: 380px) {
+          .prf__card {
+            padding: 18px 14px 20px;
+          }
+          .prf__amount {
+            font-size: 24px;
+          }
+          .prf__statValue {
+            font-size: 14px;
+          }
+          .prf__actionBtn {
+            font-size: 12px;
+            padding: 10px 12px;
+          }
+          .prf__avatarRing {
+            width: 64px;
+            height: 64px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

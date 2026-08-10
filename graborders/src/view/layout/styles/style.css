@@ -29,7 +29,7 @@
 .children__content {
   align-items: center;
   justify-content: center;
-  max-width: 1000px;
+  max-width: 400px;
   margin: auto;
 
   margin-bottom: 60px;
@@ -44,30 +44,31 @@
 /* styles the tabbarBottom */
 .tabbottomNavigator {
   position: fixed;
-  background-color: #000;
-  border-top-left-radius: 19px;
-  border-top-right-radius: 19px;
-  width: auto;
-  height: 50px;
+  background-color: #181a20;
+  border-top: 1px solid #23262c;
   width: 100%;
+  height: 58px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-around;
-  z-index: 10;
+  z-index: 100;
   bottom: 0;
-  max-width: 1000px;
+  max-width: 400px;
   margin: auto;
   left: 0;
   right: 0;
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.5);
 }
 
-.text__link {
-  color: #b1b4c3;
-  font-size: 12px;
-}
-
-.active {
-  color: #93B958 important;
+.tabLink {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
 }
 
 .singleTab {
@@ -75,9 +76,38 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  max-width: 30px;
+  gap: 4px;
+  max-width: 76px;
+  padding: 0 4px;
   text-align: center;
+}
+
+.singleTab i {
+  font-size: 18px;
+  color: #5e6673;
+  transition: color 0.15s ease;
+}
+
+.singleTab i.active {
+  color: #f0b90b;
+}
+
+.text__link {
+  color: #5e6673;
+  font-family: "Poppins", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin: 0;
+  transition: color 0.15s ease;
+}
+
+.text__link.active {
+  color: #f0b90b;
+  font-weight: 600;
 }
 
 .left__header {

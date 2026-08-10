@@ -1,298 +1,332 @@
-import React from "react";
-import SubHeader from "src/view/shared/Header/SubHeader";
+import React, { useRef } from "react";
 import { useSelector } from "react-redux";
+import SubHeader from "src/view/shared/Header/SubHeader";
 import authSelectors from "src/modules/auth/authSelectors";
+import Message from "src/view/shared/message";
 import { i18n } from "../../../i18n";
 
 function Team() {
   const currentUser = useSelector(authSelectors.selectCurrentUser);
+  const inviteCodeRef = useRef<any>(null);
+
+  const photoUrl = currentUser?.passportPhoto?.[0]?.downloadUrl;
+  const notAvailable = i18n("pages.team.notAvailable");
+
+  const copyInviteCode = () => {
+    const code = inviteCodeRef.current?.innerText;
+    if (!code) {
+      return;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(code)
+        .then(() => Message.success(i18n("pages.profile.copied")))
+        .catch((error) => console.error("Error copying to clipboard:", error));
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = code;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      Message.success(i18n("pages.profile.copied"));
+    }
+  };
+
+  const genderValue = currentUser?.gender;
+  const genderLabel = genderValue
+    ? i18n(`user.enumerators.gender.${genderValue}`)
+    : i18n("pages.team.genderNotSpecified");
+
+  const rows = [
+    {
+      icon: "fa-solid fa-user",
+      label: i18n("pages.team.fullName"),
+      value: currentUser?.fullName || notAvailable,
+    },
+    {
+      icon: "fa-solid fa-envelope",
+      label: i18n("pages.team.email"),
+      value: currentUser?.email || notAvailable,
+    },
+    {
+      icon: "fa-solid fa-phone",
+      label: i18n("pages.team.phoneNumber"),
+      value: currentUser?.phoneNumber || notAvailable,
+    },
+    {
+      icon: "fa-solid fa-earth-americas",
+      label: i18n("pages.team.country"),
+      value: currentUser?.country || notAvailable,
+    },
+  ];
 
   return (
-    <div className="profile-page-wrapper">
-      <SubHeader title={i18n('pages.team.title')} path="/profile" />
+    <div>
+      <SubHeader title={i18n("pages.team.title")} path="/profile" />
 
-      <div className="profile-content-area">
-        <div className="profile-info-card">
-          <div className="profile-header-section">
-            <h2 className="profile-main-title">{i18n('pages.team.personalInformation')}</h2>
-            <p className="profile-subtitle">
-              {i18n('pages.team.accountDetails')}
-            </p>
+      <div className="tp__page">
+        <div className="tp__card">
+          <div className="tp__header">
+            <div className="tp__avatar">
+              {photoUrl ? (
+                <img src={photoUrl} alt={currentUser?.fullName || "avatar"} />
+              ) : (
+                <i className="fa-solid fa-user"></i>
+              )}
+            </div>
+            <div className="tp__headerText">
+              <div className="tp__name">
+                {currentUser?.fullName || notAvailable}
+              </div>
+              <div className="tp__email">
+                {currentUser?.email || notAvailable}
+              </div>
+            </div>
           </div>
 
-          <div className="profile-info-list">
-            {/* ✅ Full Name */}
-            <div className="profile-info-item">
-              <div className="info-item-content">
-                <div className="info-icon">
-                  <i className="fa-solid fa-user"></i>
+          <div className="tp__sectionTitle">
+            {i18n("pages.team.personalInformation")}
+          </div>
+
+          <div className="tp__list">
+            {rows.map((row, index) => (
+              <div className="tp__row" key={index}>
+                <span className="tp__rowIcon">
+                  <i className={row.icon}></i>
+                </span>
+                <div className="tp__rowText">
+                  <div className="tp__rowLabel">{row.label}</div>
+                  <div className="tp__rowValue">{row.value}</div>
                 </div>
-                <div className="info-details">
-                  <label className="info-label">{i18n('pages.team.fullName')}</label>
-                  <span className="info-value">
-                    {currentUser?.fullName || i18n('pages.team.notAvailable')}
+              </div>
+            ))}
+
+            <div className="tp__row">
+              <span className="tp__rowIcon">
+                <i className="fa-solid fa-venus-mars"></i>
+              </span>
+              <div className="tp__rowText">
+                <div className="tp__rowLabel">{i18n("pages.team.gender")}</div>
+                <div className="tp__rowValue">
+                  <span className={`tp__genderTag tp__genderTag--${genderValue || "unknown"}`}>
+                    {genderLabel}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* ✅ Email */}
-            <div className="profile-info-item">
-              <div className="info-item-content">
-                <div className="info-icon">
-                  <i className="fa-solid fa-envelope"></i>
+            <div className="tp__row">
+              <span className="tp__rowIcon">
+                <i className="fa-solid fa-user-plus"></i>
+              </span>
+              <div className="tp__rowText">
+                <div className="tp__rowLabel">
+                  {i18n("pages.team.invitationCode")}
                 </div>
-                <div className="info-details">
-                  <label className="info-label">{i18n('pages.team.email')}</label>
-                  <span className="info-value">
-                    {currentUser?.email || i18n('pages.team.notAvailable')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* ✅ Phone Number */}
-            <div className="profile-info-item">
-              <div className="info-item-content">
-                <div className="info-icon">
-                  <i className="fa-solid fa-phone"></i>
-                </div>
-                <div className="info-details">
-                  <label className="info-label">{i18n('pages.team.phoneNumber')}</label>
-                  <span className="info-value">
-                    {currentUser?.phoneNumber || i18n('pages.team.notAvailable')}
-                  </span>
+                <div className="tp__rowValue tp__rowValue--mono" ref={inviteCodeRef}>
+                  {currentUser?.invitationcode || notAvailable}
                 </div>
               </div>
-            </div>
-
-            {/* ✅ Country */}
-            {currentUser?.username && (
-              <div className="profile-info-item">
-                <div className="info-item-content">
-                  <div className="info-icon">
-                    <i className="fa-solid fa-globe"></i>
-                  </div>
-                  <div className="info-details">
-                    <label className="info-label">{i18n('pages.team.country')}</label>
-                    <span className="info-value">
-                      {currentUser?.username || i18n('pages.team.notAvailable')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ✅ Gender */}
-            <div className="profile-info-item">
-              <div className="info-item-content">
-                <div className="info-icon">
-                  <i className="fa-solid fa-venus-mars"></i>
-                </div>
-                <div className="info-details">
-                  <label className="info-label">{i18n('pages.team.gender')}</label>
-                  <span
-                    className={`info-value gender-tag ${currentUser?.gender === "male"
-                        ? "male"
-                        : currentUser?.gender === "female"
-                          ? "female"
-                          : "unknown"
-                      }`}
-                  >
-                    {currentUser?.gender
-                      ? i18n(`user.enumerators.gender.${currentUser.gender}`)
-                      : i18n('pages.team.genderNotSpecified')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* ✅ Invitation Code */}
-            <div className="profile-info-item">
-              <div className="info-item-content">
-                <div className="info-icon">
-                  <i className="fa-solid fa-user-plus"></i>
-                </div>
-                <div className="info-details">
-                  <label className="info-label">{i18n('pages.team.invitationCode')}</label>
-                  <span className="info-value invitation-code-display">
-                    {currentUser?.invitationcode || i18n('pages.team.notAvailable')}
-                  </span>
-                </div>
-              </div>
+              {currentUser?.invitationcode && (
+                <button
+                  type="button"
+                  className="tp__copyBtn"
+                  onClick={copyInviteCode}
+                >
+                  <i className="fa-regular fa-copy"></i>
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <style>{`
-        .profile-page-wrapper {
-          max-width: 1000px;
-          margin: 0 auto;
-          background: #EDF1F7;
+        .tp__page {
           min-height: 100vh;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background: #06070b;
+          display: flex;
+          justify-content: center;
+          padding: 20px 14px 100px;
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .profile-content-area {
-          padding: 20px;
+        .tp__card {
+          max-width: 400px;
+          width: 100%;
+          background: #14151d;
+          padding: 22px 18px 26px;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: #eaecef;
         }
 
-        .profile-info-card {
-          background: #FFFFFF;
-          border-radius: 20px;
-          padding: 0;
-          border: 1px solid #E2E8F0;
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-          overflow: hidden;
-        }
-
-        .profile-header-section {
-          background: linear-gradient(135deg, #4299E1, #3182CE);
-          padding: 24px;
-          text-align: center;
-          color: white;
-        }
-
-        .profile-main-title {
-          font-size: 24px;
-          font-weight: 700;
-          margin: 0 0 8px 0;
-          color: #FFFFFF;
-        }
-
-        .profile-subtitle {
-          font-size: 14px;
-          opacity: 0.9;
-          margin: 0;
-          font-weight: 400;
-        }
-
-        .profile-info-list {
-          padding: 0;
-        }
-
-        .profile-info-item {
-          border-bottom: 1px solid #F1F5F9;
-          transition: all 0.3s ease;
-          animation: slideInUp 0.5s ease-out;
-        }
-
-        .profile-info-item:last-child {
-          border-bottom: none;
-        }
-
-        .profile-info-item:hover {
-          background: #F7FAFC;
-        }
-
-        .info-item-content {
+        .tp__header {
           display: flex;
           align-items: center;
-          padding: 20px 24px;
-          gap: 16px;
+          gap: 14px;
+          margin-bottom: 24px;
         }
 
-        .info-icon {
-          width: 44px;
-          height: 44px;
-          background: rgba(66, 153, 225, 0.1);
-          border-radius: 12px;
+        .tp__avatar {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          border: 2px solid rgba(66, 153, 225, 0.2);
+          overflow: hidden;
         }
 
-        .info-icon i {
-          color: #4299E1;
-          font-size: 18px;
+        .tp__avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
-        .info-details {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
+        .tp__avatar i {
+          color: #5e6673;
+          font-size: 22px;
         }
 
-        .info-label {
+        .tp__headerText {
+          min-width: 0;
+        }
+
+        .tp__name {
+          font-size: 16px;
+          font-weight: 700;
+          color: #f5f6f8;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .tp__email {
+          font-size: 12.5px;
+          color: #848e9c;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-top: 2px;
+        }
+
+        .tp__sectionTitle {
           font-size: 12px;
-          font-weight: 600;
-          color: #718096;
+          font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
+          color: #5e6673;
+          margin-bottom: 10px;
         }
 
-        .info-value {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1A202C;
-          line-height: 1.4;
+        .tp__list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
         }
 
-        .invitation-code-display {
-          font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
-          letter-spacing: 1px;
-          color: #4299E1;
-          font-weight: 700;
-          background: rgba(66, 153, 225, 0.1);
-          padding: 8px 12px;
-          border-radius: 8px;
-          border: 1px solid rgba(66, 153, 225, 0.2);
-          display: inline-block;
-          margin-top: 4px;
+        .tp__row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 12px 14px;
         }
 
-        /* ✅ Gender Tag Styles */
-        .gender-tag {
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-weight: 600;
-          text-transform: capitalize;
+        .tp__rowIcon {
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          background: rgba(240, 185, 11, 0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .tp__rowIcon i {
+          color: #f0b90b;
           font-size: 14px;
         }
 
-        .gender-tag.male {
-          background: rgba(66, 153, 225, 0.1);
-          color: #2B6CB0;
-          border: 1px solid rgba(66, 153, 225, 0.2);
+        .tp__rowText {
+          flex: 1;
+          min-width: 0;
         }
 
-        .gender-tag.female {
-          background: rgba(236, 72, 153, 0.1);
-          color: #B83280;
-          border: 1px solid rgba(236, 72, 153, 0.2);
+        .tp__rowLabel {
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+          color: #848e9c;
+          margin-bottom: 3px;
         }
 
-        .gender-tag.unknown {
-          background: rgba(160, 174, 192, 0.1);
-          color: #4A5568;
-          border: 1px solid rgba(160, 174, 192, 0.2);
+        .tp__rowValue {
+          font-size: 14px;
+          font-weight: 600;
+          color: #eaecef;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        /* Animation */
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .tp__rowValue--mono {
+          font-family: 'Consolas', 'Courier New', monospace;
+          letter-spacing: 0.5px;
         }
 
-        /* Responsive */
-        @media (max-width: 400px) {
-          .profile-content-area {
-            padding: 15px;
-          }
-          .info-item-content {
-            padding: 16px 20px;
-          }
+        .tp__genderTag {
+          display: inline-block;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: capitalize;
+          padding: 3px 10px;
+          border-radius: 20px;
+        }
+
+        .tp__genderTag--male {
+          background: rgba(56, 189, 248, 0.14);
+          color: #38bdf8;
+        }
+
+        .tp__genderTag--female {
+          background: rgba(236, 72, 153, 0.14);
+          color: #ec4899;
+        }
+
+        .tp__genderTag--unknown {
+          background: rgba(132, 142, 156, 0.14);
+          color: #848e9c;
+        }
+
+        .tp__copyBtn {
+          flex-shrink: 0;
+          width: 34px;
+          height: 34px;
+          margin: 0;
+          background: #21232e;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          color: #848e9c;
+          font-size: 13px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .tp__copyBtn:hover {
+          color: #f0b90b;
+          border-color: rgba(240, 185, 11, 0.3);
         }
       `}</style>
     </div>

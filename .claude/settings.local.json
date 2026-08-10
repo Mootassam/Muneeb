@@ -1,7 +1,35 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep -l \"populate.*vip\\\\|vip.*populate\\\\|currentUser.*sessionPrices\")"
+      "Bash(xargs grep -l \"populate.*vip\\\\|vip.*populate\\\\|currentUser.*sessionPrices\")",
+      "Bash(npx tsc *)",
+      "Bash(timeout 40 npx vite build)",
+      "Bash(npx vite *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5183/auth/signin --max-time 5)",
+      "Bash(taskkill //F //IM node.exe //FI \"WINDOWTITLE eq *vite*\")",
+      "Bash(pkill -f \"vite --port 5183\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill *)",
+      "Bash(git show *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5184/auth/signup --max-time 8)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5185/auth/signin --max-time 8)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5186/auth/signup --max-time 8)",
+      "Bash(grep -rn \"path=\\\\\"/\\\\|Route path\" \"D:/eric/graborders/src/App\" \"D:/eric/graborders/src/routes\")",
+      "Bash(git ls-tree *)",
+      "Bash(kill %1)",
+      "Bash(grep -i \"\\\\.js$\")",
+      "Bash(node -e ' *)",
+      "Artifact",
+      "Bash(npm install *)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(docker --version)",
+      "Bash(python3 -)",
+      "Bash(node *)",
+      "Bash(pkill -f \"npx vite\")",
+      "Bash(xargs grep -l \"settings\")",
+      "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\Home.tsx\")",
+      "Bash(grep -n \"<style>{\\\\`\\\\|^      \\\\`}</style>\" \"D:\\\\eric\\\\graborders\\\\src\\\\view\\\\pages\\\\Markets\\\\LiveActivityToast.tsx\")"
     ]
   }
 }

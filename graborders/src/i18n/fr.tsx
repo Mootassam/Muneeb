@@ -42,7 +42,9 @@ tabBottomNavigator: {
     home: "Accueil",
     grap: "Saisir",
     records: "Enregistrements",
-    starting: "Démarrer"
+    starting: "Démarrer",
+    customerService: "Service Client",
+    myProfile: "Mon Profil"
   },
     transaction: {
       title: "Historique des Transactions",
@@ -87,6 +89,8 @@ tabBottomNavigator: {
       // Financial Items
       recharge: "Recharger",
       withdraw: "Retirer",
+      wallet: "Portefeuille",
+      history: "Historique",
 
       // Details Items
       contactUs: "Nous contacter",
@@ -225,6 +229,7 @@ tabBottomNavigator: {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Soumettre",
 
       // Status Labels
       status: {

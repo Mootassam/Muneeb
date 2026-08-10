@@ -8,559 +8,373 @@ import LoadingModal from "src/shared/LoadingModal";
 import Nodata from "src/view/shared/Nodata";
 import { i18n } from "../../../i18n";
 
+const FILTERS = [
+  { key: "", icon: "fa-solid fa-list", label: "pages.transaction.filters.all" },
+  { key: "withdraw", icon: "fa-solid fa-arrow-up", label: "pages.transaction.filters.withdraw" },
+  { key: "deposit", icon: "fa-solid fa-arrow-down", label: "pages.transaction.filters.deposit" },
+];
+
 function Transaction() {
   const [active, setActive] = useState("withdraw");
   const dispatch = useDispatch();
-  const loading = useSelector(selector.selectLoading)
-  const selectHasRows = useSelector(selector.selectHasRows)
-
-  const fetchAll = () => {
-    const values = {
-      type: active
-    }
-    dispatch(action.doFetchByUser(values, values))
-  }
+  const loading = useSelector(selector.selectLoading);
+  const selectHasRows = useSelector(selector.selectHasRows);
+  const record = useSelector(selector.selectRows);
 
   useEffect(() => {
-    fetchAll()
-  }, [dispatch, active])
+    const values = { type: active };
+    dispatch(action.doFetchByUser(values, values));
+  }, [dispatch, active]);
 
-  const record = useSelector(selector.selectRows)
-
-  const deposit = () => {
-    setActive("deposit")
-    const values = {
-      type: 'deposit'
-    }
-    dispatch(action.doFetchByUser(values))
-  }
-
-  const withdraw = () => {
-    setActive("withdraw")
-    const values = {
-      type: 'withdraw'
-    }
-    dispatch(action.doFetchByUser(values, values))
-  }
-
-  const allTransactions = () => {
-    setActive("")
-    const values = {
-      type: ''
-    }
-    dispatch(action.doFetchByUser(values, values))
-  }
-
-  const getTransactionIcon = (type, status) => {
-    if (type === 'deposit') {
-      return status === 'success'
-        ? "fa-solid fa-circle-arrow-down text-success"
-        : status === 'pending'
-          ? "fa-solid fa-clock text-warning"
-          : "fa-solid fa-circle-xmark text-danger";
-    } else {
-      return status === 'success'
-        ? "fa-solid fa-circle-arrow-up text-success"
-        : status === 'pending'
-          ? "fa-solid fa-clock text-warning"
-          : "fa-solid fa-circle-xmark text-danger";
-    }
+  const getTransactionIcon = (type) => {
+    return type === "deposit" ? "fa-solid fa-arrow-down" : "fa-solid fa-arrow-up";
   };
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      success: {
-        class: 'status-completed',
-        text: i18n('pages.transaction.status.completed')
-      },
-      pending: {
-        class: 'status-pending',
-        text: i18n('pages.transaction.status.processing')
-      },
-      canceled: {
-        class: 'status-canceled',
-        text: i18n('pages.transaction.status.canceled')
-      },
+  const getStatusMeta = (status) => {
+    const config = {
+      success: { className: "tx__status--success", text: i18n("pages.transaction.status.completed") },
+      pending: { className: "tx__status--pending", text: i18n("pages.transaction.status.processing") },
+      canceled: { className: "tx__status--canceled", text: i18n("pages.transaction.status.canceled") },
     };
 
-    const config = statusConfig[status] || statusConfig.pending;
-    return (
-      <div className={`status-badge ${config.class}`}>
-        {config.text}
-      </div>
-    );
+    return config[status] || config.pending;
   };
 
-  const getAmountDisplay = (item) => {
-    const sign = item.type === 'deposit' ? '+' : '-';
-    const amountClass = item.status === 'canceled' || item.status === 'failed'
-      ? 'amount-canceled'
-      : item.status === 'pending'
-        ? 'amount-pending'
-        : item.type === 'deposit'
-          ? 'amount-deposit'
-          : 'amount-withdraw';
+  const getAmountText = (item) => {
+    if (item.status === "canceled") {
+      return i18n("pages.transaction.amount.canceled", item?.amount);
+    }
 
-    const amountText = item.status === 'canceled' || item.status === 'failed'
-      ? i18n('pages.transaction.amount.canceled', item?.amount)
-      : item.type === 'deposit'
-        ? i18n('pages.transaction.amount.deposit', item?.amount)
-        : i18n('pages.transaction.amount.withdraw', item?.amount);
+    return item.type === "deposit"
+      ? i18n("pages.transaction.amount.deposit", item?.amount)
+      : i18n("pages.transaction.amount.withdraw", item?.amount);
+  };
 
-    return (
-      <div className={`transaction-amount ${amountClass}`}>
-        {amountText}
-      </div>
-    );
+  const getAmountClassName = (item) => {
+    if (item.status === "canceled") {
+      return "tx__amount--canceled";
+    }
+    if (item.status === "pending") {
+      return "tx__amount--pending";
+    }
+    return item.type === "deposit" ? "tx__amount--deposit" : "tx__amount--withdraw";
   };
 
   const getTransactionTypeText = (type) => {
-    return type === 'deposit'
-      ? i18n('pages.transaction.types.deposit')
-      : i18n('pages.transaction.types.withdrawal');
+    return type === "deposit"
+      ? i18n("pages.transaction.types.deposit")
+      : i18n("pages.transaction.types.withdrawal");
   };
 
-  const all = (item) => {
-    return (
-      <div className="transaction-item">
-        <div className="transaction-icon">
-          <i className={getTransactionIcon(item.type, item.status)}></i>
-        </div>
-
-        <div className="transaction-content">
-          <div className="transaction-header">
-            <div className="transaction-type">
-              {getTransactionTypeText(item.type)}
-            </div>
-            {getStatusBadge(item.status)}
-          </div>
-
-          <div className="transaction-details">
-            <div className="transaction-date">
-              <i className="fa-regular fa-clock"></i>
-              {Dates.Date(item?.createdAt)}
-            </div>
-          </div>
-        </div>
-
-        <div className="transaction-amount-section">
-          {getAmountDisplay(item)}
-        </div>
-      </div>
-    );
+  const onSelectFilter = (key) => {
+    setActive(key);
   };
 
   return (
-    <div className="transaction-page-container">
-      <SubHeader title={i18n('pages.transaction.title')} path="/profile" />
+    <div>
+      <SubHeader title={i18n("pages.transaction.title")} path="/profile" />
 
-      {/* Filter Tabs */}
-      <div className="transaction-filter-section">
-        <div className="filter-tabs">
-          <div
-            className={`filter-tab ${active === "" ? 'filter-tab-active' : ''}`}
-            onClick={allTransactions}
-          >
-            <i className="fa-solid fa-list"></i>
-            <span>{i18n('pages.transaction.filters.all')}</span>
+      <div className="tx__page">
+        <div className="tx__card">
+          <div className="tx__tabs">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter.key || "all"}
+                type="button"
+                className={`tx__tab ${active === filter.key ? "tx__tab--active" : ""}`}
+                onClick={() => onSelectFilter(filter.key)}
+              >
+                <i className={filter.icon}></i>
+                {i18n(filter.label)}
+              </button>
+            ))}
           </div>
-          <div
-            onClick={withdraw}
-            className={`filter-tab ${active === "withdraw" ? 'filter-tab-active' : ''}`}
-          >
-            <i className="fa-solid fa-arrow-up"></i>
-            <span>{i18n('pages.transaction.filters.withdraw')}</span>
-          </div>
-          <div
-            onClick={deposit}
-            className={`filter-tab ${active === "deposit" ? 'filter-tab-active' : ''}`}
-          >
-            <i className="fa-solid fa-arrow-down"></i>
-            <span>{i18n('pages.transaction.filters.deposit')}</span>
+
+          {!loading && record && record.length > 0 && (
+            <div className="tx__listHeader">
+              <span className="tx__listTitle">
+                {i18n("pages.transaction.recentTransactions")}
+              </span>
+              <span className="tx__listCount">
+                {i18n("pages.transaction.transactionCount", record.length)}
+              </span>
+            </div>
+          )}
+
+          <div className="tx__list">
+            {loading && (
+              <div className="tx__loading">
+                <LoadingModal />
+              </div>
+            )}
+
+            {!loading &&
+              record &&
+              record.map((item, index) => {
+                const status = getStatusMeta(item.status);
+
+                return (
+                  <div className="tx__row" key={item.id || index}>
+                    <span className={`tx__rowIcon tx__rowIcon--${item.status}`}>
+                      <i className={getTransactionIcon(item.type)}></i>
+                    </span>
+
+                    <div className="tx__rowMain">
+                      <div className="tx__rowType">
+                        {getTransactionTypeText(item.type)}
+                        {item.currency && (
+                          <span className="tx__rowCurrency">{item.currency}</span>
+                        )}
+                      </div>
+                      <div className="tx__rowDate">
+                        <i className="fa-regular fa-clock"></i>
+                        {Dates.Date(item?.createdAt)}
+                      </div>
+                    </div>
+
+                    <div className="tx__rowRight">
+                      <div className={`tx__amount ${getAmountClassName(item)}`}>
+                        {getAmountText(item)}
+                      </div>
+                      <div className={`tx__status ${status.className}`}>
+                        {status.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+            {!loading && !selectHasRows && (
+              <div className="tx__empty">
+                <Nodata />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Transaction List */}
-      <div className="transaction-list-container">
-        {loading && <LoadingModal />}
-
-        {!loading && record && record.length > 0 && (
-          <div className="transaction-list-header">
-            <h3 className="recent">{i18n('pages.transaction.recentTransactions')}</h3>
-            <div className="transaction-count">
-              {i18n('pages.transaction.transactionCount', record.length)}
-            </div>
-          </div>
-        )}
-
-        {!loading && record && record.map((item, index) => (
-          <div key={index}>
-            {all(item)}
-          </div>
-        ))}
-
-        {!loading && !selectHasRows && <Nodata />}
-      </div>
-
-
       <style>{`
-        .transaction-page-container {
-          max-width: 1000px;
-          margin: 0 auto;
-          background: #EDF1F7;
+        .tx__page {
           min-height: 100vh;
-          color: #2D3748;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        /* Summary Section */
-        .summary-section {
-          padding: 10px;
-        }
-
-        .summary-card {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 20px;
-          border-radius: 16px;
-          margin-bottom: 16px;
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+          background: #06070b;
           display: flex;
-          align-items: center;
-          gap: 15px;
+          justify-content: center;
+          padding: 20px 14px 100px;
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .summary-icon {
-          width: 50px;
-          height: 50px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 12px;
+        .tx__card {
+          max-width: 400px;
+          width: 100%;
+          background: #14151d;
+          padding: 18px;
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: #eaecef;
+        }
+
+        .tx__tabs {
+          display: flex;
+          gap: 6px;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 4px;
+          margin-bottom: 18px;
+        }
+
+        .tx__tab {
+          flex: 1;
+          margin: 0;
+          background: transparent;
+          border: none;
+          border-radius: 10px;
+          padding: 10px 4px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #848e9c;
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
+          gap: 6px;
         }
 
-        .summary-content {
-          flex: 1;
+        .tx__tab i {
+          font-size: 11px;
         }
 
-        .summary-label {
-          font-size: 14px;
-          opacity: 0.9;
-          margin-bottom: 4px;
+        .tx__tab--active {
+          background: #f0b90b;
+          color: #0b0e11;
         }
 
-        .summary-amount {
-          font-size: 24px;
-          font-weight: 700;
-        }
-
-        .summary-stats {
+        .tx__listHeader {
           display: flex;
-          gap: 12px;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          padding: 0 2px;
         }
 
-        .stat-item {
-          flex: 1;
-          background: white;
-          padding: 16px;
-          border-radius: 12px;
+        .tx__listTitle {
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #5e6673;
+        }
+
+        .tx__listCount {
+          font-size: 11px;
+          font-weight: 600;
+          color: #848e9c;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 3px 9px;
+          border-radius: 20px;
+        }
+
+        .tx__list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .tx__row {
           display: flex;
           align-items: center;
           gap: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          border: 1px solid #E2E8F0;
+          background: #1a1c26;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          padding: 12px 14px;
         }
 
-        .stat-icon {
-          width: 40px;
-          height: 40px;
+        .tx__rowIcon {
+          width: 38px;
+          height: 38px;
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
-          color: white;
-        }
-
-        .stat-icon.deposit {
-          background: linear-gradient(135deg, #48BB78, #38A169);
-        }
-
-        .stat-icon.withdraw {
-          background: linear-gradient(135deg, #ED8936, #DD6B20);
-        }
-
-        .stat-label {
-          font-size: 12px;
-          color: #718096;
-          margin-bottom: 2px;
-        }
-
-        .stat-amount {
-          font-size: 16px;
-          font-weight: 700;
-          color: #1A202C;
-        }
-
-        /* Filter Tabs */
-        .transaction-filter-section {
-          padding: 0px  0px 10px 0px;
-        }
-
-        .filter-tabs {
-          display: flex;
-          background: #FFFFFF;
-          border-radius: 12px;
-          padding: 4px;
-          border: 1px solid #E2E8F0;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .filter-tab {
-          flex: 1;
-          text-align: center;
-          padding: 12px 16px;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-weight: 500;
-          color: #718096;
-          background: transparent;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
+          flex-shrink: 0;
           font-size: 14px;
         }
 
-        .filter-tab:hover {
-          background: #F7FAFC;
-          color: #2D3748;
+        .tx__rowIcon--success {
+          background: rgba(14, 203, 129, 0.12);
+          color: #0ecb81;
         }
 
-        .filter-tab-active {
-          background: #4299E1;
-          color: white;
-          box-shadow: 0 2px 8px rgba(66, 153, 225, 0.2);
+        .tx__rowIcon--pending {
+          background: rgba(240, 185, 11, 0.12);
+          color: #f0b90b;
         }
 
-        /* Transaction List */
-        .transaction-list-container {
-          padding: 0 20px 20px;
+        .tx__rowIcon--canceled {
+          background: rgba(246, 70, 93, 0.12);
+          color: #f6465d;
         }
 
-        .transaction-list-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 16px;
-          padding: 0 8px;
-        }
-
-        .transaction-list-header h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: #1A202C !important;
-          margin: 0;
-        }
-
-        .recent { color: #1A202C; }
-
-        .transaction-count {
-          font-size: 12px;
-          color: #718096;
-          background: #F7FAFC;
-          padding: 4px 8px;
-          border-radius: 12px;
-        }
-
-        .transaction-item {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          background: #FFFFFF;
-          padding: 20px;
-          border-radius: 16px;
-          border: 1px solid #E2E8F0;
-          margin-bottom: 12px;
-          transition: all 0.3s ease;
-          animation: slideIn 0.5s ease-out;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .transaction-item:hover {
-          border-color: #4299E1;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .transaction-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: #F7FAFC;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          flex-shrink: 0;
-        }
-
-        .text-success { color: #48BB78; }
-        .text-warning { color: #ED8936; }
-        .text-danger { color: #F56565; }
-
-        .transaction-content {
+        .tx__rowMain {
           flex: 1;
           min-width: 0;
         }
 
-        .transaction-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 8px;
-        }
-
-        .transaction-type {
-          font-size: 15px;
-          font-weight: 600;
-          color: #1A202C;
-        }
-
-        .transaction-details {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .transaction-date {
-          font-size: 13px;
-          color: #718096;
+        .tx__rowType {
+          font-size: 14px;
+          font-weight: 700;
+          color: #f5f6f8;
           display: flex;
           align-items: center;
           gap: 6px;
         }
 
-        .transaction-reference {
-          font-size: 12px;
-          color: #A0AEC0;
-          font-family: monospace;
-        }
-
-        .transaction-amount-section {
-          text-align: right;
-        }
-
-        .transaction-amount {
-          font-size: 18px;
+        .tx__rowCurrency {
+          font-size: 10.5px;
           font-weight: 700;
-          margin-bottom: 4px;
+          color: #848e9c;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 1px 6px;
+          border-radius: 20px;
         }
 
-        .amount-deposit {
-          color: #48BB78;
+        .tx__rowDate {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11.5px;
+          color: #848e9c;
+          margin-top: 3px;
         }
 
-        .amount-withdraw {
-          color: #F56565;
+        .tx__rowRight {
+          text-align: right;
+          flex-shrink: 0;
         }
 
-        .amount-pending {
-          color: #ED8936;
+        .tx__amount {
+          font-size: 14.5px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
         }
 
-        .amount-canceled {
-          color: #A0AEC0;
+        .tx__amount--deposit {
+          color: #0ecb81;
+        }
+
+        .tx__amount--withdraw {
+          color: #eaecef;
+        }
+
+        .tx__amount--pending {
+          color: #f0b90b;
+        }
+
+        .tx__amount--canceled {
+          color: #5e6673;
           text-decoration: line-through;
         }
 
-        .transaction-method {
-          font-size: 12px;
-          color: #718096;
-        }
-
-        /* Status Badges */
-        .status-badge {
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 600;
+        .tx__status {
+          display: inline-block;
+          margin-top: 5px;
+          font-size: 10px;
+          font-weight: 700;
           text-transform: uppercase;
-          width: fit-content;
+          letter-spacing: 0.3px;
+          padding: 3px 8px;
+          border-radius: 20px;
         }
 
-        .status-completed {
-          background: rgba(34, 197, 94, 0.1);
-          color: #22c55e;
-          border: 1px solid rgba(34, 197, 94, 0.2);
+        .tx__status--success {
+          background: rgba(14, 203, 129, 0.12);
+          color: #0ecb81;
         }
 
-        .status-pending {
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
-          border: 1px solid rgba(245, 158, 11, 0.2);
+        .tx__status--pending {
+          background: rgba(240, 185, 11, 0.12);
+          color: #f0b90b;
         }
 
-        .status-canceled {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.2);
+        .tx__status--canceled {
+          background: rgba(246, 70, 93, 0.12);
+          color: #f6465d;
         }
 
-        /* Animations */
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+        .tx__loading {
+          padding: 40px 0;
+          display: flex;
+          justify-content: center;
         }
 
-        .transaction-item:nth-child(1) { animation-delay: 0.1s; }
-        .transaction-item:nth-child(2) { animation-delay: 0.2s; }
-        .transaction-item:nth-child(3) { animation-delay: 0.3s; }
-        .transaction-item:nth-child(4) { animation-delay: 0.4s; }
-        .transaction-item:nth-child(5) { animation-delay: 0.5s; }
+        .tx__empty {
+          padding: 20px 0 4px;
+        }
 
-        /* Responsive Design */
-        @media (max-width: 400px) {
-          .transaction-page-container {
-            border-radius: 0;
-            max-width: 100%;
-          }
-          
-          .summary-section,
-          .transaction-filter-section {
-       
-          }
-          
-          .transaction-list-container {
-            padding: 0 15px 15px;
-          }
-          
-          .transaction-item {
-            padding: 16px;
-          }
-          
-          .filter-tab {
-            padding: 10px 12px;
-            font-size: 13px;
-          }
-          
-          .summary-stats {
-            flex-direction: column;
-          }
-          
-          .transaction-amount {
-            font-size: 16px;
-          }
+        .tx__empty span {
+          color: #848e9c !important;
         }
       `}</style>
     </div>

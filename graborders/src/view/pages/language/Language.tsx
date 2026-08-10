@@ -5,11 +5,9 @@ import { i18n } from "../../../i18n";
 
 function LanguagePage() {
   return (
-    <div className="language-page-container">
+    <div>
       <SubHeader title={i18n('pages.language.title')} path="/profile" />
-      <div style={{ paddingTop: '20px' }}>
-        <I18nSelect />
-      </div>
+      <I18nSelect />
     </div>
   );
 }

@@ -67,7 +67,9 @@ const de = {
       home: "Startseite",
       grap: "Erfassen",
       records: "Aufzeichnungen",
-      starting: "Starten"
+      starting: "Starten",
+      customerService: "Kundenservice",
+      myProfile: "Mein Profil"
     },
 
     transaction: {
@@ -112,6 +114,8 @@ const de = {
       // Financial Items
       recharge: "Aufladen",
       withdraw: "Auszahlen",
+      wallet: "Wallet",
+      history: "Verlauf",
 
       // Details Items
       contactUs: "Kontaktieren Sie uns",
@@ -250,6 +254,7 @@ const de = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Absenden",
 
       // Status Labels
       status: {

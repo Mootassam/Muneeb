@@ -14,6 +14,9 @@ export default (database) => {
       theme: { type: String },
       backgroundImages: [FileSchema],
       logos: [FileSchema],
+      usdtWalletAddress: { type: String },
+      ethWalletAddress: { type: String },
+      btcWalletAddress: { type: String },
       tenant: {
         type: Schema.Types.ObjectId,
         ref: 'tenant',

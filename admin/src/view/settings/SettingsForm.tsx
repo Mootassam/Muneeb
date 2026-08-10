@@ -6,6 +6,7 @@ import actions from 'src/modules/settings/settingsActions';
 import selectors from 'src/modules/settings/settingsSelectors';
 import ButtonIcon from 'src/view/shared/ButtonIcon';
 import SelectFormItem from 'src/view/shared/form/items/SelectFormItem';
+import InputFormItem from 'src/view/shared/form/items/InputFormItem';
 import FormWrapper from 'src/view/shared/styles/FormWrapper';
 import * as yup from 'yup';
 import settingsEnumerators from 'src/modules/settings/settingsEnumerators';
@@ -35,6 +36,18 @@ const schema = yup.object().shape({
     {
       max: 1,
     },
+  ),
+  usdtWalletAddress: yupFormSchemas.string(
+    i18n('settings.fields.usdtWalletAddress'),
+    {},
+  ),
+  ethWalletAddress: yupFormSchemas.string(
+    i18n('settings.fields.ethWalletAddress'),
+    {},
+  ),
+  btcWalletAddress: yupFormSchemas.string(
+    i18n('settings.fields.btcWalletAddress'),
+    {},
   ),
 });
 
@@ -109,6 +122,30 @@ function SettingsForm(props) {
                   Storage.values.settingsBackgroundImages
                 }
                 max={1}
+              />
+            </div>
+
+            <div className="col-lg-7 col-md-8 col-12">
+              <InputFormItem
+                name="usdtWalletAddress"
+                label={i18n('settings.fields.usdtWalletAddress')}
+                hint={i18n('settings.fields.usdtWalletAddressHint')}
+              />
+            </div>
+
+            <div className="col-lg-7 col-md-8 col-12">
+              <InputFormItem
+                name="ethWalletAddress"
+                label={i18n('settings.fields.ethWalletAddress')}
+                hint={i18n('settings.fields.ethWalletAddressHint')}
+              />
+            </div>
+
+            <div className="col-lg-7 col-md-8 col-12">
+              <InputFormItem
+                name="btcWalletAddress"
+                label={i18n('settings.fields.btcWalletAddress')}
+                hint={i18n('settings.fields.btcWalletAddressHint')}
               />
             </div>
           </div>

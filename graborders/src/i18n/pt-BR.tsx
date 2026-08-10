@@ -68,7 +68,9 @@ const ptBR = {
       home: "Início",
       grap: "Capturar",
       records: "Registros",
-      starting: "Iniciar"
+      starting: "Iniciar",
+      customerService: "Atendimento ao Cliente",
+      myProfile: "Meu Perfil"
     },
     transaction: {
       title: "Histórico de Transações",
@@ -112,6 +114,8 @@ const ptBR = {
       // Financial Items
       recharge: "Recarregar",
       withdraw: "Sacar",
+      wallet: "Carteira",
+      history: "Histórico",
 
       // Details Items
       contactUs: "Contate-nos",
@@ -250,6 +254,7 @@ const ptBR = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Enviar",
 
       // Status Labels
       status: {

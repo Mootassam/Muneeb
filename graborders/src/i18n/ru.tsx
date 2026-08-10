@@ -44,7 +44,9 @@ const ru = {
       home: "Главная",
       grap: "Захват",
       records: "Записи",
-      starting: "Старт"
+      starting: "Старт",
+      customerService: "Поддержка",
+      myProfile: "Мой профиль"
     },
 
 
@@ -101,6 +103,8 @@ const ru = {
       // Financial Items
       recharge: "Пополнить",
       withdraw: "Вывести",
+      wallet: "Кошелёк",
+      history: "История",
 
       // Details Items
       contactUs: "Связаться с нами",
@@ -239,6 +243,7 @@ const ru = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Отправить",
 
       // Status Labels
       status: {

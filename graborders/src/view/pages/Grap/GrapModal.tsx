@@ -97,39 +97,29 @@ function GrapModal(props) {
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.6);
+          background: rgba(0, 0, 0, 0.7);
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 16px;
           z-index: 1000;
+          font-family: "Poppins", sans-serif;
         }
 
         /* MODAL */
         .product-modal {
           width: 100%;
-          max-width: 520px;
-        }
-
-        @media (min-width: 768px) {
-          .product-modal {
-            max-width: 720px;
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .product-modal {
-            max-width: 1000px;
-          }
+          max-width: 420px;
         }
 
         .modal-contents {
-          background: #ffffff;
+          background: #181a20;
+          border: 1px solid #23262c;
           border-radius: 16px;
           padding: 24px;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65);
         }
 
         /* HEADER */
@@ -141,7 +131,7 @@ function GrapModal(props) {
         .modal-title {
           font-size: 22px;
           font-weight: 700;
-          color: #1a202c;
+          color: #eaecef;
         }
 
         /* PRODUCT */
@@ -149,19 +139,17 @@ function GrapModal(props) {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 16px;
-          margin-bottom: 24px;
+          gap: 14px;
+          margin-bottom: 22px;
         }
 
-  
-
         .product-image-container {
-          width: 110px;
+          width: 100px;
           aspect-ratio: 1 / 1;
           border-radius: 14px;
           overflow: hidden;
-          border: 2px solid #e2e8f0;
-          background: #f7fafc;
+          border: 2px solid #f0b90b;
+          background: #101317;
           flex-shrink: 0;
         }
 
@@ -172,60 +160,53 @@ function GrapModal(props) {
         }
 
         .product-name {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 600;
-          color: #1a202c;
+          color: #eaecef;
           text-align: center;
-        }
-
-        @media (min-width: 768px) {
-          .product-name {
-            text-align: left;
-            font-size: 20px;
-          }
         }
 
         /* SUMMARY */
         .order-summary {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
-          background: #f7fafc;
-          padding: 16px;
-          border-radius: 12px;
-          margin-bottom: 20px;
+          gap: 10px;
+          margin-bottom: 16px;
         }
 
         .summary-row {
-            flex: 1;
-    min-width: 140px;
-    background: white;
-    border-radius: 10px;
-    padding: 14px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+          flex: 1;
+          min-width: 140px;
+          background: #1e2329;
+          border: 1px solid #23262c;
+          border-radius: 10px;
+          padding: 14px;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 6px;
         }
 
         .summary-label {
-          font-size: 14px;
-          color: #718096;
+          font-size: 12.5px;
+          color: #848e9c;
         }
 
         .summary-value {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 700;
-          color: #1a202c;
+          color: #f0b90b;
         }
 
         /* INFO */
         .order-info {
-          background: #f7fafc;
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 24px;
+          background: #1e2329;
+          border: 1px solid #23262c;
+          border-radius: 10px;
+          padding: 14px 16px;
+          margin-bottom: 22px;
         }
 
         .info-row {
@@ -235,13 +216,14 @@ function GrapModal(props) {
         }
 
         .info-label {
-          color: #718096;
-          font-size: 14px;
+          color: #848e9c;
+          font-size: 13px;
         }
 
         .info-value {
           font-weight: 600;
-          color: #1a202c;
+          color: #eaecef;
+          font-size: 13px;
         }
 
         /* ACTION */
@@ -249,18 +231,21 @@ function GrapModal(props) {
           width: 100%;
           min-height: 48px;
           border: none;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #48bb78, #38a169);
-          color: white;
-          font-size: 16px;
-          font-weight: 600;
+          border-radius: 10px;
+          background: #f0b90b;
+          color: #181a20;
+          font-size: 15.5px;
+          font-weight: 700;
           cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          transition: background-color 0.15s ease, transform 0.1s ease;
         }
 
         .submit-button:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(56, 161, 105, 0.4);
+          background: #f8d12f;
+        }
+
+        .submit-button:active {
+          transform: translateY(1px);
         }
       `}</style>
     </div>

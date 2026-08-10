@@ -68,7 +68,9 @@ const it = {
             home: "Home",
             grap: "Acquisisci",
             records: "Registri",
-            starting: "Avvia"
+            starting: "Avvia",
+            customerService: "Servizio Clienti",
+            myProfile: "Il Mio Profilo"
         },
 
 
@@ -113,6 +115,8 @@ const it = {
             // Financial Items
             recharge: "Ricarica",
             withdraw: "Prelievo",
+            wallet: "Portafoglio",
+            history: "Cronologia",
 
             // Details Items
             contactUs: "Contattaci",
@@ -251,6 +255,7 @@ const it = {
             // Product Details
             quantity: "X 1",
             currency: "USD",
+            submit: "Invia",
 
             // Status Labels
             status: {

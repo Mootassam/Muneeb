@@ -118,7 +118,7 @@ function ImagesUploader(props) {
             return (
               <div
                 className="mr-2 mb-2 img-card"
-                style={{ height: '56px' }}
+                style={{ height: '56px', border: '2px solid #f0b90b', overflow: 'hidden' }}
                 key={item.id}
               >
                 <img

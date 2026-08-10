@@ -72,7 +72,9 @@ const tr = {
       home: "Ana Sayfa",
       grap: "Yakala",
       records: "Kayıtlar",
-      starting: "Başlat"
+      starting: "Başlat",
+      customerService: "Müşteri Hizmetleri",
+      myProfile: "Profilim"
     },
 
 
@@ -118,6 +120,8 @@ const tr = {
       // Financial Items
       recharge: "Yükleme",
       withdraw: "Çekim",
+      wallet: "Cüzdan",
+      history: "Geçmiş",
 
       // Details Items
       contactUs: "Bize Ulaşın",
@@ -256,6 +260,7 @@ const tr = {
       // Product Details
       quantity: "X 1",
       currency: "USD",
+      submit: "Gönder",
 
       // Status Labels
       status: {
