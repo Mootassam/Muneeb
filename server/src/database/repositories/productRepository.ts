@@ -15,12 +15,12 @@ import User from "../models/user";
 class ProductRepository {
 
   private static baseConfig = {
-    "cookie": "ka_sessionid=1148933806dc1ef91507cc9a22e5c10c; CSRF-TOKEN=CfDJ8KXhJwB4GRRPqJWFH0ywOem-7pLEJaTu1k2hYb2g7siY7KtwdpiZ-2UA2oW1dhMnSEAZhPSHqmrnkMvtnh6xoqmC4IQfp5H8Sqz5ak6hBw; GCLB=CLrL9-2l8pHPpAEQAw; _ga=GA1.1.949800193.1778862646; build-hash=aaea9b15e3358dd82d2f0f96545d99c4e5d846e2; XSRF-TOKEN=CfDJ8KXhJwB4GRRPqJWFH0ywOelxHVrYpFdIMTVquzx66rqD2z3EQ4rLBnsWwmyDPWjS6dtYqnwWf5QB3zFzI9w8polZMWzPOwnV8wWDELCSISRQKw; CLIENT-TOKEN=eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJrYWdnbGUiLCJhdWQiOiJjbGllbnQiLCJzdWIiOiIiLCJuYnQiOiIyMDI2LTA1LTE1VDE2OjMxOjE4LjExNzcwNDRaIiwiaWF0IjoiMjAyNi0wNS0xNVQxNjozMToxOC4xMTc3MDQ0WiIsImp0aSI6ImZjYmU1NjYyLWNiNTAtNGRiYy1iMmJhLTNiNWEwYzFlZjM0NCIsImV4cCI6IjIwMjYtMDYtMTVUMTY6MzE6MTguMTE3NzA0NFoiLCJhbm9uIjp0cnVlLCJmZmgiOiI3YzkxNDBiMDM0M2FiNmNjNTc0MDhjZDFkYmU1NGIxODc3ODBiMGQwOTdmYzUzZGM2OWUzNzI0MzQ5OWYzODA0IiwicGlkIjoia2FnZ2xlLTE2MTYwNyIsInN2YyI6IndlYi1mZSIsInNkYWsiOiJBSXphU3lBNGVOcVVkUlJza0pzQ1pXVnotcUw2NTVYYTVKRU1yZUUiLCJibGQiOiJhYWVhOWIxNWUzMzU4ZGQ4MmQyZjBmOTY1NDVkOTljNGU1ZDg0NmUyIn0.; _ga_T7QHS60L4Q=GS2.1.s1778862645$o1$g1$t1778862683$j22$l0$h0",
+    "cookie": "ka_sessionid=03a389821a46663e0cb880b9c5689f98; CSRF-TOKEN=CfDJ8Oxz6O_D_GNGkNy8kL7JFsXok95jf0N8-tunPjP8RnyTJ5iUDfO55lOFpUOYS-fquhb484zDgIJNP7UPbbj_0UPox6kxGUFXuHEzejxibw; GCLB=CKn0m8PltczKoQEQAw; _ga=GA1.1.1775206920.1786376353; build-hash=8cb7b6ee7ac17b81b69e0e2556ab1848e8d518e9; XSRF-TOKEN=CfDJ8Oxz6O_D_GNGkNy8kL7JFsVK-ibXSZeG5gXer-UmUYOduLPIfhVMxQV1zRVQRWXEYeiZ27JCc4vSEPbz9mgorovMNGWF_w5J3QqReub5FBDPaw; CLIENT-TOKEN=eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJrYWdnbGUiLCJhdWQiOiJjbGllbnQiLCJzdWIiOiIiLCJuYnQiOiIyMDI2LTA4LTEwVDE1OjM5OjI1LjkwOTc0MzBaIiwiaWF0IjoiMjAyNi0wOC0xMFQxNTozOToyNS45MDk3NDMwWiIsImp0aSI6ImRmNTgyZGVmLWZhMTMtNDg3YS1iMzRiLTExNDg3YzRmZDA3ZSIsImV4cCI6IjIwMjYtMDktMTBUMTU6Mzk6MjUuOTA5NzQzMFoiLCJhbm9uIjp0cnVlLCJmZmgiOiJlNjc4MzlkNGU3N2YzM2FmODJmZjM0ZDQwNjUyODY4NmFmYzc2M2E3ZTc3MDAzOGUwYjhhNjM4YjUxODQ4ODhiIiwicGlkIjoia2FnZ2xlLTE2MTYwNyIsInN2YyI6IndlYi1mZSIsInNkYWsiOiJBSXphU3lBNGVOcVVkUlJza0pzQ1pXVnotcUw2NTVYYTVKRU1yZUUiLCJibGQiOiI4Y2I3YjZlZTdhYzE3YjgxYjY5ZTBlMjU1NmFiMTg0OGU4ZDUxOGU5In0.; _ga_T7QHS60L4Q=GS2.1.s1786376353$o1$g1$t1786376367$j46$l0$h0",
     "origin": "https://www.kaggle.com",
     "referer": "https://www.kaggle.com/datasets/asaniczka/amazon-canada-products-2023-2-1m-products",
-    "x-kaggle-build-version": "29506ea853cc6a3a542f130dec2b4a40863d7254",
+    "x-kaggle-build-version": "8cb7b6ee7ac17b81b69e0e2556ab1848e8d518e9",
     "Content-Type": "application/json",
-    "x-xsrf-token": "CfDJ8KXhJwB4GRRPqJWFH0ywOelxHVrYpFdIMTVquzx66rqD2z3EQ4rLBnsWwmyDPWjS6dtYqnwWf5QB3zFzI9w8polZMWzPOwnV8wWDELCSISRQKw"
+    "x-xsrf-token": "CfDJ8Oxz6O_D_GNGkNy8kL7JFsVK-ibXSZeG5gXer-UmUYOduLPIfhVMxQV1zRVQRWXEYeiZ27JCc4vSEPbz9mgorovMNGWF_w5J3QqReub5FBDPaw"
   };
   static async create(data, options: IRepositoryOptions) {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
