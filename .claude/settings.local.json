@@ -44,7 +44,10 @@
       "Bash(git ls-remote *)",
       "Bash(echo \"EXIT CODE: $?\")",
       "Bash(git remote *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git fsck *)",
+      "Bash(git pull *)",
+      "Bash(git stash *)"
     ]
   }
 }
