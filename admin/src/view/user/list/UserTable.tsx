@@ -29,6 +29,8 @@ function UserTable() {
   const dispatch = useDispatch();
   const [recordIdToDestroy, setRecordIdToDestroy] = useState<string | null>(null);
   const [recordIdToTotalDestroy, setRecordIdToTotalDestroy] = useState<string | null>(null);
+  const [recordIdToResetTask, setRecordIdToResetTask] = useState<string | null>(null);
+  const [resettingTask, setResettingTask] = useState(false);
   const [totalTask, setTotalTasks] = useState<string>('');
   const tasksdone = useSelector(selectorTaskdone.selectCountRecord);
   const LoadingTasksDone = useSelector(selectorTaskdone.selectLoading);
@@ -57,6 +59,20 @@ function UserTable() {
   const doTotalDestroy = (id: string) => {
     setRecordIdToTotalDestroy(null);
     dispatch(actions.doDestroyAllFull(id));
+  };
+
+  const doResetTask = async (id: string) => {
+    try {
+      setResettingTask(true);
+      await UserService.resetTasks(id);
+      setRecordIdToResetTask(null);
+      dispatch(actions.doFetchCurrentFilter());
+      Message.success('Task reset successfully.');
+    } catch (error) {
+      console.error('Failed to reset task', error);
+    } finally {
+      setResettingTask(false);
+    }
   };
 
   const doClearMinus = async (id: string) => {
@@ -169,6 +185,8 @@ function UserTable() {
         .user-table-action-btn.warning { background: #faad14; border-color: #faad14; color: white; }
         .user-table-action-btn.danger { background: #ff4d4f; border-color: #ff4d4f; color: white; }
         .user-table-action-btn.dark { background: #262626; border-color: #262626; color: white; }
+        .user-table-action-btn.teal { background: #8B5CF6; border-color: #8B5CF6; color: white; }
+        .user-table-action-btn.orange { background: #F59E0B; border-color: #F59E0B; color: white; }
         .user-table-action-btn:hover {
           opacity: 0.85;
         }
@@ -442,15 +460,24 @@ function UserTable() {
                             Edit
                           </Link>
 
-                          {/* Freeze */}
+                          {/* Team */}
+                          <Link
+                            className="user-table-action-btn teal"
+                            to={`/user/${row.id}/team`}
+                          >
+                            <i className="fas fa-people-group user-table-action-icon" />
+                            Team
+                          </Link>
+
+                          {/* Reset Task */}
                           <button
-                            className="user-table-action-btn danger"
+                            className="user-table-action-btn orange"
                             onClick={() =>
-                              setRecordIdToDestroy(row.id)
+                              setRecordIdToResetTask(row.id)
                             }
                           >
-                            <i className="fas fa-lock user-table-action-icon" />
-                            Freeze
+                            <i className="fas fa-rotate-left user-table-action-icon" />
+                            Reset Task
                           </button>
 
                           {/* Total Delete */}
@@ -497,6 +524,17 @@ function UserTable() {
             message={i18n('user.doDestroyAllFullConfirm')}
             onConfirm={() => doTotalDestroy(recordIdToTotalDestroy)}
             onClose={() => setRecordIdToTotalDestroy(null)}
+            okText={i18n('common.yes')}
+            cancelText={i18n('common.no')}
+          />
+        )}
+
+        {recordIdToResetTask && (
+          <ConfirmModal
+            title={i18n('common.areYouSure')}
+            message="This will reset the user's completed tasks count back to 0."
+            onConfirm={() => doResetTask(recordIdToResetTask)}
+            onClose={() => !resettingTask && setRecordIdToResetTask(null)}
             okText={i18n('common.yes')}
             cancelText={i18n('common.no')}
           />

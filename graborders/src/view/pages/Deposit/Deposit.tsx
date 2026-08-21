@@ -3,14 +3,17 @@ import { useSelector } from "react-redux";
 import QRCode from "qrcode";
 import SubHeader from "src/view/shared/Header/SubHeader";
 import authSelectors from "src/modules/auth/authSelectors";
-import TransactionService from "src/modules/transaction/transactionService";
+import DepositService from "src/modules/deposit/depositService";
 import SettingsService from "src/modules/settings/settingsService";
 import Errors from "src/modules/shared/error/errors";
 import Message from "src/view/shared/message";
 import { i18n } from "../../../i18n";
 
-const SYMBOLS = ["USDT", "ETH", "BTC"];
 const DEFAULT_SYMBOL = "USDT";
+const PAYMENT_METHOD = "USDT";
+const PROTOCOL = "TRC-20";
+const CURRENCY = "ALL";
+const MIN_AMOUNT = 0.1;
 
 function Deposit() {
   const currentUser = useSelector(authSelectors.selectCurrentUser);
@@ -50,7 +53,7 @@ function Deposit() {
     QRCode.toDataURL(address, {
       width: 168,
       margin: 1,
-      color: { dark: "#f0b90b", light: "#1a1c26" },
+      color: { dark: "#0f1111", light: "#ffffff" },
     })
       .then(setQrDataUrl)
       .catch((error) => console.error(error));
@@ -80,20 +83,19 @@ function Deposit() {
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    if (!amount || Number(amount) <= 0 || !address) {
+    if (!amount || Number(amount) < MIN_AMOUNT || !address) {
       return;
     }
 
     setSubmitting(true);
 
     try {
-      await TransactionService.create({
-        status: "pending",
-        datetransaction: new Date(),
+      await DepositService.create({
         user: currentUser ? currentUser.id : null,
-        type: "deposit",
         amount,
-        currency: symbol,
+        currency: CURRENCY,
+        paymentMethod: PAYMENT_METHOD,
+        protocol: PROTOCOL,
       });
 
       setShowReviewModal(true);
@@ -116,17 +118,19 @@ function Deposit() {
 
       <div className="dep__page">
         <div className="dep__card">
-          <div className="dep__tabs">
-            {SYMBOLS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                className={`dep__tab ${symbol === item ? "dep__tab--active" : ""}`}
-                onClick={() => setSymbol(item)}
-              >
-                {item}
-              </button>
-            ))}
+          <div className="dep__optionGroup">
+            <div className="dep__optionLabel">{i18n("pages.deposit.paymentMethod")}</div>
+            <span className="dep__chip dep__chip--active">{PAYMENT_METHOD}</span>
+          </div>
+
+          <div className="dep__optionGroup">
+            <div className="dep__optionLabel">{i18n("pages.deposit.selectProtocol")}</div>
+            <span className="dep__chip dep__chip--active">{PROTOCOL}</span>
+          </div>
+
+          <div className="dep__optionGroup">
+            <div className="dep__optionLabel">{i18n("pages.deposit.currencySelection")}</div>
+            <span className="dep__chip dep__chip--active">{CURRENCY}</span>
           </div>
 
           <div className="dep__qrWrap">
@@ -180,6 +184,20 @@ function Deposit() {
                 onChange={(event) => setAmount(event.target.value)}
                 required
               />
+              <div className="dep__amountHints">
+                <div className="dep__amountHint">
+                  {i18n("pages.deposit.minAmountHint", MIN_AMOUNT, PAYMENT_METHOD)}
+                </div>
+                <div className="dep__amountHint">
+                  {i18n("pages.deposit.estimatedPayment", amount || 0, PAYMENT_METHOD)}
+                </div>
+                <div className="dep__amountHint">
+                  {i18n("pages.deposit.referenceRate", PAYMENT_METHOD)}
+                </div>
+                <div className="dep__amountHint dep__amountHint--muted">
+                  {i18n("pages.deposit.disclaimer")}
+                </div>
+              </div>
             </div>
 
             <button
@@ -224,7 +242,7 @@ function Deposit() {
       <style>{`
         .dep__page {
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           display: flex;
           justify-content: center;
           padding: 20px 14px 100px;
@@ -234,47 +252,48 @@ function Deposit() {
         .dep__card {
           max-width: 400px;
           width: 100%;
-          background: #14151d;
+          background: var(--bg-card);
           padding: 22px 18px 26px;
           border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          color: #eaecef;
+          border: 1px solid var(--border);
+          color: var(--text-primary);
         }
 
-        .dep__tabs {
-          display: flex;
-          gap: 8px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 4px;
-          margin-bottom: 20px;
+        .dep__optionGroup {
+          margin-bottom: 16px;
         }
 
-        .dep__tab {
-          flex: 1;
-          margin: 0;
-          background: transparent;
-          border: none;
-          border-radius: 10px;
-          padding: 10px 0;
-          font-size: 13.5px;
+        .dep__optionLabel {
+          font-size: 12px;
           font-weight: 700;
-          color: #848e9c;
-          cursor: pointer;
+          color: var(--text-muted);
+          margin-bottom: 8px;
         }
 
-        .dep__tab--active {
-          background: #f0b90b;
-          color: #0b0e11;
+        .dep__chip {
+          display: inline-flex;
+          align-items: center;
+          padding: 7px 16px;
+          border-radius: 999px;
+          font-size: 12.5px;
+          font-weight: 700;
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+        }
+
+        .dep__chip--active {
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          border-color: transparent;
+          color: var(--accent-text-on);
         }
 
         .dep__qrWrap {
           width: 176px;
           height: 176px;
-          margin: 0 auto 14px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          margin: 4px auto 14px;
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 16px;
           display: flex;
           align-items: center;
@@ -294,20 +313,20 @@ function Deposit() {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #5e6673;
+          color: var(--text-faint);
           font-size: 32px;
         }
 
         .dep__hint {
           text-align: center;
           font-size: 12px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-bottom: 18px;
         }
 
         .dep__addressBlock {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 16px;
           padding: 14px 16px;
           margin-bottom: 14px;
@@ -317,7 +336,7 @@ function Deposit() {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-bottom: 8px;
         }
 
@@ -330,7 +349,7 @@ function Deposit() {
         .dep__addressText {
           flex: 1;
           font-size: 13px;
-          color: #f5f6f8;
+          color: var(--text-primary);
           word-break: break-all;
           line-height: 1.5;
         }
@@ -338,10 +357,10 @@ function Deposit() {
         .dep__copyBtn {
           flex-shrink: 0;
           margin: 0;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           border: none;
           border-radius: 10px;
-          color: #0b0e11;
+          color: var(--accent-text-on);
           font-size: 12px;
           font-weight: 700;
           padding: 8px 12px;
@@ -355,12 +374,12 @@ function Deposit() {
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          background: #241c0e;
-          border: 1px solid rgba(240, 185, 11, 0.25);
+          background: var(--bg-tint);
+          border: 1px solid var(--tint-border);
           border-radius: 12px;
           padding: 10px 12px;
           font-size: 12px;
-          color: #f0b90b;
+          color: var(--tint-text);
           line-height: 1.5;
           margin-bottom: 20px;
         }
@@ -376,36 +395,53 @@ function Deposit() {
         .dep__label {
           display: block;
           font-size: 12px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-bottom: 8px;
         }
 
         .dep__input {
           width: 100%;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 12px;
           padding: 12px 14px;
           font-size: 14px;
-          color: #eaecef;
+          color: var(--text-primary);
           outline: none;
         }
 
         .dep__input:focus {
-          border-color: #f0b90b;
+          border-color: var(--accent);
         }
 
         .dep__input::placeholder {
-          color: #5e6673;
+          color: var(--placeholder);
+        }
+
+        .dep__amountHints {
+          margin-top: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+
+        .dep__amountHint {
+          font-size: 11px;
+          color: var(--text-muted);
+          line-height: 1.5;
+        }
+
+        .dep__amountHint--muted {
+          color: var(--text-faint);
         }
 
         .dep__submitBtn {
           width: 100%;
           margin: 0;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           border: none;
           border-radius: 14px;
-          color: #0b0e11;
+          color: var(--accent-text-on);
           font-size: 15px;
           font-weight: 700;
           padding: 13px 0;
@@ -413,8 +449,8 @@ function Deposit() {
         }
 
         .dep__submitBtn:disabled {
-          background: #3a3d26;
-          color: #6b6f5a;
+          background: var(--bg-surface-2);
+          color: var(--text-faint);
           cursor: not-allowed;
         }
 
@@ -424,19 +460,19 @@ function Deposit() {
           gap: 8px;
           margin-top: 16px;
           font-size: 11px;
-          color: #5e6673;
+          color: var(--text-faint);
           line-height: 1.6;
         }
 
         .dep__note i {
-          color: #848e9c;
+          color: var(--text-muted);
           margin-top: 1px;
         }
 
         .dep__modalOverlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.6);
+          background: var(--overlay);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -448,8 +484,8 @@ function Deposit() {
         .dep__modalCard {
           width: 100%;
           max-width: 320px;
-          background: #14151d;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 20px;
           padding: 28px 24px 24px;
           text-align: center;
@@ -461,27 +497,27 @@ function Deposit() {
           height: 56px;
           margin: 0 auto 16px;
           border-radius: 50%;
-          background: rgba(240, 185, 11, 0.12);
+          background: var(--bg-tint);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .dep__modalIcon i {
-          color: #f0b90b;
+          color: var(--accent);
           font-size: 22px;
         }
 
         .dep__modalTitle {
           font-size: 17px;
           font-weight: 700;
-          color: #f5f6f8;
+          color: var(--text-primary);
           margin-bottom: 10px;
         }
 
         .dep__modalText {
           font-size: 13.5px;
-          color: #848e9c;
+          color: var(--text-muted);
           line-height: 1.6;
           margin: 0 0 22px;
         }
@@ -489,10 +525,10 @@ function Deposit() {
         .dep__modalConfirm {
           width: 100%;
           margin: 0;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           border: none;
           border-radius: 12px;
-          color: #0b0e11;
+          color: var(--accent-text-on);
           font-size: 14px;
           font-weight: 700;
           padding: 12px 0;

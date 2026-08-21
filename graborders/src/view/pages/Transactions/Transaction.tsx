@@ -5,7 +5,6 @@ import selector from 'src/modules/transaction/list/transactionListSelectors'
 import { useDispatch, useSelector } from 'react-redux';
 import Dates from "src/view/shared/utils/Dates";
 import LoadingModal from "src/shared/LoadingModal";
-import Nodata from "src/view/shared/Nodata";
 import { i18n } from "../../../i18n";
 
 const FILTERS = [
@@ -75,21 +74,21 @@ function Transaction() {
       <SubHeader title={i18n("pages.transaction.title")} path="/profile" />
 
       <div className="tx__page">
-        <div className="tx__card">
-          <div className="tx__tabs">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.key || "all"}
-                type="button"
-                className={`tx__tab ${active === filter.key ? "tx__tab--active" : ""}`}
-                onClick={() => onSelectFilter(filter.key)}
-              >
-                <i className={filter.icon}></i>
-                {i18n(filter.label)}
-              </button>
-            ))}
-          </div>
+        <div className="tx__tabs">
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.key || "all"}
+              type="button"
+              className={`tx__tab ${active === filter.key ? "tx__tab--active" : ""}`}
+              onClick={() => onSelectFilter(filter.key)}
+            >
+              <i className={filter.icon}></i>
+              {i18n(filter.label)}
+            </button>
+          ))}
+        </div>
 
+        <div className="tx__card">
           {!loading && record && record.length > 0 && (
             <div className="tx__listHeader">
               <span className="tx__listTitle">
@@ -146,7 +145,15 @@ function Transaction() {
 
             {!loading && !selectHasRows && (
               <div className="tx__empty">
-                <Nodata />
+                <span className="tx__emptyIcon">
+                  <i className="fa-solid fa-receipt"></i>
+                </span>
+                <div className="tx__emptyTitle">
+                  {i18n("pages.transaction.empty.title")}
+                </div>
+                <div className="tx__emptySubtitle">
+                  {i18n("pages.transaction.empty.subtitle")}
+                </div>
               </div>
             )}
           </div>
@@ -156,9 +163,10 @@ function Transaction() {
       <style>{`
         .tx__page {
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: center;
           padding: 20px 14px 100px;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -166,38 +174,37 @@ function Transaction() {
         .tx__card {
           max-width: 400px;
           width: 100%;
-          background: #14151d;
+          background: var(--bg-card);
           padding: 22px 18px 26px;
           border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          color: #eaecef;
+          color: var(--text-primary);
+          box-shadow: 0 8px 20px var(--shadow-color);
         }
 
         .tx__tabs {
           display: flex;
-          gap: 6px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 4px;
-          margin-bottom: 18px;
+          gap: 10px;
+          max-width: 400px;
+          width: 100%;
+          margin-bottom: 16px;
         }
 
         .tx__tab {
           flex: 1;
           margin: 0;
-          background: transparent;
-          border: none;
-          border-radius: 10px;
-          padding: 10px 4px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 11px 4px;
           font-size: 12.5px;
           font-weight: 700;
-          color: #848e9c;
+          color: var(--text-muted);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
+          box-shadow: 0 4px 12px var(--shadow-color);
         }
 
         .tx__tab i {
@@ -205,8 +212,9 @@ function Transaction() {
         }
 
         .tx__tab--active {
-          background: #f0b90b;
-          color: #0b0e11;
+          border-color: transparent;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
         }
 
         .tx__listHeader {
@@ -222,15 +230,15 @@ function Transaction() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #5e6673;
+          color: var(--text-faint);
         }
 
         .tx__listCount {
           font-size: 11px;
           font-weight: 600;
-          color: #848e9c;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: var(--text-muted);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           padding: 3px 9px;
           border-radius: 20px;
         }
@@ -245,8 +253,8 @@ function Transaction() {
           display: flex;
           align-items: center;
           gap: 12px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 14px;
           padding: 12px 14px;
         }
@@ -263,18 +271,18 @@ function Transaction() {
         }
 
         .tx__rowIcon--success {
-          background: rgba(14, 203, 129, 0.12);
-          color: #0ecb81;
+          background: var(--success-bg);
+          color: var(--success);
         }
 
         .tx__rowIcon--pending {
-          background: rgba(240, 185, 11, 0.12);
-          color: #f0b90b;
+          background: var(--bg-tint);
+          color: var(--accent);
         }
 
         .tx__rowIcon--canceled {
-          background: rgba(246, 70, 93, 0.12);
-          color: #f6465d;
+          background: var(--danger-bg);
+          color: var(--danger);
         }
 
         .tx__rowMain {
@@ -285,7 +293,7 @@ function Transaction() {
         .tx__rowType {
           font-size: 14px;
           font-weight: 700;
-          color: #f5f6f8;
+          color: var(--text-primary);
           display: flex;
           align-items: center;
           gap: 6px;
@@ -294,8 +302,8 @@ function Transaction() {
         .tx__rowCurrency {
           font-size: 10.5px;
           font-weight: 700;
-          color: #848e9c;
-          background: rgba(255, 255, 255, 0.06);
+          color: var(--text-muted);
+          background: var(--border);
           padding: 1px 6px;
           border-radius: 20px;
         }
@@ -305,7 +313,7 @@ function Transaction() {
           align-items: center;
           gap: 5px;
           font-size: 11.5px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-top: 3px;
         }
 
@@ -321,19 +329,19 @@ function Transaction() {
         }
 
         .tx__amount--deposit {
-          color: #0ecb81;
+          color: var(--success);
         }
 
         .tx__amount--withdraw {
-          color: #eaecef;
+          color: var(--text-primary);
         }
 
         .tx__amount--pending {
-          color: #f0b90b;
+          color: var(--accent);
         }
 
         .tx__amount--canceled {
-          color: #5e6673;
+          color: var(--text-faint);
           text-decoration: line-through;
         }
 
@@ -349,18 +357,18 @@ function Transaction() {
         }
 
         .tx__status--success {
-          background: rgba(14, 203, 129, 0.12);
-          color: #0ecb81;
+          background: var(--success-bg);
+          color: var(--success);
         }
 
         .tx__status--pending {
-          background: rgba(240, 185, 11, 0.12);
-          color: #f0b90b;
+          background: var(--bg-tint);
+          color: var(--accent);
         }
 
         .tx__status--canceled {
-          background: rgba(246, 70, 93, 0.12);
-          color: #f6465d;
+          background: var(--danger-bg);
+          color: var(--danger);
         }
 
         .tx__loading {
@@ -370,11 +378,39 @@ function Transaction() {
         }
 
         .tx__empty {
-          padding: 20px 0 4px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 26px 10px 10px;
         }
 
-        .tx__empty span {
-          color: #848e9c !important;
+        .tx__emptyIcon {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: var(--bg-card-alt);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 14px;
+        }
+
+        .tx__emptyIcon i {
+          color: var(--text-faint);
+          font-size: 22px;
+        }
+
+        .tx__emptyTitle {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 4px;
+        }
+
+        .tx__emptySubtitle {
+          font-size: 12.5px;
+          color: var(--text-muted);
         }
       `}</style>
     </div>

@@ -117,6 +117,28 @@ const MenuWrapper = styled.div`
     background-color: var(--hover);
     color: var(--white);
   }
+
+  .menu-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .menu-count-badge--active {
+    background-color: #ff8a00;
+    color: #17130d;
+  }
 `;
 
 export default MenuWrapper;

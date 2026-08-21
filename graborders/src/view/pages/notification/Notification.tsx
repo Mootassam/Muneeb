@@ -136,34 +136,34 @@ function Notifications() {
       <SubHeader title={i18n("pages.notifications.title")} />
 
       <div className="ntf__page">
-        <div className="ntf__card">
-          <div className="ntf__tabs">
-            {FILTERS.map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                className={`ntf__tab ${filter === item.key ? "ntf__tab--active" : ""}`}
-                onClick={() => setFilter(item.key)}
-              >
-                <i className={item.icon}></i>
-                {i18n(`pages.notifications.filters.${item.key}`)}
-              </button>
-            ))}
-          </div>
+        <div className="ntf__tabs">
+          {FILTERS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`ntf__tab ${filter === item.key ? "ntf__tab--active" : ""}`}
+              onClick={() => setFilter(item.key)}
+            >
+              <i className={item.icon}></i>
+              {i18n(`pages.notifications.filters.${item.key}`)}
+            </button>
+          ))}
+        </div>
 
-          {!loading && (
-            <div className="ntf__listHeader">
-              <span className="ntf__listTitle">
-                {i18n("pages.notifications.totalCount", filteredNotifications.length)}
+        {!loading && (
+          <div className="ntf__listHeader">
+            <span className="ntf__listTitle">
+              {i18n("pages.notifications.totalCount", filteredNotifications.length)}
+            </span>
+            {unreadCount > 0 && (
+              <span className="ntf__listCount">
+                {i18n("pages.notifications.unreadCount", unreadCount)}
               </span>
-              {unreadCount > 0 && (
-                <span className="ntf__listCount">
-                  {i18n("pages.notifications.unreadCount", unreadCount)}
-                </span>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
+        <div className="ntf__card">
           {loading && (
             <div className="ntf__loading">
               <LoadingModal />
@@ -172,7 +172,9 @@ function Notifications() {
 
           {!loading && filteredNotifications.length === 0 && (
             <div className="ntf__empty">
-              <i className="fa-solid fa-bell-slash"></i>
+              <span className="ntf__emptyIcon">
+                <i className="fa-solid fa-bell-slash"></i>
+              </span>
               <span className="ntf__emptyTitle">
                 {i18n("pages.notifications.emptyState.title")}
               </span>
@@ -237,9 +239,10 @@ function Notifications() {
       <style>{`
         .ntf__page {
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: center;
           padding: 20px 14px 100px;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -247,38 +250,37 @@ function Notifications() {
         .ntf__card {
           max-width: 400px;
           width: 100%;
-          background: #14151d;
+          background: var(--bg-card);
           padding: 22px 18px 26px;
           border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          color: #eaecef;
+          color: var(--text-primary);
+          box-shadow: 0 8px 20px var(--shadow-color);
         }
 
         .ntf__tabs {
           display: flex;
-          gap: 6px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 4px;
-          margin-bottom: 18px;
+          gap: 10px;
+          max-width: 400px;
+          width: 100%;
+          margin-bottom: 16px;
         }
 
         .ntf__tab {
           flex: 1;
           margin: 0;
-          background: transparent;
-          border: none;
-          border-radius: 10px;
-          padding: 10px 4px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 11px 4px;
           font-size: 12.5px;
           font-weight: 700;
-          color: #848e9c;
+          color: var(--text-muted);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
+          box-shadow: 0 4px 12px var(--shadow-color);
         }
 
         .ntf__tab i {
@@ -286,31 +288,34 @@ function Notifications() {
         }
 
         .ntf__tab--active {
-          background: #f0b90b;
-          color: #0b0e11;
+          border-color: transparent;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
         }
 
         .ntf__listHeader {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          max-width: 400px;
+          width: 100%;
           margin-bottom: 10px;
           padding: 0 2px;
         }
 
         .ntf__listTitle {
           font-size: 12px;
-          font-weight: 700;
+          font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #5e6673;
+          color: var(--text-secondary);
         }
 
         .ntf__listCount {
           font-size: 11px;
           font-weight: 600;
-          color: #f0b90b;
-          background: rgba(240, 185, 11, 0.12);
+          color: var(--accent);
+          background: var(--bg-tint);
           padding: 3px 9px;
           border-radius: 20px;
         }
@@ -325,8 +330,8 @@ function Notifications() {
           display: flex;
           align-items: flex-start;
           gap: 12px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 14px;
           padding: 13px 14px;
           cursor: pointer;
@@ -345,28 +350,28 @@ function Notifications() {
         }
 
         .ntf__icon--success {
-          background: rgba(14, 203, 129, 0.12);
-          color: #0ecb81;
+          background: var(--success-bg);
+          color: var(--success);
         }
 
         .ntf__icon--canceled {
-          background: rgba(246, 70, 93, 0.12);
-          color: #f6465d;
+          background: var(--danger-bg);
+          color: var(--danger);
         }
 
         .ntf__icon--system {
-          background: rgba(56, 189, 248, 0.12);
-          color: #38bdf8;
+          background: var(--info-bg);
+          color: var(--info-text);
         }
 
         .ntf__icon--alert {
-          background: rgba(240, 185, 11, 0.12);
-          color: #f0b90b;
+          background: var(--bg-tint);
+          color: var(--accent);
         }
 
         .ntf__icon--default {
-          background: rgba(132, 142, 156, 0.12);
-          color: #848e9c;
+          background: var(--bg-surface-2);
+          color: var(--text-muted);
         }
 
         .ntf__body {
@@ -384,19 +389,19 @@ function Notifications() {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           flex-shrink: 0;
         }
 
         .ntf__title {
           font-size: 14px;
           font-weight: 700;
-          color: #f5f6f8;
+          color: var(--text-primary);
         }
 
         .ntf__message {
           font-size: 12.5px;
-          color: #848e9c;
+          color: var(--text-muted);
           line-height: 1.5;
           margin: 4px 0 8px;
         }
@@ -407,7 +412,7 @@ function Notifications() {
           justify-content: space-between;
           gap: 10px;
           padding-top: 8px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          border-top: 1px solid var(--border);
         }
 
         .ntf__amount {
@@ -416,17 +421,17 @@ function Notifications() {
           gap: 6px;
           font-size: 12px;
           font-weight: 700;
-          color: #eaecef;
+          color: var(--text-primary);
         }
 
         .ntf__amount i {
-          color: #f0b90b;
+          color: var(--accent);
           font-size: 11px;
         }
 
         .ntf__date {
           font-size: 11px;
-          color: #5e6673;
+          color: var(--text-faint);
           margin-left: auto;
         }
 
@@ -437,27 +442,40 @@ function Notifications() {
         }
 
         .ntf__empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           text-align: center;
-          padding: 46px 16px 30px;
+          padding: 26px 16px 10px;
         }
 
-        .ntf__empty i {
-          font-size: 32px;
-          color: #3a3d47;
-          margin-bottom: 14px;
+        .ntf__emptyIcon {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: var(--bg-card-alt);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+
+        .ntf__emptyIcon i {
+          font-size: 24px;
+          color: var(--text-faint);
         }
 
         .ntf__emptyTitle {
           display: block;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
-          color: #eaecef;
-          margin-bottom: 6px;
+          color: var(--text-primary);
+          margin-bottom: 4px;
         }
 
         .ntf__emptyText {
           font-size: 12.5px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin: 0;
           line-height: 1.5;
         }

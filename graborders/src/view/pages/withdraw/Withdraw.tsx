@@ -8,13 +8,21 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useDispatch, useSelector } from "react-redux";
 import InputFormItem from "src/shared/form/InputFormItem";
-import actions from "src/modules/transaction/form/transactionFormActions";
+import WithdrawService from "src/modules/withdraw/withdrawService";
+import Errors from "src/modules/shared/error/errors";
+import Message from "src/view/shared/message";
 import authActions from "src/modules/auth/authActions";
+
+const NETWORK = "USDT · TRC-20";
 
 const schema = yup.object().shape({
   amount: yupFormSchemas.integer(i18n("entities.transaction.fields.amount"), {
     required: true,
     min: 50,
+  }),
+  address: yupFormSchemas.string(i18n("pages.withdraw.withdrawAddress"), {
+    required: true,
+    min: 10,
   }),
   withdrawPassword: yupFormSchemas.string(
     i18n("user.fields.withdrawPassword"),
@@ -33,25 +41,30 @@ function Withdraw() {
     await dispatch(authActions.doRefreshCurrentUser());
   }, [dispatch]);
 
-  const onSubmit = async ({ amount, withdrawPassword }) => {
-    const values = {
-      status: "pending",
-      date: new Date(),
-      user: currentUser ? currentUser.id : null,
-      type: "withdraw",
-      amount: amount,
-      vip: currentUser,
-      withdrawPassword: withdrawPassword,
-    };
-
+  const onSubmit = async ({ amount, address, withdrawPassword }) => {
     setSubmitting(true);
-    await dispatch(actions.doCreate(values));
-    await refreshItems();
-    setSubmitting(false);
+
+    try {
+      await WithdrawService.create({
+        user: currentUser ? currentUser.id : null,
+        amount,
+        address,
+        withdrawPassword,
+      });
+
+      Message.success(i18n("pages.withdraw.success"));
+      form.reset({ amount: "", address: "", withdrawPassword: "" });
+      await refreshItems();
+    } catch (error) {
+      Errors.handle(error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const [initialValues] = useState({
     amount: "",
+    address: "",
   });
   const form = useForm({
     resolver: yupResolver(schema),
@@ -77,6 +90,11 @@ function Withdraw() {
             </div>
           </div>
 
+          <div className="wd__optionGroup">
+            <div className="wd__optionLabel">{i18n("pages.withdraw.network")}</div>
+            <span className="wd__chip">{NETWORK}</span>
+          </div>
+
           <div className="wd__warning">
             <i className="fa-solid fa-volume-high"></i>
             {i18n("pages.withdraw.announcement")}
@@ -84,6 +102,18 @@ function Withdraw() {
 
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div className="wd__formGroup">
+                <label className="wd__label" htmlFor="address">
+                  {i18n("pages.withdraw.withdrawAddress")}
+                </label>
+                <InputFormItem
+                  type="text"
+                  name="address"
+                  placeholder={i18n("pages.withdraw.withdrawAddressPlaceholder")}
+                  className="wd__input"
+                />
+              </div>
+
               <div className="wd__formGroup">
                 <label className="wd__label" htmlFor="amount">
                   {i18n("pages.withdraw.withdrawAmount")}
@@ -130,7 +160,7 @@ function Withdraw() {
       <style>{`
         .wd__page {
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           display: flex;
           justify-content: center;
           padding: 20px 14px 100px;
@@ -140,16 +170,16 @@ function Withdraw() {
         .wd__card {
           max-width: 400px;
           width: 100%;
-          background: #14151d;
+          background: var(--bg-card);
           padding: 22px 18px 26px;
           border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          color: #eaecef;
+          border: 1px solid var(--border);
+          color: var(--text-primary);
         }
 
         .wd__balanceBlock {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 18px;
           padding: 18px;
           margin-bottom: 16px;
@@ -159,33 +189,55 @@ function Withdraw() {
           font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.6px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-bottom: 6px;
         }
 
         .wd__balanceAmount {
           font-size: 28px;
           font-weight: 800;
-          color: #f7c948;
+          color: var(--accent);
           line-height: 1;
         }
 
         .wd__balanceUnit {
           font-size: 13px;
           font-weight: 700;
-          color: #848e9c;
+          color: var(--text-muted);
+        }
+
+        .wd__optionGroup {
+          margin-bottom: 16px;
+        }
+
+        .wd__optionLabel {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-muted);
+          margin-bottom: 8px;
+        }
+
+        .wd__chip {
+          display: inline-flex;
+          align-items: center;
+          padding: 7px 16px;
+          border-radius: 999px;
+          font-size: 12.5px;
+          font-weight: 700;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
         }
 
         .wd__warning {
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          background: #241c0e;
-          border: 1px solid rgba(240, 185, 11, 0.25);
+          background: var(--bg-tint);
+          border: 1px solid var(--tint-border);
           border-radius: 12px;
           padding: 10px 12px;
           font-size: 12px;
-          color: #f0b90b;
+          color: var(--tint-text);
           line-height: 1.5;
           margin-bottom: 20px;
         }
@@ -202,43 +254,43 @@ function Withdraw() {
         .wd__label {
           display: block;
           font-size: 12px;
-          color: #848e9c;
+          color: var(--text-muted);
           margin-bottom: 8px;
         }
 
         .wd__page .wd__input {
           width: 100%;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 12px;
           padding: 12px 14px;
           font-size: 14px;
-          color: #eaecef;
+          color: var(--text-primary);
           outline: none;
           box-sizing: border-box;
         }
 
         .wd__page .wd__input:focus {
-          border-color: #f0b90b;
+          border-color: var(--accent);
         }
 
         .wd__page .wd__input::placeholder {
-          color: #5e6673;
+          color: var(--placeholder);
         }
 
         .wd__page .wd__input.__danger {
-          border-color: #f6465d;
+          border-color: var(--danger);
         }
 
         .wd__page .invalid-feedback {
           display: block;
-          color: #f6465d;
+          color: var(--danger);
           font-size: 11.5px;
           margin-top: 6px;
         }
 
         .wd__page .form-text {
-          color: #5e6673;
+          color: var(--text-faint);
           font-size: 11px;
           margin-top: 6px;
         }
@@ -246,10 +298,10 @@ function Withdraw() {
         .wd__submitBtn {
           width: 100%;
           margin: 4px 0 0;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           border: none;
           border-radius: 14px;
-          color: #0b0e11;
+          color: var(--accent-text-on);
           font-size: 15px;
           font-weight: 700;
           padding: 13px 0;
@@ -257,8 +309,8 @@ function Withdraw() {
         }
 
         .wd__submitBtn:disabled {
-          background: #3a3d26;
-          color: #6b6f5a;
+          background: var(--bg-surface-2);
+          color: var(--text-faint);
           cursor: not-allowed;
         }
 
@@ -268,12 +320,12 @@ function Withdraw() {
           gap: 8px;
           margin-top: 14px;
           font-size: 11.5px;
-          color: #5e6673;
+          color: var(--text-faint);
           line-height: 1.6;
         }
 
         .wd__disabledNote i {
-          color: #848e9c;
+          color: var(--text-muted);
           margin-top: 1px;
         }
       `}</style>

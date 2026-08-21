@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 import authSelectors from "src/modules/auth/authSelectors";
 import actions from "src/modules/product/list/productListActions";
@@ -21,6 +22,7 @@ const Grappage = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showBalanceModal, setShowBalanceModal] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -88,8 +90,8 @@ const Grappage = () => {
 
   // Balance and task warnings
   useEffect(() => {
-    if (currentUser?.balance <= 0) {
-      Message.error("Insufficient balance. Please top up your account to continue.");
+    if ((currentUser?.balance || 0) < 0) {
+      setShowBalanceModal(true);
     }
     if (currentUser?.tasksDone >= currentUser?.vip?.dailyorder) {
       Message.success("You have completed all available tasks. Please contact support to reset your account.");
@@ -98,7 +100,7 @@ const Grappage = () => {
 
    const rollAll = async () => {
      if (currentUser?.balance <= 0) {
-       Message.error("Insufficient balance. Please top up your account to continue.");
+       setShowBalanceModal(true);
        return;
      }
      if (currentUser?.tasksDone >= currentUser?.vip?.dailyorder) {
@@ -131,6 +133,8 @@ const Grappage = () => {
   const tasksDone = currentUser?.tasksDone || 0;
   const dailyOrders = currentUser?.vip?.dailyorder || 0;
   const progressPct = dailyOrders > 0 ? Math.min(100, (tasksDone / dailyOrders) * 100) : 0;
+
+  const balanceDeficit = Math.abs(currentUser?.balance || 0).toFixed(2);
 
   return (
     <div className="grappage-container">
@@ -268,26 +272,55 @@ const Grappage = () => {
         <GrapModal items={items} number={number} hideModal={hideModal} submit={submit} />
       )}
 
+      {showBalanceModal && (
+        <div className="balance-modal-overlay" onClick={() => setShowBalanceModal(false)}>
+          <div className="balance-modal-card" onClick={(e) => e.stopPropagation()}>
+            <span className="balance-modal-icon">
+              <i className="fa-solid fa-triangle-exclamation"></i>
+            </span>
+            <div className="balance-modal-text">
+              {i18n("pages.grab.insufficientBalance")}{" "}
+              <span className="balance-modal-amount">
+                {balanceDeficit} {i18n("pages.grab.currency")}
+              </span>
+            </div>
+            <Link
+              to="/deposit"
+              className="balance-modal-btn"
+              onClick={() => setShowBalanceModal(false)}
+            >
+              {i18n("pages.grab.depositNow")}
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Theme */}
       <style>{`
         .grappage-container {
           position: relative;
           margin: 0 auto;
-          padding: 20px;
-          background: #0b0e11;
+          max-width: 460px;
+          padding: 16px 14px 100px;
+          background: #eaeded;
           min-height: 100vh;
           overflow: hidden;
+          box-sizing: border-box;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .grappage-container * {
+          box-sizing: border-box;
         }
 
         .grappage-glow {
           position: absolute;
-          top: -140px;
+          top: -160px;
           left: 50%;
           transform: translateX(-50%);
           width: 680px;
           height: 320px;
-          background: radial-gradient(ellipse at center, rgba(240, 185, 11, 0.10), transparent 70%);
+          background: radial-gradient(ellipse at center, rgba(255, 138, 0, 0.14), transparent 70%);
           filter: blur(20px);
           pointer-events: none;
           z-index: 0;
@@ -301,28 +334,29 @@ const Grappage = () => {
           z-index: 1;
         }
 
-        .grappage-header { margin-bottom: 16px; }
+        .grappage-header { margin-bottom: 14px; }
         .user-greeting {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background: #181a20;
-          padding: 16px 20px;
-          border-radius: 14px;
-          border: 1px solid #23262c;
+          background: linear-gradient(160deg, #ffb84d, #ff8a00 75%);
+          padding: 16px 18px;
+          border-radius: 16px;
+          box-shadow: 0 10px 24px -10px rgba(255, 106, 0, 0.45);
         }
         .greeting-content {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 12px;
           min-width: 0;
         }
         .user-avatar {
-          width: 46px;
-          height: 46px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
-          border: 2px solid #f0b90b;
+          border: 2px solid rgba(255, 255, 255, 0.85);
           flex-shrink: 0;
+          background: #fff;
         }
         .greeting-text-wrap {
           display: flex;
@@ -331,114 +365,200 @@ const Grappage = () => {
           min-width: 0;
         }
         .greeting-text {
-          font-size: 15.5px;
-          font-weight: 600;
-          color: #eaecef;
+          font-size: 14.5px;
+          font-weight: 700;
+          color: #fff;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .greeting-sub {
-          font-size: 12px;
-          color: #5e6673;
+          font-size: 11.5px;
+          color: rgba(255, 255, 255, 0.85);
         }
         .vip-badge {
-          background: #f0b90b;
-          color: #181a20;
-          padding: 7px 16px;
+          background: #fff;
+          color: #d1650a;
+          padding: 7px 14px;
           border-radius: 20px;
-          font-weight: 700;
-          font-size: 13px;
+          font-weight: 800;
+          font-size: 12.5px;
           flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(15, 17, 17, 0.12);
+        }
+
+        .balance-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(15, 17, 17, 0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 1200;
+          animation: balanceModalFadeIn 0.15s ease-out;
+        }
+
+        .balance-modal-card {
+          width: 100%;
+          max-width: 340px;
+          background: #fff;
+          border-radius: 20px;
+          padding: 28px 24px 24px;
+          text-align: center;
+          box-shadow: 0 25px 60px -15px rgba(15, 17, 17, 0.35);
+          animation: balanceModalIn 0.18s ease-out;
+        }
+
+        .balance-modal-icon {
+          width: 56px;
+          height: 56px;
+          margin: 0 auto 16px;
+          border-radius: 50%;
+          background: #fdecea;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .balance-modal-icon i {
+          color: #d13212;
+          font-size: 22px;
+        }
+
+        .balance-modal-text {
+          font-size: 14.5px;
+          font-weight: 700;
+          color: #d13212;
+          line-height: 1.5;
+          margin-bottom: 20px;
+        }
+
+        .balance-modal-amount {
+          font-size: 16.5px;
+          font-weight: 800;
+        }
+
+        .balance-modal-btn {
+          display: block;
+          width: 100%;
+          text-align: center;
+          background: linear-gradient(180deg, #ffb84d, #ff8a00);
+          border: 1px solid #d17f00;
+          border-radius: 12px;
+          color: #17130d;
+          font-size: 14.5px;
+          font-weight: 700;
+          padding: 12px 0;
+          text-decoration: none;
+          box-shadow: 0 8px 18px -8px rgba(255, 138, 0, 0.5);
+        }
+
+        @keyframes balanceModalFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes balanceModalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.94) translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
         }
 
         .stats-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          margin-bottom: 16px;
+          gap: 10px;
+          margin-bottom: 14px;
         }
         .stat-card {
-          background: #181a20;
-          padding: 16px;
+          background: #fff;
+          padding: 14px;
           border-radius: 14px;
-          border: 1px solid #23262c;
+          border: 1px solid #e7e7e7;
+          box-shadow: 0 2px 8px rgba(15, 17, 17, 0.05);
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 12px;
         }
-        .stat-content { display: flex; align-items: center; gap: 12px; }
+        .stat-content { display: flex; align-items: center; gap: 10px; }
         .stat-icon {
-          width: 42px;
-          height: 42px;
-          background: rgba(240, 185, 11, 0.12);
-          border-radius: 12px;
+          width: 38px;
+          height: 38px;
+          background: #fff2e5;
+          border-radius: 11px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
-        .stat-icon img { width: 22px; height: 22px; }
-        .stat-title { font-weight: 600; color: #eaecef; font-size: 13.5px; }
-        .stat-subtitle { font-size: 11.5px; color: #5e6673; }
+        .stat-icon img { width: 20px; height: 20px; }
+        .stat-title { font-weight: 700; color: #0f1111; font-size: 12.5px; }
+        .stat-subtitle { font-size: 10.5px; color: #9aa0a6; }
         .amount-value {
-          font-size: 20px;
-          font-weight: 700;
-          color: #f0b90b;
+          font-size: 19px;
+          font-weight: 800;
+          color: #ff6a00;
           font-variant-numeric: tabular-nums;
         }
-        .amount-currency { font-size: 11.5px; color: #5e6673; font-weight: 500; }
+        .amount-currency { font-size: 11px; color: #9aa0a6; font-weight: 500; }
 
         .game-grid-section {
-          background: #181a20;
-          padding: 22px 20px;
-          border-radius: 16px;
-          border: 1px solid #23262c;
-          margin-bottom: 16px;
+          background: #fff;
+          padding: 20px 18px;
+          border-radius: 18px;
+          border: 1px solid #e7e7e7;
+          box-shadow: 0 2px 10px rgba(15, 17, 17, 0.06);
+          margin-bottom: 14px;
         }
 
         .game-header {
-          margin-bottom: 14px;
+          margin-bottom: 12px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           flex-wrap: wrap;
           gap: 10px;
         }
-        .vip-title { font-size: 17px; font-weight: 700; color: #eaecef; }
-        .commission-rate { font-size: 12.5px; color: #848e9c; }
-        .rate-value { color: #f0b90b; font-weight: 700; }
+        .vip-title { font-size: 16.5px; font-weight: 700; color: #0f1111; }
+        .commission-rate { font-size: 12px; color: #767676; }
+        .rate-value { color: #ff6a00; font-weight: 700; }
 
         .progress-pill {
-          background: rgba(240, 185, 11, 0.12);
-          color: #f0b90b;
-          padding: 6px 14px;
+          background: #fff2e5;
+          color: #d1650a;
+          padding: 6px 13px;
           border-radius: 20px;
-          font-size: 12.5px;
+          font-size: 12px;
           font-weight: 700;
         }
 
         .progress-track {
           height: 6px;
-          background: #23262c;
+          background: #f0f1f3;
           border-radius: 6px;
           overflow: hidden;
-          margin-bottom: 22px;
+          margin-bottom: 20px;
         }
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #f0b90b, #f8d12f);
+          background: linear-gradient(90deg, #ffb84d, #ff8a00);
           border-radius: 6px;
           transition: width 0.4s ease;
         }
 
         /* =============== SLIDER =============== */
         .slider-container {
-          margin: 0 0 6px;
+          margin: 0 0 4px;
         }
         .slider-wrapper {
           position: relative;
-          height: 240px;
+          height: 230px;
           overflow: hidden;
           border-radius: 18px;
         }
@@ -461,29 +581,29 @@ const Grappage = () => {
         .slider-item[data-position="0"],
         .slider-item[data-position="2"] {
           transform: scale(0.78);
-          opacity: 0.55;
-          filter: brightness(0.8);
+          opacity: 0.5;
+          filter: brightness(0.95);
         }
 
         .slider-item[data-position="1"] {
-          transform: scale(1.02);
+          transform: scale(1.03);
           opacity: 1;
           z-index: 10;
         }
 
         .slider-item.active .image-container {
-          border: 3px solid #f0b90b;
-          box-shadow: 0 16px 40px rgba(240, 185, 11, 0.25);
+          border: 3px solid #ff8a00;
+          box-shadow: 0 16px 34px -10px rgba(255, 138, 0, 0.4);
         }
 
         .image-container {
           width: 100%;
-          max-width: 230px;
-          height: 220px;
+          max-width: 225px;
+          height: 210px;
           border-radius: 16px;
           overflow: hidden;
-          border: 1px solid #23262c;
-          background: #101317;
+          border: 1px solid #e7e7e7;
+          background: #f7f8fa;
           transition: all 0.4s ease;
         }
 
@@ -501,27 +621,28 @@ const Grappage = () => {
         .game-grid {
           display: flex;
           justify-content: center;
-          margin-top: 22px;
+          margin-top: 20px;
         }
 
         .start-button {
           width: 100%;
           max-width: 320px;
-          height: 54px;
-          background: #f0b90b;
-          border: none;
+          height: 52px;
+          background: linear-gradient(180deg, #ffb84d, #ff8a00);
+          border: 1px solid #d17f00;
           border-radius: 12px;
-          color: #181a20;
-          font-size: 16px;
+          color: #17130d;
+          font-size: 15.5px;
           font-weight: 700;
           cursor: pointer;
-          transition: background-color 0.15s ease, transform 0.1s ease;
+          transition: filter 0.15s ease, transform 0.1s ease;
           position: relative;
           overflow: hidden;
+          box-shadow: 0 8px 18px -8px rgba(255, 138, 0, 0.5);
         }
 
         .start-button:hover:not(.loading) {
-          background: #f8d12f;
+          filter: brightness(1.04);
         }
 
         .start-button:active:not(.loading) {
@@ -529,9 +650,11 @@ const Grappage = () => {
         }
 
         .start-button.loading {
-          background: #2b3139;
-          color: #5e6673;
+          background: #f0f1f3;
+          border-color: #d5d9d9;
+          color: #9aa0a6;
           cursor: not-allowed;
+          box-shadow: none;
         }
 
         .button-text {
@@ -544,8 +667,8 @@ const Grappage = () => {
           content: '';
           width: 16px;
           height: 16px;
-          border: 2px solid rgba(94, 102, 115, 0.4);
-          border-top-color: #848e9c;
+          border: 2px solid rgba(154, 160, 166, 0.35);
+          border-top-color: #767676;
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -555,41 +678,36 @@ const Grappage = () => {
         }
 
         .notice-section {
-          background: #181a20;
-          padding: 16px 20px;
+          background: #fff;
+          padding: 15px 18px;
           border-radius: 14px;
-          border: 1px solid #23262c;
-          border-left: 3px solid #f0b90b;
+          border: 1px solid #e7e7e7;
+          border-left: 3px solid #ff8a00;
+          box-shadow: 0 2px 8px rgba(15, 17, 17, 0.05);
         }
         .notice-header {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #f0b90b;
+          color: #d1650a;
           margin-bottom: 8px;
-          font-size: 13.5px;
+          font-size: 13px;
         }
         .notice-list {
-          color: #848e9c;
-          font-size: 12.5px;
+          color: #767676;
+          font-size: 12px;
           line-height: 1.7;
           margin: 0;
           padding-left: 18px;
         }
 
         /* Responsive */
-        @media (max-width: 768px) {
-          .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-          .slider-wrapper { height: 220px; }
-          .image-container { max-width: 200px; height: 200px; }
-        }
-
         @media (max-width: 480px) {
-          .grappage-container { padding: 14px; }
+          .grappage-container { padding: 14px 12px 100px; }
           .slider-wrapper { height: 190px; }
           .image-container { max-width: 165px; height: 165px; }
           .amount-value { font-size: 17px; }
-          .vip-badge { padding: 6px 12px; font-size: 12px; }
+          .vip-badge { padding: 6px 12px; font-size: 11.5px; }
         }
       `}</style>
     </div>

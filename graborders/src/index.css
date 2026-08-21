@@ -13,6 +13,99 @@
   --icon-width: 79px;
   --icon-height: 79px;
   --max-lines: 9;
+
+  /* ===== Theme tokens (light, default) ===== */
+  --bg-page: #eaeded;
+  --bg-card: #ffffff;
+  --bg-card-alt: #f7f8fa;
+  --bg-surface-2: #f0f1f3;
+  --bg-tint: #fff2e5;
+  --bg-tint-strong: #fff4ea;
+  --bg-tint-soft: #fff8f0;
+
+  --border: #e7e7e7;
+  --border-strong: #d5d9d9;
+  --border-soft: #ececec;
+
+  --text-primary: #0f1111;
+  --text-secondary: #565959;
+  --text-tertiary: #767676;
+  --text-muted: #9aa0a6;
+  --text-faint: #c7cad1;
+  --placeholder: #b7bbc0;
+
+  --accent: #ff6a00;
+  --accent-strong: #d1650a;
+  --accent-grad-start: #ffb84d;
+  --accent-grad-end: #ff8a00;
+  --accent-border: #d17f00;
+  --accent-text-on: #17130d;
+  --tint-text: #a0611c;
+  --tint-border: #ffd9ac;
+
+  --danger: #d13212;
+  --danger-bg: #fdecea;
+  --success: #1a9e5c;
+  --success-bg: #e7f8ef;
+  --info-bg: #e8f2fc;
+  --info-text: #0b7fc7;
+  --link: #0066c0;
+
+  --shadow-color: rgba(15, 17, 17, 0.06);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  color-scheme: light;
+}
+
+/* ===== Theme tokens (dark) ===== */
+[data-theme="dark"] {
+  --bg-page: #0b0e11;
+  --bg-card: #181a20;
+  --bg-card-alt: #1e2329;
+  --bg-surface-2: #23262c;
+  --bg-tint: rgba(255, 138, 0, 0.14);
+  --bg-tint-strong: rgba(255, 138, 0, 0.18);
+  --bg-tint-soft: rgba(255, 138, 0, 0.1);
+
+  --border: #262b33;
+  --border-strong: #2e343d;
+  --border-soft: #23262c;
+
+  --text-primary: #eaecef;
+  --text-secondary: #b6bcc4;
+  --text-tertiary: #9aa4af;
+  --text-muted: #7c848f;
+  --text-faint: #565e68;
+  --placeholder: #5e6673;
+
+  --accent: #ff8a3d;
+  --accent-strong: #ffb15c;
+  --accent-grad-start: #ffb84d;
+  --accent-grad-end: #ff8a00;
+  --accent-border: #d17f00;
+  --accent-text-on: #17130d;
+  --tint-text: #ffcf8f;
+  --tint-border: rgba(255, 138, 0, 0.35);
+
+  --danger: #ff6b5e;
+  --danger-bg: rgba(209, 50, 18, 0.18);
+  --success: #2ecc82;
+  --success-bg: rgba(26, 158, 92, 0.16);
+  --info-bg: rgba(11, 127, 199, 0.16);
+  --info-text: #63b3e8;
+  --link: #4fa8e8;
+
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --overlay: rgba(0, 0, 0, 0.75);
+
+  color-scheme: dark;
+}
+
+body,
+.acc__page,
+.ord__root,
+.vsel__root {
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 img {
@@ -22,7 +115,7 @@ img {
   object-fit: contain;
   /* border-radius: 8px; */
 }
-.start__{ 
+.start__{
   font-size: 54px !important;
 }
 
@@ -33,7 +126,7 @@ body {
   background-position: center;
   font-family: "Roboto", sans-serif;
   overflow-x: hidden;
-  background-color: #06070b;
+  background-color: var(--bg-page);
 }
 
 p {
@@ -49,7 +142,6 @@ h3 {
 h3 {
   line-height: 1.5 !important;
   margin: 0px !important;
-  color: rgb(255, 255, 255) !important;
   font-weight: 700 !important;
   font-size: 17px !important;
   padding-top: 5px;

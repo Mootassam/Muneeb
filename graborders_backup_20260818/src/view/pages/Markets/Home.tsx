@@ -1,0 +1,1080 @@
+import React, { useEffect, useState, useCallback, memo } from "react";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import vipActions from "src/modules/vip/list/vipListActions";
+import vipSelectors from "src/modules/vip/list/vipListSelectors";
+import LoadingModal from "src/shared/LoadingModal";
+import authSelectors from "src/modules/auth/authSelectors";
+import authActions from "src/modules/auth/authActions";
+import companyActions from "src/modules/company/list/companyListActions";
+import companySelectors from "src/modules/company/list/companyListSelectors";
+import { i18n } from "../../../i18n";
+import logos from "src/shared/data/logos";
+import productImages from "src/shared/data/images";
+import AnnouncementTicker from "./AnnouncementTicker";
+
+interface DataItem {
+  id: string;
+  image: string;
+  title: string;
+  Entrylimit: string;
+  levellimit: string;
+  dailyorder: string;
+  comisionrate: string;
+  commissionmergedata?: string;
+  tasksperday?: string;
+  photo?: Array<{ downloadUrl: string }>;
+}
+
+const HERO_SLIDES = productImages.slice(0, 6);
+const FEATURED_PRODUCTS = productImages.slice(10, 18);
+
+const QUICK_ACTIONS = [
+  { icon: "fa-solid fa-headphones", label: "services", link: "/Online" },
+  { icon: "fa-solid fa-calendar", label: "events", link: "/events" },
+  { icon: "fa-regular fa-building", label: "about", link: "/company" },
+  { icon: "fa-solid fa-file-contract", label: "terms", link: "/tc" },
+  { icon: "fa-solid fa-certificate", label: "certificate", link: "/Certificate" },
+  { icon: "fa-solid fa-circle-question", label: "faqs", link: "/faqs" },
+];
+
+const TRUST_ITEMS = [
+  { icon: "fa-solid fa-shield-halved", titleKey: "secureTitle", textKey: "secureText" },
+  { icon: "fa-solid fa-bolt", titleKey: "fastTitle", textKey: "fastText" },
+  { icon: "fa-solid fa-headset", titleKey: "supportTitle", textKey: "supportText" },
+  { icon: "fa-solid fa-circle-check", titleKey: "verifiedTitle", textKey: "verifiedText" },
+];
+
+const VipLevelCard = memo(({
+  item,
+  isCurrent,
+  onShowModal,
+}: {
+  item: DataItem;
+  isCurrent: boolean;
+  onShowModal: (item: DataItem) => void;
+}) => {
+  return (
+    <div
+      className={`home__vipCard ${isCurrent ? "home__vipCard--current" : ""}`}
+      onClick={() => onShowModal(item)}
+    >
+      <div className="home__vipBadge">
+        {isCurrent ? (
+          <span className="home__vipBadgeCurrent">
+            <i className="fa-solid fa-crown"></i>
+            {i18n("pages.home.currentLevel")}
+          </span>
+        ) : (
+          <span className="home__vipBadgeUpgrade">{i18n("pages.home.upgrade")}</span>
+        )}
+      </div>
+
+      <div className="home__vipImage">
+        <img src={item?.photo?.[0]?.downloadUrl} alt={item?.title} loading="lazy" />
+      </div>
+
+      <div className="home__vipTitle">{item?.title}</div>
+
+      <div className="home__vipFeature">
+        <i className="fa-solid fa-chart-line"></i>
+        {item.comisionrate}% {i18n("pages.home.profitNormal")}
+      </div>
+      <div className="home__vipFeature">
+        <i className="fa-solid fa-star"></i>
+        {item.commissionmergedata}% {i18n("pages.home.profitPremium")}
+      </div>
+      <div className="home__vipFeature">
+        <i className="fa-solid fa-box"></i>
+        {i18n("pages.home.maxOrders")} {item.tasksperday}
+      </div>
+    </div>
+  );
+});
+
+VipLevelCard.displayName = "VipLevelCard";
+
+function Home() {
+  const dispatch = useDispatch();
+  const record = useSelector(vipSelectors.selectRows);
+  const loading = useSelector(vipSelectors.selectLoading);
+  const currentUser = useSelector(authSelectors.selectCurrentUser);
+  const companyRecord = useSelector(companySelectors.selectRows);
+  const company = companyRecord?.[0];
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<DataItem | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const [showNotificationModal, setShowNotificationModal] = useState(
+    !!currentUser?.notification
+  );
+
+  useEffect(() => {
+    if (currentUser?.notification) {
+      setShowNotificationModal(true);
+    }
+  }, [currentUser?.notification]);
+
+  const fetchCompany = useCallback(() => {
+    dispatch(companyActions.doFetch());
+  }, [dispatch]);
+
+  const fetchVipData = useCallback(() => {
+    dispatch(vipActions.doFetch());
+  }, [dispatch]);
+
+  const hideModal = useCallback(() => {
+    setModalOpen(false);
+    setSelectedItem(null);
+  }, []);
+
+  const showModal = useCallback((item: DataItem) => {
+    setSelectedItem(item);
+    setModalOpen(true);
+  }, []);
+
+  const submitUpgrade = useCallback(
+    (item: DataItem) => {
+      dispatch(authActions.doUpdateProfileMobile({ vip: item }));
+      setModalOpen(false);
+      setSelectedItem(null);
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    fetchCompany();
+    fetchVipData();
+  }, [fetchCompany, fetchVipData]);
+
+  useEffect(() => {
+    const sliderInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev === HERO_SLIDES.length - 1 ? 0 : prev + 1));
+    }, 4000);
+
+    return () => clearInterval(sliderInterval);
+  }, []);
+
+  const greeting = currentUser?.fullName
+    ? `${i18n("pages.home.welcome")}, ${currentUser.fullName}`
+    : i18n("pages.home.welcomeGuest");
+
+  return (
+    <div className="home__page">
+      {/* Hero */}
+      <div className="home__hero">
+        {HERO_SLIDES.map((slide, index) => (
+          <div
+            key={slide.url}
+            className={`home__heroSlide ${index === currentSlide ? "home__heroSlide--active" : ""}`}
+            style={{ backgroundImage: `url(${slide.url})` }}
+          />
+        ))}
+
+        <div className="home__heroOverlay">
+          <div className="home__heroText">
+            <div className="home__heroGreetingRow">
+              <div className="home__heroGreeting">{greeting}</div>
+              {currentUser?.vip?.title && (
+                <span className="home__heroVipChip">
+                  <i className="fa-solid fa-crown"></i>
+                  {currentUser.vip.title}
+                </span>
+              )}
+            </div>
+            <div className="home__heroTagline">{i18n("pages.home.heroTagline")}</div>
+          </div>
+          <Link to="/vip" className="home__heroCta">
+            {i18n("pages.home.viewAllVIP")}
+            <i className="fa-solid fa-arrow-right"></i>
+          </Link>
+        </div>
+
+        <div className="home__heroDots">
+          {HERO_SLIDES.map((slide, index) => (
+            <button
+              key={slide.url}
+              type="button"
+              className={`home__heroDot ${index === currentSlide ? "home__heroDot--active" : ""}`}
+              onClick={() => setCurrentSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Account snapshot */}
+      <div className="home__snapshot">
+        <Link to="/profile" className="home__snapshotItem">
+          <div className="home__snapshotValue">
+            {currentUser?.balance?.toFixed(2) || "0.00"}
+          </div>
+          <div className="home__snapshotLabel">{i18n("pages.profile.balance")}</div>
+        </Link>
+        <span className="home__snapshotDivider"></span>
+        <Link to="/vip" className="home__snapshotItem">
+          <div className="home__snapshotValue">
+            {currentUser?.vip?.title || "—"}
+          </div>
+          <div className="home__snapshotLabel">{i18n("pages.home.levels")}</div>
+        </Link>
+        <span className="home__snapshotDivider"></span>
+        <Link to="/profile" className="home__snapshotItem">
+          <div className="home__snapshotValue">{currentUser?.score || 100}%</div>
+          <div className="home__snapshotLabel">{i18n("pages.profile.creditScore")}</div>
+        </Link>
+      </div>
+
+      <div className="home__body">
+        {/* Announcement */}
+        <AnnouncementTicker />
+
+        {/* Quick actions */}
+        <div className="home__actionsGrid">
+          {QUICK_ACTIONS.map((item) => (
+            <Link key={item.link} to={item.link} className="home__actionItem">
+              <span className="home__actionIcon">
+                <i className={item.icon}></i>
+              </span>
+              <span className="home__actionLabel">{i18n(`pages.home.${item.label}`)}</span>
+            </Link>
+          ))}
+        </div>
+
+        {/* Trust section */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.platform")}</div>
+        <div className="home__sectionTitle">{i18n("pages.home.whyChooseUs")}</div>
+        <div className="home__trustGrid">
+          {TRUST_ITEMS.map((item) => (
+            <div className="home__trustCard" key={item.titleKey}>
+              <span className="home__trustIcon">
+                <i className={item.icon}></i>
+              </span>
+              <div className="home__trustTitle">
+                {i18n(`pages.home.trust.${item.titleKey}`)}
+              </div>
+              <div className="home__trustText">
+                {i18n(`pages.home.trust.${item.textKey}`)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* VIP levels */}
+        <div className="home__sectionHeader">
+          <div>
+            <div className="home__eyebrow">{i18n("pages.home.eyebrow.membership")}</div>
+            <div className="home__sectionTitle home__sectionTitle--noMargin">
+              {i18n("pages.home.levels")}
+            </div>
+            <div className="home__sectionSubtitle">{i18n("pages.home.chooseLevel")}</div>
+          </div>
+          <Link to="/vip" className="home__sectionLink">
+            {i18n("pages.home.viewAllVIP")}
+          </Link>
+        </div>
+
+        {loading && <LoadingModal />}
+        {!loading && record && record.length > 0 && (
+          <div className="home__vipScroll">
+            {record.map((item, index) => (
+              <VipLevelCard
+                key={item.id || index}
+                item={item}
+                isCurrent={currentUser?.vip?.id === item.id}
+                onShowModal={showModal}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Featured products */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.marketplace")}</div>
+        <div className="home__sectionTitle">{i18n("pages.home.featuredTitle")}</div>
+        <div className="home__sectionSubtitle home__sectionSubtitle--block">
+          {i18n("pages.home.featuredSubtitle")}
+        </div>
+        <div className="home__productsScroll">
+          {FEATURED_PRODUCTS.map((product, index) => (
+            <div className="home__productCard" key={product.url}>
+              {index === 0 && (
+                <span className="home__productBadge">
+                  <i className="fa-solid fa-fire"></i>
+                  {i18n("pages.home.trending")}
+                </span>
+              )}
+              <img src={product.url} alt="" loading="lazy" />
+            </div>
+          ))}
+        </div>
+
+        {/* About us */}
+        <div className="home__eyebrow">{i18n("pages.home.eyebrow.company")}</div>
+        <div className="home__aboutCard">
+          <div className="home__sectionTitle home__sectionTitle--noMargin">
+            {company?.name || i18n("pages.home.aboutTitle")}
+          </div>
+          {company?.companydetails ? (
+            <div
+              className="home__aboutText"
+              dangerouslySetInnerHTML={{ __html: company.companydetails }}
+            />
+          ) : (
+            <p className="home__aboutText">{i18n("pages.home.aboutFallback")}</p>
+          )}
+        </div>
+
+        {/* Trusted partners */}
+        <div className="home__trustedLabel">{i18n("pages.home.trustedBy")}</div>
+        <div className="home__logoSlider">
+          <div className="home__logoTrack">
+            {logos.map((logo, index) => (
+              <div key={`a-${index}`} className="home__logoItem">
+                <img src={logo.url} alt="" loading="lazy" />
+              </div>
+            ))}
+            {logos.map((logo, index) => (
+              <div key={`b-${index}`} className="home__logoItem">
+                <img src={logo.url} alt="" loading="lazy" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* VIP upgrade modal */}
+      {selectedItem && modalOpen && (
+        <div className="home__modalOverlay" onClick={hideModal}>
+          <div className="home__modalCard" onClick={(e) => e.stopPropagation()}>
+            <div className="home__modalHeader">
+              <div className="home__modalTitle">{i18n("pages.home.modal.levelDetails")}</div>
+              <i className="fa-solid fa-xmark home__modalClose" onClick={hideModal}></i>
+            </div>
+
+            <div className="home__modalImage">
+              <img src={selectedItem?.photo?.[0]?.downloadUrl} alt={selectedItem?.title} loading="lazy" />
+            </div>
+
+            <div className="home__modalDetails">
+              <div className="home__modalDetailRow">
+                <i className="fa-solid fa-layer-group"></i>
+                <span className="home__modalDetailLabel">{i18n("pages.home.modal.levelLimit")}</span>
+                <span className="home__modalDetailValue">{selectedItem?.levellimit}</span>
+              </div>
+              <div className="home__modalDetailRow">
+                <i className="fa-solid fa-calendar-day"></i>
+                <span className="home__modalDetailLabel">{i18n("pages.home.modal.dailyOrders")}</span>
+                <span className="home__modalDetailValue">{selectedItem?.dailyorder}</span>
+              </div>
+              <div className="home__modalDetailRow">
+                <i className="fa-solid fa-percent"></i>
+                <span className="home__modalDetailLabel">{i18n("pages.home.modal.commissionRate")}</span>
+                <span className="home__modalDetailValue">{selectedItem?.comisionrate}%</span>
+              </div>
+            </div>
+
+            <div className="home__modalActions">
+              <button className="home__modalCancelBtn" onClick={hideModal}>
+                {i18n("pages.home.modal.cancel")}
+              </button>
+              <button className="home__modalConfirmBtn" onClick={() => submitUpgrade(selectedItem)}>
+                <i className="fa-solid fa-arrow-up"></i>
+                {i18n("pages.home.modal.upgradeNow")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin notification modal */}
+      {showNotificationModal && currentUser?.notification && (
+        <div className="home__modalOverlay" onClick={() => setShowNotificationModal(false)}>
+          <div className="home__modalCard" onClick={(e) => e.stopPropagation()}>
+            <div className="home__modalHeader">
+              <div className="home__modalTitle">
+                <i className="fa-solid fa-bell"></i>
+                {i18n("common.notification") || "Important Notice"}
+              </div>
+              <i
+                className="fa-solid fa-xmark home__modalClose"
+                onClick={() => setShowNotificationModal(false)}
+              ></i>
+            </div>
+
+            <p className="home__noticeText">{currentUser.notification}</p>
+
+            <button
+              className="home__modalConfirmBtn home__modalConfirmBtn--full"
+              onClick={() => setShowNotificationModal(false)}
+            >
+              <i className="fa-solid fa-check"></i>
+              I Understand
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .home__page {
+          background: var(--bg-page);
+          color: var(--text-primary);
+          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Hero */
+        .home__hero {
+          position: relative;
+          height: 244px;
+          overflow: hidden;
+          border-radius: 0 0 26px 26px;
+        }
+
+        .home__heroSlide {
+          position: absolute;
+          inset: 0;
+          background-size: cover;
+          background-position: center;
+          opacity: 0;
+          transition: opacity 0.6s ease;
+        }
+
+        .home__heroSlide--active {
+          opacity: 1;
+        }
+
+        .home__heroOverlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(6, 7, 11, 0.15) 0%, rgba(6, 7, 11, 0.55) 55%, rgba(6, 7, 11, 0.96) 100%);
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          padding: 18px 16px 32px;
+          gap: 12px;
+        }
+
+        .home__heroGreetingRow {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .home__heroGreeting {
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .home__heroVipChip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--bg-tint);
+          border: 1px solid var(--tint-border);
+          color: var(--accent);
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 20px;
+          flex-shrink: 0;
+        }
+
+        .home__heroTagline {
+          font-size: 12.5px;
+          color: var(--text-secondary);
+          margin-top: 3px;
+        }
+
+        .home__heroCta {
+          align-self: flex-start;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
+          font-size: 13px;
+          font-weight: 700;
+          padding: 9px 16px;
+          border-radius: 20px;
+          text-decoration: none;
+        }
+
+        .home__heroDots {
+          position: absolute;
+          top: 14px;
+          right: 16px;
+          display: flex;
+          gap: 5px;
+        }
+
+        .home__heroDot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.35);
+          border: none;
+          margin: 0;
+          padding: 0;
+          cursor: pointer;
+        }
+
+        .home__heroDot--active {
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          width: 16px;
+          border-radius: 4px;
+        }
+
+        /* Account snapshot */
+        .home__snapshot {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: stretch;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          margin: -30px 14px 20px;
+          padding: 14px 6px;
+          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .home__snapshotItem {
+          flex: 1;
+          text-align: center;
+          text-decoration: none;
+          padding: 0 4px;
+        }
+
+        .home__snapshotValue {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .home__snapshotLabel {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+          color: var(--text-muted);
+          margin-top: 4px;
+        }
+
+        .home__snapshotDivider {
+          width: 1px;
+          background: var(--border);
+          margin: 2px 0;
+        }
+
+        /* Body */
+        .home__body {
+          padding: 0 14px 24px;
+        }
+
+        .home__actionsGrid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+
+        .home__actionItem {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 14px 6px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+
+        .home__actionIcon {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          background: var(--bg-tint);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .home__actionIcon i {
+          color: var(--accent);
+          font-size: 15px;
+          filter: drop-shadow(0 0 8px var(--tint-border));
+        }
+
+        .home__actionLabel {
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          text-align: center;
+        }
+
+        .home__eyebrow {
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: var(--accent);
+          margin-bottom: 5px;
+        }
+
+        .home__sectionTitle {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 12px;
+        }
+
+        .home__sectionTitle--noMargin {
+          margin-bottom: 3px;
+        }
+
+        .home__sectionSubtitle {
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+
+        .home__sectionSubtitle--block {
+          margin-bottom: 12px;
+        }
+
+        .home__sectionHeader {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          gap: 10px;
+        }
+
+        .home__sectionLink {
+          flex-shrink: 0;
+          font-size: 11.5px;
+          font-weight: 700;
+          color: var(--accent);
+          text-decoration: none;
+          padding-top: 2px;
+        }
+
+        /* Trust */
+        .home__trustGrid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-bottom: 24px;
+        }
+
+        .home__trustCard {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 14px;
+          transition: border-color 0.2s ease;
+        }
+
+        .home__trustCard:hover {
+          border-color: var(--success-bg);
+        }
+
+        .home__trustIcon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: var(--success-bg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 10px;
+        }
+
+        .home__trustIcon i {
+          color: var(--success);
+          font-size: 15px;
+          filter: drop-shadow(0 0 8px rgba(14, 203, 129, 0.35));
+        }
+
+        .home__trustTitle {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 4px;
+        }
+
+        .home__trustText {
+          font-size: 11px;
+          color: var(--text-muted);
+          line-height: 1.5;
+        }
+
+        /* VIP scroll */
+        .home__vipScroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding-bottom: 6px;
+          margin-bottom: 24px;
+          scrollbar-width: none;
+        }
+
+        .home__vipScroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .home__vipCard {
+          flex: 0 0 148px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 12px;
+          cursor: pointer;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .home__vipCard--current {
+          border-color: var(--tint-border);
+          box-shadow: 0 10px 24px var(--bg-tint);
+        }
+
+        .home__vipBadge {
+          margin-bottom: 8px;
+        }
+
+        .home__vipBadgeCurrent {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--bg-tint);
+          color: var(--accent);
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 20px;
+        }
+
+        .home__vipBadgeUpgrade {
+          display: inline-block;
+          background: var(--border);
+          color: var(--text-muted);
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 20px;
+        }
+
+        .home__vipImage {
+          width: 100%;
+          height: 84px;
+          border-radius: 10px;
+          overflow: hidden;
+          background: #fff;
+          margin-bottom: 10px;
+        }
+
+        .home__vipImage img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .home__vipTitle {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 8px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .home__vipFeature {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 10.5px;
+          color: var(--text-muted);
+          margin-bottom: 5px;
+        }
+
+        .home__vipFeature i {
+          color: var(--accent);
+          font-size: 10px;
+          width: 12px;
+          flex-shrink: 0;
+        }
+
+        /* Featured products */
+        .home__productsScroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding-bottom: 6px;
+          margin-bottom: 24px;
+          scrollbar-width: none;
+        }
+
+        .home__productsScroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .home__productCard {
+          position: relative;
+          flex: 0 0 100px;
+          width: 100px;
+          height: 100px;
+          background: var(--bg-card-alt);
+          border-radius: 14px;
+          padding: 8px;
+          box-sizing: border-box;
+        }
+
+        .home__productCard img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+
+        .home__productBadge {
+          position: absolute;
+          top: 6px;
+          left: 6px;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
+          font-size: 8.5px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          padding: 2px 6px;
+          border-radius: 20px;
+          z-index: 1;
+        }
+
+        /* About */
+        .home__aboutCard {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px;
+          margin-bottom: 20px;
+        }
+
+        .home__aboutText {
+          font-size: 12.5px;
+          color: var(--text-muted);
+          line-height: 1.7;
+          margin: 0;
+        }
+
+        /* Logo slider */
+        .home__trustedLabel {
+          text-align: center;
+          font-size: 10.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: var(--text-faint);
+          margin-bottom: 10px;
+        }
+
+        .home__logoSlider {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px 0;
+          overflow: hidden;
+        }
+
+        .home__logoTrack {
+          display: flex;
+          align-items: center;
+          gap: 28px;
+          width: max-content;
+          animation: home__scroll 22s linear infinite;
+        }
+
+        .home__logoItem {
+          flex-shrink: 0;
+          height: 26px;
+          display: flex;
+          align-items: center;
+        }
+
+        .home__logoItem img {
+          height: 100%;
+          width: auto;
+          object-fit: contain;
+          opacity: 0.7;
+          filter: grayscale(1) brightness(2);
+        }
+
+        @keyframes home__scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+
+        /* Modals */
+        .home__modalOverlay {
+          position: fixed;
+          inset: 0;
+          background: var(--overlay);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 1000;
+        }
+
+        .home__modalCard {
+          width: 100%;
+          max-width: 360px;
+          max-height: 86vh;
+          overflow-y: auto;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          padding: 20px;
+        }
+
+        .home__modalHeader {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 16px;
+        }
+
+        .home__modalTitle {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .home__modalTitle i {
+          color: var(--accent);
+        }
+
+        .home__modalClose {
+          color: var(--text-faint);
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .home__modalClose:hover {
+          color: var(--text-primary);
+        }
+
+        .home__modalImage {
+          width: 100%;
+          height: 140px;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #fff;
+          margin-bottom: 14px;
+        }
+
+        .home__modalImage img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .home__modalDetails {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 18px;
+        }
+
+        .home__modalDetailRow {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--bg-card-alt);
+          border-radius: 10px;
+          padding: 10px 12px;
+        }
+
+        .home__modalDetailRow i {
+          color: var(--accent);
+          font-size: 13px;
+          width: 14px;
+        }
+
+        .home__modalDetailLabel {
+          flex: 1;
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+
+        .home__modalDetailValue {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .home__modalActions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .home__modalCancelBtn {
+          flex: 1;
+          margin: 0;
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          color: var(--text-primary);
+          font-size: 13px;
+          font-weight: 700;
+          padding: 12px 0;
+          cursor: pointer;
+        }
+
+        .home__modalConfirmBtn {
+          flex: 1;
+          margin: 0;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          border: none;
+          border-radius: 12px;
+          color: var(--accent-text-on);
+          font-size: 13px;
+          font-weight: 700;
+          padding: 12px 0;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .home__modalConfirmBtn--full {
+          width: 100%;
+        }
+
+        .home__noticeText {
+          font-size: 13.5px;
+          color: var(--text-secondary);
+          line-height: 1.7;
+          white-space: pre-wrap;
+          margin: 0 0 18px;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default memo(Home);

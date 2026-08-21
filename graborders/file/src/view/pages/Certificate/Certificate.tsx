@@ -1,0 +1,33 @@
+import React, { useEffect } from "react";
+import SubHeader from "src/view/shared/Header/SubHeader";
+import actions from "src/modules/company/list/companyListActions";
+import selectors from "src/modules/company/list/companyListSelectors";
+import { useDispatch, useSelector } from "react-redux";
+import LoadingModal from "src/shared/LoadingModal";
+import { i18n } from "../../../i18n";
+
+function Tc() {
+  const dispatch = useDispatch();
+
+  const record = useSelector(selectors.selectRows);
+  const loading = useSelector(selectors.selectLoading);
+
+  const doFetch = () => {
+    dispatch(actions.doFetch());
+  };
+
+  useEffect(() => {
+    doFetch();
+  }, [dispatch]);
+
+  return (
+    <div>
+      <SubHeader title={i18n('pages.actions.certificate')} path="/" />
+      <div className="detaill__company" style={{ whiteSpace: "pre-line" }}>
+        <img src="/images/Certificate.jpg" />
+      </div>
+    </div>
+  );
+}
+
+export default Tc;

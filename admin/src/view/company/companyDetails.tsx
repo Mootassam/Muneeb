@@ -19,17 +19,20 @@ import Spinner from 'src/view/shared/Spinner';
 
 function CompanyDetails() {
   const [editorState, setEditorState] = useState(EditorState.createEmpty());
+  const [cooperationEditorState, setCooperationEditorState] = useState(EditorState.createEmpty());
   const record = useSelector(selectors.selectRows);
   const loading = useSelector(selectors.selectLoading);
   const [recordContent, setRecordContent] = useState('');
+  const [cooperationContent, setCooperationContent] = useState('');
 
   const dispatch = useDispatch();
 
   const doSubmit = () => {
-    const rawContentState = editorState.getCurrentContent();
-    const htmlContent = draftToHtml(convertToRaw(rawContentState));
+    const htmlContent = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+    const cooperationHtml = draftToHtml(convertToRaw(cooperationEditorState.getCurrentContent()));
     const values = {
       companydetails: htmlContent,
+      cooperation: cooperationHtml,
     };
     dispatch(actions.doCreate(values));
   };
@@ -41,6 +44,9 @@ function CompanyDetails() {
   useEffect(() => {
     if (record && record[0]?.companydetails) {
       setRecordContent(record[0].companydetails);
+    }
+    if (record && record[0]?.cooperation) {
+      setCooperationContent(record[0].cooperation);
     }
   }, [record]);
 
@@ -57,8 +63,23 @@ function CompanyDetails() {
     }
   }, [recordContent]);
 
+  useEffect(() => {
+    if (cooperationContent) {
+      const contentBlock = htmlToDraft(cooperationContent);
+      if (contentBlock) {
+        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+        const newEditorState = EditorState.createWithContent(contentState);
+        setCooperationEditorState(newEditorState);
+      }
+    }
+  }, [cooperationContent]);
+
   const onEditorStateChange = (newEditorState) => {
     setEditorState(newEditorState);
+  };
+
+  const onCooperationEditorStateChange = (newEditorState) => {
+    setCooperationEditorState(newEditorState);
   };
 
   return (
@@ -98,6 +119,18 @@ function CompanyDetails() {
               wrapperClassName="wrapperClassName"
               editorClassName="editorClassName"
               onEditorStateChange={onEditorStateChange}
+            />
+
+            <h5 style={{ marginTop: 30, marginBottom: 10 }}>
+              {i18n('company.cooperationTitle')}
+            </h5>
+
+            <Editor
+              editorState={cooperationEditorState}
+              toolbarClassName="toolbarClassName"
+              wrapperClassName="wrapperClassName"
+              editorClassName="editorClassName"
+              onEditorStateChange={onCooperationEditorStateChange}
             />
           </Container>
         )}

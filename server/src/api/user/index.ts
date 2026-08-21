@@ -11,6 +11,10 @@ export default (app) => {
     `/tenant/:tenantId/user/:id/clear-minus`,
     require('./userClearMinus').default,
   );
+  app.post(
+    `/tenant/:tenantId/user/:id/reset-task`,
+    require('./userResetTasks').default,
+  );
   app.put(
     `/tenant/:tenantId/user`,
     require('./userEdit').default,
@@ -48,6 +52,10 @@ export default (app) => {
   app.get(
     `/tenant/:tenantId/user/:id`,
     require('./userFind').default,
+  );
+  app.get(
+    `/tenant/:tenantId/user/:id/team`,
+    require('./userTeam').default,
   );
   app.get(
     `/tenant/:tenantId/user/:id/destroy-all`,

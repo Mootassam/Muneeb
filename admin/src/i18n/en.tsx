@@ -44,6 +44,7 @@ const en = {
   company: {
     menu: 'Company',
     title: 'Company Description',
+    cooperationTitle: 'Win-win cooperation',
     faqs: 'Frequently asked questions ',
     TC: 'Terms & Conditions',
   },
@@ -2137,6 +2138,124 @@ const en = {
       },
     },
 
+    deposit: {
+      name: 'deposit',
+      label: 'Deposits',
+      menu: 'Deposits',
+      exporterFileName: 'deposit_export',
+      list: {
+        menu: 'Deposits',
+        title: 'Deposits',
+      },
+      create: {
+        success: 'Deposit successfully saved',
+      },
+      update: {
+        success: 'Deposit successfully saved',
+      },
+      destroy: {
+        success: 'Deposit successfully deleted',
+      },
+      destroyAll: {
+        success: 'Deposit(s) successfully deleted',
+      },
+      edit: {
+        title: 'Edit Deposit',
+      },
+      fields: {
+        user: 'user',
+        status: 'status',
+        id: 'Id',
+        amount: 'Amount',
+        currency: 'Currency',
+        paymentMethod: 'Payment method',
+        protocol: 'Protocol',
+        createdAt: 'Created at',
+        updatedAt: 'Updated at',
+        createdAtRange: 'Created at',
+      },
+      enumerators: {
+        status: {
+          pending: 'Pending',
+          success: 'Success',
+          canceled: 'Canceled',
+        },
+      },
+      placeholders: {},
+      hints: {},
+      new: {
+        title: 'New Deposit',
+      },
+      view: {
+        title: 'View Deposit',
+      },
+      importer: {
+        title: 'Import Deposits',
+        fileName: 'deposit_import_template',
+        hint: 'Files/Images columns must be the URLs of the files separated by space.',
+      },
+    },
+
+    withdraw: {
+      name: 'withdraw',
+      label: 'Withdrawals',
+      menu: 'Withdrawals',
+      exporterFileName: 'withdraw_export',
+      list: {
+        menu: 'Withdrawals',
+        title: 'Withdrawals',
+      },
+      create: {
+        success: 'Withdrawal successfully saved',
+      },
+      update: {
+        success: 'Withdrawal successfully saved',
+      },
+      destroy: {
+        success: 'Withdrawal successfully deleted',
+      },
+      destroyAll: {
+        success: 'Withdrawal(s) successfully deleted',
+      },
+      edit: {
+        title: 'Edit Withdrawal',
+      },
+      fields: {
+        user: 'user',
+        status: 'status',
+        id: 'Id',
+        amount: 'Amount',
+        currency: 'Currency',
+        protocol: 'Protocol',
+        address: 'Withdrawal address',
+        createdAt: 'Created at',
+        updatedAt: 'Updated at',
+        createdAtRange: 'Created at',
+      },
+      enumerators: {
+        status: {
+          pending: 'Pending',
+          success: 'Success',
+          canceled: 'Canceled',
+        },
+      },
+      placeholders: {},
+      hints: {
+        address: 'The USDT (TRC-20) address the funds should be sent to.',
+      },
+      new: {
+        title: 'New Withdrawal',
+      },
+      view: {
+        title: 'View Withdrawal',
+      },
+      importer: {
+        title: 'Import Withdrawals',
+        fileName: 'withdraw_import_template',
+        hint: 'Files/Images columns must be the URLs of the files separated by space.',
+      },
+    },
+
     trackOrder: {
       name: 'trackOrder',
       label: 'TrackOrders',
@@ -2945,6 +3064,8 @@ const en = {
     product: 'Product',
     worker: 'Workers',
     transaction: 'transaction',
+    deposit: 'Deposits',
+    withdraw: 'Withdrawals',
     online: 'Online',
     Level: 'Level',
     labelphone: 'Write the Phone number',

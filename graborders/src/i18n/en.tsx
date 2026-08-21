@@ -58,6 +58,7 @@ const en = {
       chooseLevel: "Choose your level to maximize your earnings",
       welcome: "Welcome back",
       welcomeGuest: "Welcome",
+      dashboardSubtitle: "Welcome to your dashboard",
       heroTagline: "Shop smarter, earn faster",
       viewAllVIP: "View All VIP",
       showLess: "Show Less",
@@ -68,6 +69,28 @@ const en = {
       terms: "T&C",
       certificate: "Certificate",
       faqs: "FAQs",
+
+      // Quick actions (dashboard)
+      quickActions: {
+        recharge: "Recharge",
+        withdraw: "Withdraw",
+        teams: "Teams",
+        invitation: "Invitation"
+      },
+
+      // Platform introduction
+      platformIntro: {
+        title: "Platform Introduction",
+        profileTitle: "Platform profile",
+        profileText: "MALL is an intelligent cloud global order matching center.",
+        rulesTitle: "Platform rules",
+        rulesText: "About recharge system and rules.",
+        cooperationTitle: "Win-win cooperation",
+        cooperationText: "Cooperation between users and merchants.",
+        instructionsTitle: "Instructions for use",
+        instructionsText: "Usage guidelines and platform rules.",
+        emptyContent: "This content will be added soon."
+      },
 
       // VIP Level Cards
       currentLevel: "Current",
@@ -150,12 +173,51 @@ const en = {
       upgradeNow: "Upgrade Now",
       upgrading: "Upgrading..."
     },
+    vipSelect: {
+      title: "Start Task",
+      activeBadge: "Active",
+      tapToStart: "Start Task",
+      lockedHint: "Not your current plan",
+      upsellTitle: "Want higher rewards?",
+      upsellSub: "Explore all VIP levels and upgrade",
+      noResults: "No VIP levels found",
+
+      joinVip: "Join VIP",
+      joining: "Joining...",
+      requiresBalance: "Requires {0} {1} balance",
+      qualified: "You qualify",
+      currency: "USD",
+      joinSuccess: "You've successfully joined {0}!",
+
+      insufficientModal: {
+        title: "Insufficient Balance",
+        message: "You need at least {0} {1} to join {2}. Your current balance is {3} {1}.",
+        depositNow: "Deposit Now",
+        cancel: "Maybe Later"
+      }
+    },
+    invitation: {
+      title: "Invitation",
+      heroTitle: "Invite & Earn",
+      heroSubtitle: "Share your referral code with friends and earn rewards when they join",
+      codeLabel: "My Referral Code",
+      copyButton: "Copy Referral Code",
+      howItWorks: "How It Works",
+      steps: {
+        shareTitle: "Share your code",
+        shareText: "Send your referral code to friends and family",
+        joinTitle: "They join",
+        joinText: "Your friend signs up using your code",
+        earnTitle: "You both earn",
+        earnText: "Get rewarded once their account is active"
+      }
+    },
     tabBottomNavigator: {
       home: "Home",
       grap: "Start Task",
       records: "Orders",
       starting: "starting",
-      customerService: "Customer Service",
+      customerService: "Support",
       myProfile: "My Profile"
     },
     profile: {
@@ -225,6 +287,20 @@ const en = {
 
       // Placeholders
       notAvailable: "—"
+    },
+
+    teamNetwork: {
+      title: "My Team",
+      currency: "USD",
+      totalInvited: "Total Invited",
+      totalEarned: "Total Earned",
+      eyebrow: "Team",
+      membersTitle: "Team Members",
+      invited: "invited",
+      joined: "Joined",
+      emptyTitle: "No team members yet",
+      emptySubtitle: "Invite friends to start building your team",
+      inviteFriends: "Invite Friends"
     },
 
     language: {
@@ -304,6 +380,7 @@ const en = {
     },
 
     portfolio: {
+      title: "Orders",
       // Status Tabs
       completed: "Completed",
       pending: "Pending",
@@ -339,13 +416,21 @@ const en = {
       confirmPassword: "Confirm Password",
       submit: "Submit",
       note: "Please fill out this information carefully",
-      requiredField: "*"
+      requiredField: "*",
+      secured: "Secured · 256-bit encryption"
     },
 
 
     deposit: {
       title: "Deposit",
       chooseCurrency: "Choose Currency",
+      paymentMethod: "Payment method",
+      selectProtocol: "Select the protocol to use",
+      currencySelection: "Currency selection",
+      minAmountHint: "Deposit amount must be greater than {0} {1}",
+      estimatedPayment: "Estimated payment: {0} {1}",
+      referenceRate: "Reference rate: 1 {0} ≈ 1 {0}",
+      disclaimer: "The payment amount and exchange rate are subject to the actual payment",
       depositAddress: "Deposit Address",
       addressUnavailable: "This address hasn't been configured yet. Please contact customer service.",
       copy: "Copy",
@@ -368,6 +453,11 @@ const en = {
     withdraw: {
       title: "Withdraw",
       announcement:"The minimum withdrawal amount is $50. All withdrawals are processed and completed within one hour.",
+      network: "Network",
+      withdrawAddress: "Withdrawal address",
+      withdrawAddressPlaceholder: "Enter your USDT (TRC-20) address",
+      addressRequired: "Please enter a valid withdrawal address",
+      success: "Withdrawal request submitted, awaiting confirmation.",
       withdrawAmount: "Withdraw Amount",
       withdrawPassword: "Withdraw Password",
       availableBalance: "Available balance",
@@ -419,7 +509,11 @@ const en = {
       // Notice Section
       notice: "Notice",
       supportHours: "Online Support Hours 10:00 - 22:00",
-      contactSupport: "Please contact online support for your assistance!"
+      contactSupport: "Please contact online support for your assistance!",
+
+      // Insufficient balance banner
+      insufficientBalance: "Insufficient balance! You need to deposit:",
+      depositNow: "Deposit Now"
     },
 
     grapModal: {
@@ -480,6 +574,10 @@ const en = {
         deposit: "+${0}",
         withdraw: "-${0}",
         canceled: "${0}"
+      },
+      empty: {
+        title: "No transactions yet",
+        subtitle: "There's no transactions till now!"
       }
     },
 

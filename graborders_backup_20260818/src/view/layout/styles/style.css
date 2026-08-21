@@ -1,0 +1,126 @@
+.app__header {
+  background-color: #1d1d1d;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  align-content: center;
+  justify-content: space-between;
+  padding-left: 5%;
+  padding-right: 5%;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.header__search {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  align-items: flex-end;
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+
+.children__content {
+  align-items: center;
+  justify-content: center;
+  max-width: 400px;
+  margin: auto;
+
+  margin-bottom: 60px;
+}
+
+.page__name {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* styles the tabbarBottom */
+.tabbottomNavigator {
+  position: fixed;
+  background-color: #181a20;
+  border-top: 1px solid #23262c;
+  width: 100%;
+  height: 58px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  z-index: 100;
+  bottom: 0;
+  max-width: 400px;
+  margin: auto;
+  left: 0;
+  right: 0;
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.5);
+}
+
+.tabLink {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.singleTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: 76px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.singleTab i {
+  font-size: 18px;
+  color: #5e6673;
+  transition: color 0.15s ease;
+}
+
+.singleTab i.active {
+  color: #f0b90b;
+}
+
+.text__link {
+  color: #5e6673;
+  font-family: "Poppins", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin: 0;
+  transition: color 0.15s ease;
+}
+
+.text__link.active {
+  color: #f0b90b;
+  font-weight: 600;
+}
+
+.left__header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* stylign the company and the detaisl  */
+
+.detaill__company {
+  background-color: #fff;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 10px;
+}

@@ -36,6 +36,10 @@ function ChangePassword() {
     newPasswordConfirmation: "",
   }));
 
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const form = useForm({
     resolver: yupResolver(schema),
     mode: "all",
@@ -54,56 +58,72 @@ function ChangePassword() {
 
       <div className="sec__page">
         <div className="sec__card">
-          <div className="sec__header">
-            <span className="sec__headerIcon">
-              <i className="fa-solid fa-shield-halved"></i>
-            </span>
-            <div>
-              <div className="sec__headerTitle">
-                {i18n('pages.changePassword.header')}
-              </div>
-              <div className="sec__headerSubtitle">
-                {i18n('pages.changePassword.subtitle')}
-              </div>
-            </div>
-          </div>
-
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="sec__formGroup">
                 <label className="sec__label" htmlFor="oldPassword">
                   {i18n('pages.changePassword.oldPassword')}
                 </label>
-                <InputFormItem
-                  type="password"
-                  name="oldPassword"
-                  autoComplete="old-password"
-                  className="sec__input"
-                />
+                <div className="sec__inputWrap">
+                  <InputFormItem
+                    type={showOld ? "text" : "password"}
+                    name="oldPassword"
+                    autoComplete="old-password"
+                    className="sec__input"
+                  />
+                  <button
+                    type="button"
+                    className="sec__eyeBtn"
+                    onClick={() => setShowOld((v) => !v)}
+                    aria-label="Toggle password visibility"
+                  >
+                    <i className={`fa-regular ${showOld ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
               </div>
 
               <div className="sec__formGroup">
                 <label className="sec__label" htmlFor="newPassword">
                   {i18n('pages.changePassword.newPassword')}
                 </label>
-                <InputFormItem
-                  type="password"
-                  name="newPassword"
-                  autoComplete="new-password"
-                  className="sec__input"
-                />
+                <div className="sec__inputWrap">
+                  <InputFormItem
+                    type={showNew ? "text" : "password"}
+                    name="newPassword"
+                    autoComplete="new-password"
+                    className="sec__input"
+                  />
+                  <button
+                    type="button"
+                    className="sec__eyeBtn"
+                    onClick={() => setShowNew((v) => !v)}
+                    aria-label="Toggle password visibility"
+                  >
+                    <i className={`fa-regular ${showNew ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
               </div>
 
               <div className="sec__formGroup">
                 <label className="sec__label" htmlFor="newPasswordConfirmation">
                   {i18n('pages.changePassword.confirmPassword')}
                 </label>
-                <InputFormItem
-                  type="password"
-                  name="newPasswordConfirmation"
-                  autoComplete="new-password"
-                  className="sec__input"
-                />
+                <div className="sec__inputWrap">
+                  <InputFormItem
+                    type={showConfirm ? "text" : "password"}
+                    name="newPasswordConfirmation"
+                    autoComplete="new-password"
+                    className="sec__input"
+                  />
+                  <button
+                    type="button"
+                    className="sec__eyeBtn"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    aria-label="Toggle password visibility"
+                  >
+                    <i className={`fa-regular ${showConfirm ? "fa-eye-slash" : "fa-eye"}`}></i>
+                  </button>
+                </div>
               </div>
 
               <button
@@ -123,14 +143,20 @@ function ChangePassword() {
             </form>
           </FormProvider>
         </div>
+
+        <div className="sec__secured">
+          <i className="fa-solid fa-lock"></i>
+          {i18n('pages.changePassword.secured')}
+        </div>
       </div>
 
       <style>{`
         .sec__page {
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           display: flex;
-          justify-content: center;
+          flex-direction: column;
+          align-items: center;
           padding: 20px 14px 100px;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -138,46 +164,11 @@ function ChangePassword() {
         .sec__card {
           max-width: 400px;
           width: 100%;
-          background: #14151d;
+          background: var(--bg-card);
           padding: 22px 18px 26px;
           border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          color: #eaecef;
-        }
-
-        .sec__header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 22px;
-        }
-
-        .sec__headerIcon {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
-          background: rgba(240, 185, 11, 0.12);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .sec__headerIcon i {
-          color: #f0b90b;
-          font-size: 17px;
-        }
-
-        .sec__headerTitle {
-          font-size: 16px;
-          font-weight: 700;
-          color: #f5f6f8;
-        }
-
-        .sec__headerSubtitle {
-          font-size: 12px;
-          color: #848e9c;
-          margin-top: 2px;
+          color: var(--text-primary);
+          box-shadow: 0 8px 20px var(--shadow-color);
         }
 
         .sec__page .sec__formGroup,
@@ -187,44 +178,66 @@ function ChangePassword() {
 
         .sec__label {
           display: block;
-          font-size: 12px;
-          color: #848e9c;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--text-primary);
           margin-bottom: 8px;
+        }
+
+        .sec__inputWrap {
+          position: relative;
         }
 
         .sec__page .sec__input {
           width: 100%;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 12px;
-          padding: 12px 14px;
+          padding: 12px 40px 12px 14px;
           font-size: 14px;
-          color: #eaecef;
+          color: var(--text-primary);
           outline: none;
           box-sizing: border-box;
         }
 
         .sec__page .sec__input:focus {
-          border-color: #f0b90b;
+          border-color: var(--accent);
         }
 
         .sec__page .sec__input::placeholder {
-          color: #5e6673;
+          color: var(--text-faint);
         }
 
         .sec__page .sec__input.__danger {
-          border-color: #f6465d;
+          border-color: var(--danger);
+        }
+
+        .sec__eyeBtn {
+          position: absolute;
+          top: 50%;
+          right: 12px;
+          transform: translateY(-50%);
+          margin: 0;
+          padding: 0;
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          font-size: 15px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .sec__page .invalid-feedback {
           display: block;
-          color: #f6465d;
+          color: var(--danger);
           font-size: 11.5px;
           margin-top: 6px;
         }
 
         .sec__page .form-text {
-          color: #5e6673;
+          color: var(--text-faint);
           font-size: 11px;
           margin-top: 6px;
         }
@@ -232,10 +245,10 @@ function ChangePassword() {
         .sec__submitBtn {
           width: 100%;
           margin: 6px 0 0;
-          background: #f0b90b;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
           border: none;
           border-radius: 14px;
-          color: #0b0e11;
+          color: var(--accent-text-on);
           font-size: 15px;
           font-weight: 700;
           padding: 13px 0;
@@ -247,8 +260,8 @@ function ChangePassword() {
         }
 
         .sec__submitBtn:disabled {
-          background: #3a3d26;
-          color: #6b6f5a;
+          background: var(--bg-surface-2);
+          color: var(--text-faint);
           cursor: not-allowed;
         }
 
@@ -256,12 +269,12 @@ function ChangePassword() {
           width: 16px;
           height: 16px;
           border: 2px solid rgba(11, 14, 17, 0.25);
-          border-top-color: #0b0e11;
+          border-top-color: var(--accent-text-on);
         }
 
         .sec__submitBtn:disabled .spinner {
-          border-color: rgba(107, 111, 90, 0.35);
-          border-top-color: #6b6f5a;
+          border-color: var(--border-strong);
+          border-top-color: var(--text-faint);
         }
 
         .sec__note {
@@ -270,13 +283,23 @@ function ChangePassword() {
           gap: 8px;
           margin-top: 16px;
           font-size: 11.5px;
-          color: #5e6673;
+          color: var(--text-faint);
           line-height: 1.6;
         }
 
         .sec__note i {
-          color: #848e9c;
+          color: var(--text-muted);
           margin-top: 1px;
+        }
+
+        .sec__secured {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 16px;
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--accent);
         }
       `}</style>
     </div>

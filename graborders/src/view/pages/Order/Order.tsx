@@ -51,16 +51,12 @@ function Portfolio() {
 
         return (
           <div className="ord__card" key={`${item.id}-${index}`}>
-            <div className={`ord__badge ord__badge--${item?.status}`}>
-              {i18n(`pages.portfolio.status.${item?.status}`)}
-            </div>
-
-            <div className="ord__meta">
-              <span>
-                {i18n("pages.portfolio.orderTime")}: {Dates.currentDate(item?.date)}
+            <div className="ord__cardHead">
+              <span className={`ord__badge ord__badge--${item?.status}`}>
+                {i18n(`pages.portfolio.status.${item?.status}`)}
               </span>
-              <span>
-                {i18n("pages.portfolio.orderNumber")}: {item.number}
+              <span className="ord__orderNumber">
+                {i18n("pages.portfolio.orderNumber")} #{item.number}
               </span>
             </div>
 
@@ -83,8 +79,14 @@ function Portfolio() {
                 <div className="ord__productQty">
                   {i18n("pages.portfolio.quantity")}
                 </div>
+                <div className="ord__productDate">
+                  <i className="fa-regular fa-clock"></i>
+                  {Dates.currentDate(item?.date)}
+                </div>
               </div>
             </div>
+
+            <div className="ord__divider" />
 
             <div className="ord__stats">
               <div className="ord__stat">
@@ -106,12 +108,12 @@ function Portfolio() {
                 </span>
               </div>
 
-              <div className="ord__stat">
+              <div className="ord__stat ord__stat--right">
                 <span className="ord__statLabel">
                   {i18n("pages.portfolio.estimatedReturn")}
                 </span>
                 <span className="ord__statValue ord__statValue--accent">
-                  {estimatedReturn} {i18n("pages.portfolio.currency")}
+                  +{estimatedReturn} {i18n("pages.portfolio.currency")}
                 </span>
               </div>
             </div>
@@ -132,20 +134,22 @@ function Portfolio() {
 
   return (
     <div className="ord__page">
-      <div className="ord__glow" />
-
       <div className="ord__wrap">
+        <h1 className="ord__title">{i18n("pages.portfolio.title")}</h1>
+
         <div className="ord__tabs">
           <button
             className={`ord__tab ${active === "completed" ? "ord__tab--active" : ""}`}
             onClick={() => setActive("completed")}
           >
+            <i className="fa-solid fa-circle-check"></i>
             {i18n("pages.portfolio.completed")}
           </button>
           <button
             className={`ord__tab ${active === "pending" ? "ord__tab--active" : ""}`}
             onClick={() => setActive("pending")}
           >
+            <i className="fa-solid fa-hourglass-half"></i>
             {i18n("pages.portfolio.pending")}
           </button>
         </div>
@@ -162,132 +166,131 @@ function Portfolio() {
         .ord__page {
           position: relative;
           min-height: 100vh;
-          background: #06070b;
+          background: var(--bg-page);
           padding: 20px 0 40px;
           font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        .ord__glow {
-          position: absolute;
-          top: -140px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 680px;
-          height: 320px;
-          background: radial-gradient(ellipse at center, rgba(240, 185, 11, 0.08), transparent 70%);
-          filter: blur(20px);
-          pointer-events: none;
-          z-index: 0;
-        }
-
         .ord__wrap {
           position: relative;
-          z-index: 1;
           max-width: 400px;
           margin: 0 auto;
           padding: 0 16px;
         }
 
+        .ord__title {
+          font-size: 26px;
+          font-weight: 800;
+          color: var(--text-primary);
+          margin: 4px 0 16px;
+        }
+
         .ord__tabs {
           display: flex;
-          gap: 6px;
-          background: #14151d;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 12px;
-          padding: 5px;
+          gap: 10px;
           margin-bottom: 18px;
         }
 
         .ord__tab {
           flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
           margin: 0;
-          border: none;
-          background: transparent;
-          color: #848e9c;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          color: var(--text-muted);
           font-family: "Poppins", sans-serif;
-          font-size: 13.5px;
-          font-weight: 600;
-          padding: 10px 0;
-          border-radius: 9px;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 12px 0;
+          border-radius: 999px;
           cursor: pointer;
+          box-shadow: 0 4px 12px var(--shadow-color);
           transition: background-color 0.15s ease, color 0.15s ease;
         }
 
+        .ord__tab i {
+          font-size: 11.5px;
+        }
+
         .ord__tab--active {
-          background: #f0b90b;
-          color: #0b0e11;
+          border-color: transparent;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
         }
 
         .ord__list {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
 
         .ord__card {
-          position: relative;
-          background: #14151d;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
+          background: var(--bg-card);
+          border-radius: 20px;
           padding: 16px;
           display: flex;
           flex-direction: column;
           gap: 14px;
+          box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        .ord__cardHead {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
         }
 
         .ord__badge {
-          position: absolute;
-          top: 14px;
-          right: 14px;
+          flex-shrink: 0;
           padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 700;
+          border-radius: 999px;
+          font-size: 10.5px;
+          font-weight: 800;
           text-transform: uppercase;
           letter-spacing: 0.3px;
         }
 
         .ord__badge--completed {
-          background: rgba(14, 203, 129, 0.12);
-          color: #0ecb81;
+          background: var(--success-bg);
+          color: var(--success);
         }
 
         .ord__badge--pending {
-          background: rgba(240, 185, 11, 0.12);
-          color: #f0b90b;
+          background: var(--bg-tint);
+          color: var(--accent);
         }
 
         .ord__badge--canceled,
         .ord__badge--frozen {
-          background: rgba(246, 70, 93, 0.12);
-          color: #f6465d;
+          background: var(--danger-bg);
+          color: var(--danger);
         }
 
-        .ord__meta {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          font-size: 12px;
-          color: #5e6673;
-          max-width: 75%;
+        .ord__orderNumber {
+          font-size: 11.5px;
+          color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
         }
 
         .ord__product {
           display: flex;
           gap: 14px;
           align-items: center;
-          padding: 12px;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 12px;
         }
 
         .ord__thumb {
-          width: 60px;
-          height: 60px;
-          border-radius: 10px;
+          width: 58px;
+          height: 58px;
+          border-radius: 12px;
           overflow: hidden;
-          background: #1a1c26;
+          background: var(--bg-card-alt);
           flex-shrink: 0;
         }
 
@@ -300,14 +303,14 @@ function Portfolio() {
         .ord__productInfo {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 5px;
           min-width: 0;
         }
 
         .ord__productName {
-          font-size: 14.5px;
-          font-weight: 600;
-          color: #eaecef;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -315,12 +318,51 @@ function Portfolio() {
 
         .ord__productQty {
           font-size: 12px;
-          color: #5e6673;
+          color: var(--text-muted);
+        }
+
+        .ord__productDate {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          color: var(--text-muted);
+        }
+
+        .ord__productDate i {
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+
+        .ord__divider {
+          position: relative;
+          border-top: 1px dashed var(--border-strong);
+        }
+
+        .ord__divider::before,
+        .ord__divider::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--bg-page);
+          transform: translateY(-50%);
+        }
+
+        .ord__divider::before {
+          left: -24px;
+        }
+
+        .ord__divider::after {
+          right: -24px;
         }
 
         .ord__stats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
           gap: 8px;
         }
 
@@ -330,19 +372,24 @@ function Portfolio() {
           gap: 4px;
         }
 
+        .ord__stat--right {
+          align-items: flex-end;
+          text-align: right;
+        }
+
         .ord__statLabel {
           font-size: 11px;
-          color: #5e6673;
+          color: var(--text-muted);
         }
 
         .ord__statValue {
-          font-size: 13px;
-          font-weight: 600;
-          color: #eaecef;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: var(--text-primary);
         }
 
         .ord__statValue--accent {
-          color: #f0b90b;
+          color: var(--success);
         }
 
         .ord__submitBtn {
@@ -351,8 +398,8 @@ function Portfolio() {
           border: none;
           border-radius: 14px;
           padding: 11px;
-          background: #f0b90b;
-          color: #0b0e11;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
           font-family: "Poppins", sans-serif;
           font-size: 14px;
           font-weight: 700;
@@ -361,17 +408,11 @@ function Portfolio() {
         }
 
         .ord__submitBtn:hover {
-          background: #f8d12f;
+          background: var(--accent-grad-start);
         }
 
         .ord__submitBtn:active {
           transform: translateY(1px);
-        }
-
-        @media (max-width: 480px) {
-          .ord__stats {
-            grid-template-columns: repeat(2, 1fr);
-          }
         }
       `}</style>
     </div>

@@ -1,0 +1,40 @@
+export default (app) => {
+  app.post(
+    `/tenant/:tenantId/deposit`,
+    require("./depositCreate").default
+  );
+  app.put(
+    `/tenant/:tenantId/deposit/:id`,
+    require("./depositUpdate").default
+  );
+  app.post(
+    `/tenant/:tenantId/deposit/import`,
+    require("./depositImport").default
+  );
+
+  app.post(
+    `/tenant/:tenantId/depositStatus`,
+    require("./depositStatus").default
+  );
+  app.delete(
+    `/tenant/:tenantId/deposit`,
+    require("./depositDestroy").default
+  );
+  app.get(
+    `/tenant/:tenantId/deposit/autocomplete`,
+    require("./depositAutocomplete").default
+  );
+  app.get(
+    `/tenant/:tenantId/deposit`,
+    require("./depositList").default
+  );
+
+  app.get(
+    `/tenant/:tenantId/deposit/byUser`,
+    require("./depositByUser").default
+  );
+  app.get(
+    `/tenant/:tenantId/deposit/:id`,
+    require("./depositFind").default
+  );
+};

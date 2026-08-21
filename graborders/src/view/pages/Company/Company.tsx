@@ -1,35 +1,14 @@
-import React, { useEffect } from "react";
-import SubHeader from "src/view/shared/Header/SubHeader";
-import actions from 'src/modules/company/list/companyListActions'
-import selectors from 'src/modules/company/list/companyListSelectors' 
-import { useDispatch, useSelector } from "react-redux";
-import LoadingModal from "src/shared/LoadingModal";
+import React from "react";
+import PlatformInfoPage from "src/view/shared/PlatformInfoPage";
 import { i18n } from "../../../i18n";
 
 function Company() {
-  const dispatch = useDispatch();
-
-  const record = useSelector(selectors.selectRows); 
-  const loading = useSelector(selectors.selectLoading);
-
-  const doFetch = () => { 
-    dispatch(actions.doFetch());
-  };
-
-  useEffect(() => {
-    doFetch();
-  }, [dispatch]);
-
   return (
-    <div>
-      <SubHeader title={i18n('pages.actions.company')} path="/" />
-      <div className="detaill__company" style={{ whiteSpace: 'pre-line' }}>
-      {loading && <LoadingModal />}
-        {record && record[0]?.companydetails && (
-          <p dangerouslySetInnerHTML={{ __html: record[0]?.companydetails }}  style={{color:"black"}}/>
-        )}
-      </div>
-    </div>
+    <PlatformInfoPage
+      title={i18n("pages.home.platformIntro.profileTitle")}
+      icon="fa-solid fa-shop"
+      field="companydetails"
+    />
   );
 }
 

@@ -69,6 +69,22 @@ export default class UserService {
     return response.data;
   }
 
+  static async resetTasks(userId) {
+    const tenantId = AuthCurrentTenant.get();
+    const response = await authAxios.post(
+      `/tenant/${tenantId}/user/${userId}/reset-task`,
+    );
+    return response.data;
+  }
+
+  static async getTeam(userId) {
+    const tenantId = AuthCurrentTenant.get();
+    const response = await authAxios.get(
+      `/tenant/${tenantId}/user/${userId}/team`,
+    );
+    return response.data;
+  }
+
   static async createDirect(data) {
     const tenantId = AuthCurrentTenant.get();
 

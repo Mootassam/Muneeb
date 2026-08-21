@@ -5,6 +5,8 @@ const models = [
   require('./user').default,
   require('./category').default,
   require('./transaction').default,
+  require('./deposit').default,
+  require('./withdraw').default,
   require('./social').default,
   require('./vip').default,
   require('./product').default,

@@ -33,6 +33,9 @@ export default (database) => {
       faqs: {
         type: String,
       },
+      cooperation: {
+        type: String,
+      },
       photo: [FileSchema],
       tenant: {
         type: Schema.Types.ObjectId,

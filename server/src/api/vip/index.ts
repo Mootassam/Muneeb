@@ -27,4 +27,8 @@ export default (app) => {
     `/tenant/:tenantId/vip/:id`,
     require('./vipFind').default,
   );
+  app.post(
+    `/tenant/:tenantId/vip/:id/join`,
+    require('./vipJoin').default,
+  );
 };

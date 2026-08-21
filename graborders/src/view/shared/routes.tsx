@@ -16,6 +16,12 @@ const privateRoutes = [
     exact: true,
   },
   {
+    path: "/vip-select",
+    loader: () => import("src/view/pages/Vip/VipSelect"),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
     path: "/Order",
     loader: () => import("src/view/pages/Order/Order"),
     permissionRequired: permissions.categoryRead,
@@ -80,6 +86,12 @@ const screenRoutes = [
     exact: true,
   },
   {
+    path: "/cooperation",
+    loader: () => import("src/view/pages/Cooperation/Cooperation"),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
     path: "/Online",
     loader: () => import("src/view/pages/Online/Online"),
     permissionRequired: permissions.categoryRead,
@@ -107,6 +119,18 @@ const screenRoutes = [
   {
     path: "/myprofile",
     loader: () => import("src/view/pages/Team/Team"),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
+    path: "/team",
+    loader: () => import("src/view/pages/Team/TeamNetwork"),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
+    path: "/team/:id",
+    loader: () => import("src/view/pages/Team/TeamNetwork"),
     permissionRequired: permissions.categoryRead,
     exact: true,
   },

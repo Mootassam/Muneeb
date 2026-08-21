@@ -76,6 +76,16 @@ export default class vipService {
     return response.data;
   }
 
+  static async join(id) {
+    const tenantId = AuthCurrentTenant.get();
+
+    const response = await authAxios.post(
+      `/tenant/${tenantId}/vip/${id}/join`,
+    );
+
+    return response.data;
+  }
+
   static async list(filter, orderBy, limit, offset) {
     const params = {
       filter,

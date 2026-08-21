@@ -10,6 +10,8 @@ import coupons from 'src/modules/coupons/couponsReducers';
 import category from 'src/modules/category/categoryReducers';
 import vip from 'src/modules/vip/vipReducers'
 import transaction from 'src/modules/transaction/transactionReducers'
+import deposit from 'src/modules/deposit/depositReducers'
+import withdraw from 'src/modules/withdraw/withdrawReducers'
 import product from 'src/modules/product/productReducers'
 import record from 'src/modules/record/recordReducers'
 import company from 'src/modules/company/companyReducers';
@@ -25,6 +27,8 @@ export default (history) =>
     vip,
     record,
     transaction,
+    deposit,
+    withdraw,
     product,
     tenant,
     user,

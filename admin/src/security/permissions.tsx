@@ -915,6 +915,122 @@ class Permissions {
         ],
       },
 
+      depositImport: {
+        id: 'depositImport',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+      depositCreate: {
+        id: 'depositCreate',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      depositEdit: {
+        id: 'depositEdit',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      depositDestroy: {
+        id: 'depositDestroy',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      depositRead: {
+        id: 'depositRead',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+      depositAutocomplete: {
+        id: 'depositAutocomplete',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+
+      withdrawImport: {
+        id: 'withdrawImport',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+      withdrawCreate: {
+        id: 'withdrawCreate',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      withdrawEdit: {
+        id: 'withdrawEdit',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      withdrawDestroy: {
+        id: 'withdrawDestroy',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+        allowedStorage: [],
+      },
+      withdrawRead: {
+        id: 'withdrawRead',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+      withdrawAutocomplete: {
+        id: 'withdrawAutocomplete',
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [
+          plans.free,
+          plans.growth,
+          plans.enterprise,
+        ],
+      },
+
       trackOrderImport: {
         id: 'trackOrderImport',
         allowedRoles: [roles.admin, roles.supervisor],

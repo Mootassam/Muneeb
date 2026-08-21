@@ -2,12 +2,49 @@ import Error400 from '../errors/Error400';
 import MongooseRepository from '../database/repositories/mongooseRepository';
 import { IServiceOptions } from './IServiceOptions';
 import VipRepository from '../database/repositories/vipRepository';
+import UserRepository from '../database/repositories/userRepository';
 
 export default class VipServices {
   options: IServiceOptions;
 
   constructor(options) {
     this.options = options;
+  }
+
+  /**
+   * Lets a customer switch their current VIP level to `vipId`, no balance
+   * deduction involved — it's just a tier change. UserRepository.updateProfile
+   * already rejects the switch (via checkSolde) if the account's balance is
+   * below the target level's levellimit, or if it's already their current
+   * level, so we just surface whatever it throws.
+   */
+  async join(vipId) {
+    const session = await MongooseRepository.createSession(
+      this.options.database,
+    );
+
+    try {
+      const vip = await VipRepository.findById(vipId, this.options);
+
+      const currentUserId = MongooseRepository.getCurrentUser(this.options).id;
+
+      const user = await UserRepository.updateProfile(
+        currentUserId,
+        { vip },
+        {
+          ...this.options,
+          session,
+          bypassPermissionValidation: true,
+        },
+      );
+
+      await MongooseRepository.commitTransaction(session);
+
+      return user;
+    } catch (error) {
+      await MongooseRepository.abortTransaction(session);
+      throw error;
+    }
   }
 
   async create(data) {

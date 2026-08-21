@@ -14,12 +14,20 @@ import yupFormSchemas from "src/modules/shared/yup/yupFormSchemas";
 import { i18n, i18nExists } from "../../../i18n";
 import ImagesFormItem from "src/shared/form/ImagesFormItems";
 import Storage from "src/security/storage";
+import { getTheme, toggleTheme } from "src/theme";
 
 const schema = yup.object().shape({
   passportPhoto: yupFormSchemas.images(i18n("inputs.passportPhoto"), {
     max: 1,
   }),
 });
+
+const QUICK_ACCESS = [
+  { icon: "fa-solid fa-people-group", label: "Teams", url: "/team" },
+  { icon: "fa-solid fa-chart-simple", label: "Record", url: "/order" },
+  { icon: "fa-solid fa-wallet", label: "Wallet", url: "/wallet" },
+  { icon: "fa-solid fa-link", label: "Invite", url: "/invitation" },
+];
 
 function Profile() {
   const dispatch = useDispatch();
@@ -28,6 +36,11 @@ function Profile() {
   const currentUser = useSelector(authSelectors.selectCurrentUser);
 
   const referenceCodeRef = useRef<any>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => getTheme() === "dark");
+
+  const handleToggleTheme = () => {
+    setIsDarkMode(toggleTheme() === "dark");
+  };
 
   useEffect(() => {
     const values = { status: "completed" };
@@ -86,16 +99,6 @@ function Profile() {
       url: "/online"
     },
     {
-      icon: "fa-solid fa-user",
-      name: i18n('pages.profile.profile'),
-      url: "/myprofile"
-    },
-    {
-      icon: "fa-solid fa-list-check",
-      name: i18n('pages.profile.tasksHistory'),
-      url: "/order"
-    },
-    {
       icon: "fa-solid fa-shield",
       name: i18n('pages.profile.security'),
       url: "/security"
@@ -114,178 +117,189 @@ function Profile() {
 
   const scorePct = currentUser?.score || 100;
   const balance = currentUser?.balance?.toFixed(2) || "0.00";
+  const frozen = currentUser?.freezeblance?.toFixed(2) || "0.00";
 
   return (
-    <div className="prf__page">
-      <div className="prf__card">
-        {/* User head */}
-        <div className="prf__userHead">
-          <div className="prf__avatarRing">
-            <div className="prf__avatarInner">
-              <FormProvider {...form}>
-                <form>
-                  <ImagesFormItem
-                    name="passportPhoto"
-                    storage={Storage.values.userAvatarsProfiles}
-                    max={1}
-                  />
-                </form>
-              </FormProvider>
-            </div>
-            {currentUser?.vip?.title && (
-              <span className="prf__vipBadge">
-                <i className="fa-solid fa-crown"></i>
-                {currentUser.vip.title}
+    <div className="acc__page">
+      <div className="acc__wrap">
+        {/* Identity card */}
+        <div className="acc__identity">
+          <div className="acc__avatar">
+            <FormProvider {...form}>
+              <form>
+                <ImagesFormItem
+                  name="passportPhoto"
+                  storage={Storage.values.userAvatarsProfiles}
+                  max={1}
+                />
+              </form>
+            </FormProvider>
+          </div>
+          <div className="acc__identityText">
+            <div className="acc__nameRow">
+              <span className="acc__name">
+                {currentUser?.fullName || currentUser?.email}
               </span>
-            )}
-          </div>
-
-          <div className="prf__userMeta">
-            <div className="prf__emailText">
-              {currentUser?.email || currentUser?.fullName}
+              {currentUser?.vip?.title && (
+                <span className="acc__vipTag">
+                  <i className="fa-solid fa-crown"></i>
+                  {currentUser.vip.title}
+                </span>
+              )}
             </div>
-            <span className="prf__inviteChip" onClick={copyToClipboardCoupon}>
-              <span className="prf__inviteLabel">{i18n('pages.profile.invitationCode')}</span>
-              <span className="prf__inviteCode" ref={referenceCodeRef}>{currentUser?.refcode}</span>
+            <div className="acc__email">{currentUser?.email}</div>
+            <button className="acc__codeChip" onClick={copyToClipboardCoupon}>
+              <span ref={referenceCodeRef}>{currentUser?.refcode}</span>
               <i className="fa-regular fa-copy"></i>
-            </span>
+            </button>
           </div>
+          <Link to="/security" className="acc__gear" aria-label="Account settings">
+            <i className="fa-solid fa-gear"></i>
+          </Link>
         </div>
 
-        {/* Balance + credit */}
-        <div className="prf__balanceCard">
-          <div className="prf__balanceLeft">
-            <div className="prf__label">{i18n('pages.profile.balance')}</div>
-            <div className="prf__amount">
-              {balance} <span className="prf__amountUnit">{i18n('pages.profile.usd')}</span>
-            </div>
+        {/* Balance strip */}
+        <div className="acc__statStrip">
+          <div className="acc__statCol">
+            <div className="acc__statValue acc__statValue--lg">{balance}</div>
+            <div className="acc__statLabel">{i18n('pages.profile.balance')} (USD)</div>
           </div>
-          <div className="prf__scoreRing">
-            <div className="prf__scoreRingInner">
-              <div className="prf__scoreValue">{scorePct}%</div>
-              <div className="prf__scoreLabel">{i18n('pages.profile.creditScore')}</div>
-            </div>
+          <div className="acc__statCol">
+            <div className="acc__statValue">{scorePct}%</div>
+            <div className="acc__statLabel">{i18n('pages.profile.creditScore')}</div>
           </div>
-        </div>
-
-        {/* Profit + frozen */}
-        <div className="prf__statsRow">
-          <div className="prf__statBlock">
-            <div className="prf__statLabel">
-              <i className="fa-solid fa-chart-line prf__iconGreen"></i>
-              {i18n('pages.profile.todayProfit')}
-            </div>
-            <div className="prf__statValue">{totalperday} {i18n('pages.profile.usd')}</div>
+          <div className="acc__statCol">
+            <div className="acc__statValue">{totalperday}</div>
+            <div className="acc__statLabel">{i18n('pages.profile.todayProfit')}</div>
           </div>
-          <div className="prf__statBlock">
-            <div className="prf__statLabel">
-              <i className="fa-solid fa-snowflake prf__iconBlue"></i>
-              {i18n('pages.profile.frozenAmount')}
-            </div>
-            <div className="prf__statValue">
-              {currentUser?.freezeblance?.toFixed(2) || "0.00"} {i18n('pages.profile.usd')}
-            </div>
+          <div className="acc__statCol">
+            <div className="acc__statValue">{frozen}</div>
+            <div className="acc__statLabel">{i18n('pages.profile.frozenAmount')}</div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="prf__actionRow">
-          <div className="prf__actionBtn" onClick={() => goto("/deposit")}>
-            <span className="prf__actionIcon">
-              <i className="fa-solid fa-dollar-sign"></i>
-            </span>
+        <div className="acc__actionRow">
+          <button className="acc__primaryBtn" onClick={() => goto("/deposit")}>
+            <i className="fa-solid fa-plus"></i>
             {i18n('pages.profile.recharge')}
-          </div>
-          <div className="prf__actionBtn" onClick={() => goto("/withdraw")}>
-            <span className="prf__actionIcon">
-              <i className="fa-solid fa-money-check"></i>
-            </span>
+          </button>
+          <button className="acc__secondaryBtn" onClick={() => goto("/withdraw")}>
+            <i className="fa-solid fa-arrow-right-arrow-left"></i>
             {i18n('pages.profile.withdraw')}
-          </div>
+          </button>
         </div>
 
-        {/* Quick links */}
-        <div className="prf__sectionTitle">{i18n('pages.profile.myDetails')}</div>
-        <div className="prf__linkList">
-          {links.map((item, index) => (
-            <Link key={index} to={item.url} className="prf__linkRow">
-              <span className="prf__linkIcon">
+        {/* Quick access rail */}
+        <div className="acc__rail">
+          {QUICK_ACCESS.map((item) => (
+            <Link key={item.url} to={item.url} className="acc__railItem">
+              <span className="acc__railIcon">
                 <i className={item.icon}></i>
               </span>
-              <span className="prf__linkName">{item.name}</span>
-              <i className="fa-solid fa-chevron-right prf__linkArrow"></i>
+              <span className="acc__railLabel">{item.label}</span>
             </Link>
           ))}
         </div>
 
-        <div className="prf__divider" />
+        {/* Account list */}
+        <div className="acc__groupLabel">Account</div>
+        <div className="acc__list">
+          {links.map((item, index) => (
+            <Link key={index} to={item.url} className="acc__listRow">
+              <span className="acc__listIcon">
+                <i className={item.icon}></i>
+              </span>
+              <span className="acc__listLabel">{item.name}</span>
+              <i className="fa-solid fa-chevron-right acc__listChevron"></i>
+            </Link>
+          ))}
 
-        {/* Logout */}
-        <div className="prf__logoutRow" onClick={doSignout}>
-          <i className="fa-solid fa-arrow-right-from-bracket"></i>
-          <span>{i18n('pages.profile.logout')}</span>
+          <div className="acc__listRow acc__listRow--static">
+            <span className="acc__listIcon">
+              <i className={isDarkMode ? "fa-solid fa-moon" : "fa-solid fa-sun"}></i>
+            </span>
+            <span className="acc__listLabel">
+              {i18nExists('pages.profile.appTheme') ? i18n('pages.profile.appTheme') : 'App Theme'}
+            </span>
+            <button
+              type="button"
+              className={`acc__switch ${isDarkMode ? "is-dark" : ""}`}
+              role="switch"
+              aria-checked={isDarkMode}
+              onClick={handleToggleTheme}
+            >
+              <span className="acc__switchThumb">
+                <i className={isDarkMode ? "fa-solid fa-moon" : "fa-solid fa-sun"}></i>
+              </span>
+            </button>
+          </div>
+
+          <div className="acc__listDivider" />
+
+          <button className="acc__listRow acc__listRow--danger" onClick={doSignout}>
+            <span className="acc__listIcon acc__listIcon--danger">
+              <i className="fa-solid fa-arrow-right-from-bracket"></i>
+            </span>
+            <span className="acc__listLabel acc__listLabel--danger">
+              {i18n('pages.profile.logout')}
+            </span>
+          </button>
         </div>
 
-        <div className="prf__footerNote">
+        <div className="acc__footerNote">
           <i className="fa-solid fa-shield-halved"></i>
           {i18nExists('pages.profile.secureNote') ? i18n('pages.profile.secureNote') : 'Secured · 256-bit encryption'}
         </div>
       </div>
 
       <style>{`
-        .prf__page {
+        .acc__page {
           min-height: 100vh;
-          background:
-            radial-gradient(circle at 15% 0%, rgba(240, 185, 11, 0.10), transparent 42%),
-            radial-gradient(circle at 85% 8%, rgba(139, 92, 246, 0.14), transparent 45%),
-            #06070b;
-          display: flex;
-          justify-content: center;
-          padding: 20px 14px 100px;
-          font-family: "Poppins", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .prf__card {
-          max-width: 400px;
           width: 100%;
-          background: #14151d;
-          padding: 22px 18px 26px;
-          border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
-          color: #eaecef;
+          overflow-x: hidden;
+          background: var(--bg-page);
+          font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+          padding: 18px 0 100px;
+          box-sizing: border-box;
         }
 
-        /* user head */
-        .prf__userHead {
+        .acc__page *,
+        .acc__page *::before,
+        .acc__page *::after {
+          box-sizing: border-box;
+        }
+
+        .acc__wrap {
+          max-width: 420px;
+          margin: 0 auto;
+          padding: 0 16px;
+        }
+
+        /* identity */
+        .acc__identity {
           display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 22px;
+          align-items: flex-start;
+          gap: 14px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 8px -4px rgba(15, 17, 17, 0.08);
         }
 
-        .prf__avatarRing {
-          position: relative;
-          width: 76px;
-          height: 76px;
+        .acc__avatar {
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
-          padding: 3px;
-          background: conic-gradient(from 180deg, #f0b90b, #a855f7, #38bdf8, #f0b90b);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .prf__avatarInner {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: #14151d;
+          background: var(--bg-tint-strong);
+          border: 2px solid #ff9900;
           display: flex;
           align-items: center;
           justify-content: center;
           overflow: hidden;
+          flex-shrink: 0;
         }
 
         .profile-avatar {
@@ -293,390 +307,393 @@ function Profile() {
         }
 
         .avatar-placeholder {
-          width: 100% !important;
-          height: 100% !important;
+          width: 64px !important;
+          height: 64px !important;
           border-radius: 50% !important;
-          background: #1e2029 !important;
+          background: var(--bg-tint-strong) !important;
           border: none !important;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 30px;
-          font-weight: 700;
-          color: #6b7280;
-          transition: opacity 0.15s ease;
+          font-size: 24px;
+          color: #ff8a00;
         }
 
-        .avatar-placeholder:hover {
-          opacity: 0.85;
-        }
-
-        .prf__avatarInner .img-card {
-          width: 100% !important;
-          height: 100% !important;
+        .acc__avatar .img-card {
+          width: 64px !important;
+          height: 64px !important;
           border: none !important;
           border-radius: 50% !important;
         }
 
-        .prf__avatarInner .header__profile__image {
-          width: 100% !important;
-          height: 100% !important;
+        .acc__avatar .header__profile__image {
+          width: 64px !important;
+          height: 64px !important;
           border-radius: 50% !important;
         }
 
-        .prf__vipBadge {
-          position: absolute;
-          bottom: -6px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(135deg, #ffd668, #f0a500);
-          border: 3px solid #14151d;
-          color: #1a1200;
-          font-weight: 800;
-          font-size: 10px;
-          padding: 2px 10px 2px 8px;
-          border-radius: 20px;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          white-space: nowrap;
-          box-shadow: 0 2px 6px rgba(240, 185, 11, 0.45);
-        }
-
-        .prf__vipBadge i {
-          font-size: 9px;
-        }
-
-        .prf__userMeta {
+        .acc__identityText {
           flex: 1;
           min-width: 0;
+          padding-top: 2px;
         }
 
-        .prf__emailText {
-          font-size: 15px;
+        .acc__nameRow {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .acc__name {
+          font-size: 15.5px;
           font-weight: 700;
-          color: #f5f6f8;
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          margin-bottom: 8px;
         }
 
-        .prf__inviteChip {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 11px;
+        .acc__vipTag {
+          flex-shrink: 0;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          cursor: pointer;
-          max-width: 100%;
-        }
-
-        .prf__inviteLabel {
-          color: #848e9c;
-        }
-
-        .prf__inviteCode {
-          color: #f0b90b;
-          font-weight: 700;
-          letter-spacing: 0.3px;
-        }
-
-        .prf__inviteChip i {
-          color: #848e9c;
-          font-size: 11px;
-        }
-
-        /* balance card */
-        .prf__balanceCard {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 18px;
-          padding: 18px 18px;
-          margin-bottom: 14px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .prf__label {
-          font-size: 11px;
-          text-transform: uppercase;
-          color: #848e9c;
-          letter-spacing: 0.6px;
-          margin-bottom: 6px;
-        }
-
-        .prf__amount {
-          font-size: 30px;
+          gap: 4px;
+          background: linear-gradient(135deg, #ffd668, #ff9900);
+          color: #1a1200;
+          font-size: 9.5px;
           font-weight: 800;
-          color: #f7c948;
-          line-height: 1;
+          padding: 3px 9px 3px 7px;
+          border-radius: 999px;
         }
 
-        .prf__amountUnit {
-          font-size: 13px;
-          font-weight: 700;
-          color: #848e9c;
+        .acc__vipTag i {
+          font-size: 8px;
         }
 
-        .prf__scoreRing {
-          width: 68px;
-          height: 68px;
-          border-radius: 50%;
-          padding: 3px;
-          background: conic-gradient(from 180deg, #f0b90b, #a855f7, #38bdf8, #f0b90b);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .prf__scoreRingInner {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: #1a1c26;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-        }
-
-        .prf__scoreValue {
-          font-size: 15px;
-          font-weight: 800;
-          color: #f5f6f8;
-        }
-
-        .prf__scoreLabel {
-          font-size: 6px;
-          text-transform: uppercase;
-          letter-spacing: 0.3px;
-          color: #848e9c;
+        .acc__email {
+          font-size: 11.5px;
+          color: var(--text-tertiary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           margin-top: 1px;
         }
 
-        /* stats row */
-        .prf__statsRow {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-bottom: 14px;
-        }
-
-        .prf__statBlock {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 16px;
-          padding: 12px 10px;
-          text-align: center;
-        }
-
-        .prf__statLabel {
+        .acc__codeChip {
+          margin-top: 9px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--bg-tint-soft);
+          border: 1px solid var(--tint-border);
+          border-radius: 999px;
+          padding: 4px 10px;
           font-size: 11px;
-          color: #848e9c;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-        }
-
-        .prf__iconGreen { color: #0ecb81; }
-        .prf__iconBlue { color: #38bdf8; }
-
-        .prf__statValue {
-          font-size: 16px;
           font-weight: 700;
-          margin-top: 4px;
-          color: #f5f6f8;
-        }
-
-        /* action buttons */
-        .prf__actionRow {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 22px;
-        }
-
-        .prf__actionBtn {
-          flex: 1;
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 16px;
-          padding: 12px 14px;
-          font-weight: 700;
-          font-size: 14px;
-          color: #eaecef;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          transition: background-color 0.15s ease, border-color 0.15s ease;
+          color: var(--tint-text);
+          font-family: 'Consolas', 'Courier New', monospace;
           cursor: pointer;
-          text-decoration: none;
         }
 
-        .prf__actionIcon {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          background: rgba(240, 185, 11, 0.14);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .acc__codeChip i {
+          color: #ff6a00;
+          font-size: 10px;
+        }
+
+        .acc__gear {
           flex-shrink: 0;
-        }
-
-        .prf__actionIcon i {
-          color: #f0b90b;
-          font-size: 14px;
-        }
-
-        .prf__actionBtn:hover {
-          background: #21232e;
-          border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* details list */
-        .prf__sectionTitle {
-          font-size: 15px;
-          font-weight: 700;
-          color: #b7bdc6;
-          margin-bottom: 10px;
-        }
-
-        .prf__linkList {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-bottom: 6px;
-        }
-
-        .prf__linkRow {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 12px 14px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          text-decoration: none;
-          transition: background-color 0.1s ease, border-color 0.1s ease;
-        }
-
-        .prf__linkIcon {
           width: 34px;
           height: 34px;
           border-radius: 10px;
-          background: linear-gradient(160deg, rgba(240, 185, 11, 0.22), rgba(240, 185, 11, 0.05) 65%);
-          border: 1px solid rgba(240, 185, 11, 0.18);
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
+          color: var(--text-tertiary);
+          text-decoration: none;
+          transition: color 0.15s ease, border-color 0.15s ease;
         }
 
-        .prf__linkIcon i {
+        .acc__gear:hover {
+          color: #ff6a00;
+          border-color: #ff6a00;
+        }
+
+        /* stat strip */
+        .acc__statStrip {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px 8px;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 8px -4px rgba(15, 17, 17, 0.08);
+        }
+
+        .acc__statCol {
+          text-align: center;
+          padding: 0 4px;
+          border-left: 1px solid var(--border-soft);
+        }
+
+        .acc__statCol:first-child {
+          border-left: none;
+        }
+
+        .acc__statValue {
           font-size: 14px;
-          color: #f0b90b;
-          background: linear-gradient(135deg, #ffe27a, #f0b90b 55%, #d68e00);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
+          font-weight: 800;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .prf__linkName {
+        .acc__statValue--lg {
+          font-size: 17px;
+          color: #ff6a00;
+        }
+
+        .acc__statLabel {
+          font-size: 9.5px;
+          color: var(--text-muted);
+          margin-top: 4px;
+          line-height: 1.3;
+        }
+
+        /* actions */
+        .acc__actionRow {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+
+        .acc__primaryBtn,
+        .acc__secondaryBtn {
           flex: 1;
+          border-radius: 10px;
+          padding: 12px;
+          font-weight: 700;
           font-size: 13.5px;
-          color: #eaecef;
-          font-weight: 500;
-        }
-
-        .prf__linkArrow {
-          font-size: 11px;
-          color: #5e6673;
-        }
-
-        .prf__linkRow:hover {
-          background: #21232e;
-          border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        /* divider */
-        .prf__divider {
-          height: 1px;
-          background: rgba(255, 255, 255, 0.06);
-          margin: 16px 0;
-        }
-
-        /* logout */
-        .prf__logoutRow {
-          background: #1a1c26;
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 14px;
-          padding: 12px 0;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
           cursor: pointer;
-          transition: background-color 0.1s ease, border-color 0.1s ease;
+          transition: filter 0.15s ease, border-color 0.15s ease, color 0.15s ease;
         }
 
-        .prf__logoutRow:hover {
-          background: #21232e;
-          border-color: rgba(255, 255, 255, 0.1);
+        .acc__primaryBtn {
+          border: 1px solid #d17f00;
+          background: linear-gradient(180deg, #ffb84d, #ff8a00);
+          color: #17130d;
         }
 
-        .prf__logoutRow i {
-          color: #f6465d;
-          font-size: 15px;
+        .acc__primaryBtn:hover {
+          filter: brightness(1.04);
         }
 
-        .prf__logoutRow span {
-          color: #f6465d;
-          font-size: 13px;
+        .acc__secondaryBtn {
+          border: 1px solid var(--border-strong);
+          background: var(--bg-card);
+          color: var(--text-primary);
+        }
+
+        .acc__secondaryBtn:hover {
+          border-color: #ff6a00;
+          color: #ff6a00;
+        }
+
+        /* quick access rail */
+        .acc__rail {
+          display: flex;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 14px 8px;
+          margin-bottom: 20px;
+          box-shadow: 0 2px 8px -4px rgba(15, 17, 17, 0.08);
+        }
+
+        .acc__railItem {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          text-decoration: none;
+        }
+
+        .acc__railIcon {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: var(--bg-tint-strong);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ff6a00;
+          font-size: 16px;
+          transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .acc__railItem:hover .acc__railIcon {
+          background: linear-gradient(180deg, #ffb84d, #ff8a00);
+          color: #fff;
+        }
+
+        .acc__railLabel {
+          font-size: 10.5px;
           font-weight: 600;
+          color: var(--text-secondary);
+        }
+
+        /* account list */
+        .acc__groupLabel {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          color: var(--text-muted);
+          margin: 0 4px 8px;
+        }
+
+        .acc__list {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 0 14px;
+          margin-bottom: 16px;
+          box-shadow: 0 2px 8px -4px rgba(15, 17, 17, 0.08);
+        }
+
+        .acc__listRow {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 13px 0;
+          border-bottom: 1px solid var(--border-soft);
+          text-decoration: none;
+          background: none;
+          border-left: none;
+          border-right: none;
+          border-top: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          margin: 0;
+        }
+
+        .acc__listRow--static {
+          cursor: default;
+        }
+
+        .acc__listIcon {
+          width: 30px;
+          height: 30px;
+          border-radius: 9px;
+          background: var(--bg-tint-strong);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: #ff6a00;
+          font-size: 13px;
+        }
+
+        .acc__listLabel {
+          flex: 1;
+          min-width: 0;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .acc__listChevron {
+          flex-shrink: 0;
+          font-size: 11px;
+          color: var(--text-faint);
+        }
+
+        .acc__switch {
+          position: relative;
+          flex-shrink: 0;
+          width: 46px;
+          height: 26px;
+          border-radius: 999px;
+          border: 1px solid var(--border-strong);
+          background: var(--bg-surface-2);
+          padding: 0;
+          cursor: pointer;
+          transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .acc__switch.is-dark {
+          background: #20232c;
+          border-color: #20232c;
+        }
+
+        .acc__switchThumb {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+          transition: transform 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ff8a00;
+          font-size: 10px;
+        }
+
+        .acc__switch.is-dark .acc__switchThumb {
+          transform: translateX(20px);
+          color: #4b5875;
+        }
+
+        .acc__listDivider {
+          height: 8px;
+        }
+
+        .acc__listRow--danger {
+          border-bottom: none;
+        }
+
+        .acc__listIcon--danger {
+          background: var(--danger-bg);
+          color: var(--danger);
+        }
+
+        .acc__listLabel--danger {
+          color: var(--danger);
         }
 
         /* footer */
-        .prf__footerNote {
-          margin-top: 12px;
+        .acc__footerNote {
           text-align: center;
-          font-size: 10px;
-          color: #5e6673;
-          letter-spacing: 0.3px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
-          padding-top: 14px;
+          font-size: 11px;
+          color: var(--text-tertiary);
+          letter-spacing: 0.2px;
         }
 
-        .prf__footerNote i {
-          color: #f0b90b;
+        .acc__footerNote i {
+          color: #ff6a00;
           margin-right: 4px;
         }
 
-        /* responsive */
         @media (max-width: 380px) {
-          .prf__card {
-            padding: 18px 14px 20px;
+          .acc__statValue--lg {
+            font-size: 15px;
           }
-          .prf__amount {
-            font-size: 24px;
-          }
-          .prf__statValue {
-            font-size: 14px;
-          }
-          .prf__actionBtn {
+          .acc__statValue {
             font-size: 12px;
-            padding: 10px 12px;
-          }
-          .prf__avatarRing {
-            width: 64px;
-            height: 64px;
           }
         }
       `}</style>

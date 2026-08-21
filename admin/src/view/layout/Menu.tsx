@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { i18n } from 'src/i18n';
@@ -9,6 +9,10 @@ import layoutSelectors from 'src/modules/layout/layoutSelectors';
 import MenuWrapper from 'src/view/layout/styles/MenuWrapper';
 import menus from 'src/view/menus';
 import selectors from 'src/modules/auth/authSelectors';
+import depositCountActions from 'src/modules/deposit/count/depositCountActions';
+import depositCountSelectors from 'src/modules/deposit/count/depositCountSelectors';
+import withdrawCountActions from 'src/modules/withdraw/count/withdrawCountActions';
+import withdrawCountSelectors from 'src/modules/withdraw/count/withdrawCountSelectors';
 
 function Menu(props) {
   const dispatch = useDispatch();
@@ -24,6 +28,27 @@ function Menu(props) {
   const menuVisible = useSelector(
     layoutSelectors.selectMenuVisible,
   );
+
+  const depositPendingCount = useSelector(
+    depositCountSelectors.selectPendingCount,
+  );
+  const withdrawPendingCount = useSelector(
+    withdrawCountSelectors.selectPendingCount,
+  );
+
+  const pendingCountsByKey = {
+    deposit: depositPendingCount,
+    withdraw: withdrawPendingCount,
+  };
+
+  useEffect(() => {
+    if (!currentTenant || !currentUser) {
+      return;
+    }
+
+    dispatch(depositCountActions.doFetchPendingCount());
+    dispatch(withdrawCountActions.doFetchPendingCount());
+  }, [dispatch, currentTenant, currentUser]);
 
   const permissionChecker = new PermissionChecker(
     currentTenant,
@@ -91,17 +116,34 @@ function Menu(props) {
             .filter((menu) =>
               match(menu.permissionRequired),
             )
-            .map((menu, index) => (
-              <li
-                key={index + 'item'}
-                className={menu.className}
-              >
-                <Link to={menu.path} key={index}>
-                  <i className={`${menu.icon}`}></i>
-                  <span>{menu.label}</span>
-                </Link>
-              </li>
-            ))}
+            .map((menu, index) => {
+              const pendingCount = menu.countKey
+                ? pendingCountsByKey[menu.countKey]
+                : undefined;
+
+              return (
+                <li
+                  key={index + 'item'}
+                  className={menu.className}
+                >
+                  <Link to={menu.path} key={index}>
+                    <i className={`${menu.icon}`}></i>
+                    <span>{menu.label}</span>
+                    {pendingCount !== undefined && (
+                      <span
+                        className={`menu-count-badge ${
+                          pendingCount > 0
+                            ? 'menu-count-badge--active'
+                            : ''
+                        }`}
+                      >
+                        {pendingCount}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
 
           {menus
             .filter((menu) =>
