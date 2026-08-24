@@ -99,8 +99,8 @@ export default class ProductServices {
   }
 
 
-    async findAllAutocompleteProduct(search, limit) {
-    return ProductRepository.findAllAutocompleteProduct(search, limit, this.options);
+    async findAllAutocompleteProduct(search, limit, type?: string) {
+    return ProductRepository.findAllAutocompleteProduct(search, limit, this.options, type);
   }
 
   async findAndCountAll(args) {

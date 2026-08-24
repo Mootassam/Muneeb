@@ -1,14 +1,10 @@
-import React, { useEffect, useState, useCallback, memo } from "react";
+import React, { useEffect, useCallback, memo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import vipActions from "src/modules/vip/list/vipListActions";
 import vipSelectors from "src/modules/vip/list/vipListSelectors";
-import vipService from "src/modules/vip/vipService";
-import authActions from "src/modules/auth/authActions";
 import authSelectors from "src/modules/auth/authSelectors";
 import LoadingModal from "src/shared/LoadingModal";
-import Message from "src/view/shared/message";
-import Errors from "src/modules/shared/error/errors";
 import { i18n, i18nExists } from "../../../i18n";
 
 const t = (key, fallback) => (i18nExists(key) ? i18n(key) : fallback);
@@ -16,12 +12,22 @@ const t = (key, fallback) => (i18nExists(key) ? i18n(key) : fallback);
 interface VipItem {
   id: string;
   title: string;
-  levellimit: string;
+  min: string;
+  max: string;
   dailyorder: string;
   comisionrate: string;
-  tasksperday?: string;
-  setperday?: string;
   photo?: Array<{ downloadUrl: string }>;
+}
+
+// VIP is fully automatic: a tier is "current" whenever the customer's
+// balance falls within that tier's Level Limit [min, max] range.
+function isBalanceInRange(balance: number, vip: VipItem) {
+  const min = parseFloat(vip.min);
+  const max = parseFloat(vip.max);
+  if (isNaN(min) || isNaN(max)) {
+    return false;
+  }
+  return balance >= min && balance <= max;
 }
 
 const VipSelectCard = memo(
@@ -29,16 +35,10 @@ const VipSelectCard = memo(
     vip,
     isCurrent,
     onSelect,
-    onJoin,
-    joining,
-    qualifies,
   }: {
     vip: VipItem;
     isCurrent: boolean;
     onSelect: (vip: VipItem) => void;
-    onJoin: (vip: VipItem) => void;
-    joining: boolean;
-    qualifies: boolean;
   }) => {
     const photoUrl = vip?.photo?.[0]?.downloadUrl;
 
@@ -82,13 +82,13 @@ const VipSelectCard = memo(
             <div className="vsel__feature">
               <i className="fa-solid fa-box"></i>
               <span>
-                {i18n("pages.vip.maxOrders")}: {vip.tasksperday}
+                {i18n("pages.vip.maxOrders")}: {vip.dailyorder}
               </span>
             </div>
             <div className="vsel__feature">
-              <i className="fa-solid fa-calendar-day"></i>
+              <i className="fa-solid fa-layer-group"></i>
               <span>
-                {i18n("pages.vip.setperday")}: {vip.setperday}
+                {i18n("pages.vip.levelLimit")}: {vip.min} - {vip.max}
               </span>
             </div>
           </div>
@@ -99,36 +99,14 @@ const VipSelectCard = memo(
               <i className="fa-solid fa-arrow-right"></i>
             </button>
           ) : (
-            <>
-              <div className={`vsel__requirement ${qualifies ? "vsel__requirement--met" : ""}`}>
-                <i className={qualifies ? "fa-solid fa-circle-check" : "fa-solid fa-circle-info"}></i>
-                {qualifies
-                  ? t("pages.vipSelect.qualified", "You qualify")
-                  : i18n(
-                      "pages.vipSelect.requiresBalance",
-                      vip.levellimit,
-                      t("pages.vipSelect.currency", "USD")
-                    )}
-              </div>
-              <button
-                type="button"
-                className="vsel__joinBtn"
-                disabled={joining}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onJoin(vip);
-                }}
-              >
-                {joining ? (
-                  t("pages.vipSelect.joining", "Joining...")
-                ) : (
-                  <>
-                    {t("pages.vipSelect.joinVip", "Join VIP")}
-                    <i className="fa-solid fa-arrow-right"></i>
-                  </>
-                )}
-              </button>
-            </>
+            <div className="vsel__requirement">
+              <i className="fa-solid fa-circle-info"></i>
+              {i18n(
+                "pages.vipSelect.requiresBalance",
+                vip.min,
+                t("pages.vipSelect.currency", "USD")
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -145,16 +123,14 @@ function VipSelect() {
   const vipRecords = useSelector(vipSelectors.selectRows);
   const loading = useSelector(vipSelectors.selectLoading);
   const currentUser = useSelector(authSelectors.selectCurrentUser);
-
-  const [joiningId, setJoiningId] = useState<string | null>(null);
-  const [insufficientVip, setInsufficientVip] = useState<VipItem | null>(null);
+  const balance = Number(currentUser?.balance) || 0;
 
   useEffect(() => {
     dispatch(vipActions.doFetch());
   }, [dispatch]);
 
   const sortedVipRecords: VipItem[] = [...(vipRecords || [])].sort(
-    (a: VipItem, b: VipItem) => parseInt(a.levellimit || "0") - parseInt(b.levellimit || "0")
+    (a: VipItem, b: VipItem) => parseFloat(a.min || "0") - parseFloat(b.min || "0")
   );
 
   const goToGrap = useCallback(() => {
@@ -163,32 +139,11 @@ function VipSelect() {
 
   const handleSelect = useCallback(
     (vip: VipItem) => {
-      if (vip.id === currentUser?.vip?.id) {
+      if (isBalanceInRange(balance, vip)) {
         goToGrap();
       }
     },
-    [currentUser, goToGrap]
-  );
-
-  const handleJoin = useCallback(
-    async (vip: VipItem) => {
-      setJoiningId(vip.id);
-
-      try {
-        await vipService.join(vip.id);
-        await dispatch(authActions.doRefreshCurrentUser());
-        Message.success(i18n("pages.vipSelect.joinSuccess", vip.title));
-      } catch (error: any) {
-        if (error?.response?.data === "Insufficient balance") {
-          setInsufficientVip(vip);
-        } else {
-          Errors.handle(error);
-        }
-      } finally {
-        setJoiningId(null);
-      }
-    },
-    [dispatch]
+    [balance, goToGrap]
   );
 
   return (
@@ -204,11 +159,8 @@ function VipSelect() {
               <VipSelectCard
                 key={vip.id || index}
                 vip={vip}
-                isCurrent={currentUser?.vip?.id === vip.id}
+                isCurrent={isBalanceInRange(balance, vip)}
                 onSelect={handleSelect}
-                onJoin={handleJoin}
-                joining={joiningId === vip.id}
-                qualifies={(currentUser?.balance || 0) >= parseFloat(vip.levellimit || "0")}
               />
             ))}
           </div>
@@ -235,44 +187,6 @@ function VipSelect() {
           <i className="fa-solid fa-chevron-right"></i>
         </Link>
       </div>
-
-      {insufficientVip && (
-        <div className="vsel__modalOverlay" onClick={() => setInsufficientVip(null)}>
-          <div className="vsel__modalCard" onClick={(event) => event.stopPropagation()}>
-            <span className="vsel__modalIcon">
-              <i className="fa-solid fa-triangle-exclamation"></i>
-            </span>
-            <div className="vsel__modalTitle">
-              {t("pages.vipSelect.insufficientModal.title", "Insufficient Balance")}
-            </div>
-            <p className="vsel__modalText">
-              {i18n(
-                "pages.vipSelect.insufficientModal.message",
-                insufficientVip.levellimit,
-                t("pages.vipSelect.currency", "USD"),
-                insufficientVip.title,
-                (currentUser?.balance || 0).toFixed(2)
-              )}
-            </p>
-            <div className="vsel__modalActions">
-              <button
-                type="button"
-                className="vsel__modalCancelBtn"
-                onClick={() => setInsufficientVip(null)}
-              >
-                {t("pages.vipSelect.insufficientModal.cancel", "Maybe Later")}
-              </button>
-              <Link
-                to="/deposit"
-                className="vsel__modalDepositBtn"
-                onClick={() => setInsufficientVip(null)}
-              >
-                {t("pages.vipSelect.insufficientModal.depositNow", "Deposit Now")}
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         .vsel__root {

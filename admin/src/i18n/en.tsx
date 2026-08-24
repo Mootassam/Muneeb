@@ -9,6 +9,8 @@ const en = {
     cancel: 'Cancel',
     reset: 'Reset',
     save: 'Save',
+    create: 'Create',
+    back: 'Back',
     search: 'Search',
     freeze: 'Freeze',
     edit: 'Edit',
@@ -121,10 +123,11 @@ const en = {
         levellimit: '',
         setperday: 'sets of data everyday',
         withdrawperday: 'Withdraw per day',
-        photo: "photo",
+        photo: "Photo",
         isFixedAmount: "Use fixed amount (checked = price, unchecked = % of balance)",
-        min: "Minimum product price for this VIP ",
-        max: "Maximum product price for this VIP",
+        min: "Level Limit Min",
+        max: "Level Limit Max",
+        levelLimitHint: "A user's balance must fall within this range for this VIP tier to be active — e.g. Min 0, Max 499.",
         targetProfit: "Target Profit (USDT) — leave 0 to disable"
       },
 
@@ -1723,8 +1726,10 @@ const en = {
       fields: {
         combo: 'Combo',
         vip: 'vip',
-        title: 'Product Name',
-        amount: 'Product Price',
+        title: 'Name',
+        amount: 'Price',
+        active: 'Active',
+        image: 'Image URL',
         commission: 'Product Commission',
         id: 'Id',
         name: 'Name',
@@ -1795,7 +1800,9 @@ const en = {
       hints: {},
 
       new: {
-        title: 'New Product',
+        title: 'Add Product',
+        namePlaceholder: 'Ex: Smart TV',
+        pricePlaceholder: 'Ex: 500.00',
       },
       view: {
         title: 'View Product',
@@ -1804,6 +1811,88 @@ const en = {
         title: 'Import Products',
         fileName: 'product_import_template',
         hint: 'Files/Images columns must be the URLs of the files separated by space.',
+      },
+    },
+
+    combo: {
+      name: 'combo',
+      label: 'Combos',
+      menu: 'Combos',
+      exporterFileName: 'combo_export',
+      list: {
+        menu: 'Combos',
+        title: 'Combos',
+      },
+      create: {
+        success: 'Combo successfully saved',
+      },
+      update: {
+        success: 'Combo successfully saved',
+      },
+      destroy: {
+        success: 'Combo successfully deleted',
+      },
+      destroyAll: {
+        success: 'Combo(s) successfully deleted',
+      },
+      new: {
+        title: 'Add Combo',
+        namePlaceholder: 'Ex: Smart TV Bundle',
+        pricePlaceholder: 'Ex: 500.00',
+      },
+      edit: {
+        title: 'Edit Combo',
+      },
+      fields: {
+        title: 'Name',
+        amount: 'Price',
+        image: 'Image URL',
+      },
+    },
+
+    sequence: {
+      name: 'sequence',
+      label: 'Sequences',
+      menu: 'Sequences',
+      exporterFileName: 'sequence_export',
+      list: {
+        menu: 'Sequences',
+        title: 'Sequences',
+      },
+      create: {
+        success: 'Sequence successfully saved',
+      },
+      update: {
+        success: 'Sequence successfully saved',
+      },
+      destroy: {
+        success: 'Sequence successfully deleted',
+      },
+      destroyAll: {
+        success: 'Sequence(s) successfully deleted',
+      },
+      new: {
+        title: 'Add Sequence',
+        namePlaceholder: 'Ex: Level-2',
+      },
+      edit: {
+        title: 'Edit Sequence',
+      },
+      fields: {
+        title: 'Name',
+        tasks: 'Tasks',
+        productValue: 'Product Value',
+        combo: 'Combo',
+        selectCombo: 'Select Combo',
+        taskCount: 'Task Count',
+        assignCombos: 'Assign Combos',
+        noCombosAssigned: 'No combos assigned yet.',
+        selectProducts: 'Select Products',
+        selectAll: 'Select All',
+        serial: 'Serial',
+        product: 'Product',
+        total: 'Total',
+        searchByName: 'Search by name...',
       },
     },
 
@@ -2815,6 +2904,8 @@ const en = {
       product: 'Product',
       productItemMappings: 'Product Item Mappings',
       noMappings: 'No product mappings added yet.',
+      sequence: 'Sequence',
+      combos: 'Combos',
       firstName: 'First Name',
       lastName: 'Last Name',
       balance: 'Balance',
@@ -3062,6 +3153,8 @@ const en = {
     company: 'Company',
     record: 'record',
     product: 'Product',
+    combo: 'Combo',
+    sequence: 'Sequences',
     worker: 'Workers',
     transaction: 'transaction',
     deposit: 'Deposits',

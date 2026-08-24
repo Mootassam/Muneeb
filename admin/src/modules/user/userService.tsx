@@ -77,6 +77,15 @@ export default class UserService {
     return response.data;
   }
 
+  static async updateSequence(userId, sequenceId) {
+    const tenantId = AuthCurrentTenant.get();
+    const response = await authAxios.post(
+      `/tenant/${tenantId}/user/${userId}/sequence`,
+      { sequenceId },
+    );
+    return response.data;
+  }
+
   static async getTeam(userId) {
     const tenantId = AuthCurrentTenant.get();
     const response = await authAxios.get(

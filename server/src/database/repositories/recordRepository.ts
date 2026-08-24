@@ -8,8 +8,7 @@ import FileRepository from "./fileRepository";
 import Records from "../models/records";
 import Error405 from "../../errors/Error405";
 import Dates from "../utils/Dates";
-import Product from "../models/product";
-import UserRepository from "./userRepository";
+import VipRepository from "./vipRepository";
 import User from "../models/user";
 import Error400 from "../../errors/Error400";
 import moment from "moment";
@@ -35,27 +34,44 @@ class RecordRepository {
   const prizesPosition = currentUser.prizesNumber || 0;
   const tasksDone = currentUser.tasksDone || 0;
   const isPrizesMatch = tasksDone === (prizesPosition - 1);
-
-  const hasProduct =
-    Array.isArray(currentUser.productItemMappings) &&
-    currentUser.productItemMappings.length > 0;
-
-  // Find which mappings trigger at the current task position
-  const matchingComboMappings = hasProduct
-    ? currentUser.productItemMappings.filter(
-        (m) => tasksDone === (Number(m.itemNumber) - 1)
-      )
-    : [];
-  const isComboMode = matchingComboMappings.length > 0;
-
   const hasPrizes = Boolean(currentUser?.prizes?.id || currentUser?.prizes);
-console.log("5 - Checking order eligibility") ;
+  const prizeActive = hasPrizes && isPrizesMatch;
+
+  // Sequence-driven task lookup: the assigned Sequence defines, in order,
+  // which product or combo appears at each task position. Prizes take
+  // priority over the sequence if both happen to line up on one position.
+  const taskNumber = tasksDone + 1;
+  const sequence = currentUser.sequence;
+
+  const comboItem = sequence && !prizeActive
+    ? (sequence.combos || []).find(
+        (item) => item.itemNumber === taskNumber && item.product
+      )
+    : null;
+  const productItem = sequence && !comboItem && !prizeActive
+    ? (sequence.products || []).find(
+        (item) => item.itemNumber === taskNumber && item.product
+      )
+    : null;
+  const isComboMode = Boolean(comboItem);
 
   await this.checkOrder(options);
   // calculeGrap handles balance freeze (COMBO) or unlock (PRIZE) — skip for normal mode
-  if (isComboMode || (hasPrizes && isPrizesMatch)) {
+  if (isComboMode || prizeActive) {
     await this.calculeGrap(data, options);
   }
+
+  // Current tier is recomputed fresh (balance may have just changed above)
+  // — commission always reflects whichever tier the *current* balance is in.
+  const freshUserForTier = await User(database)
+    .findById(currentUser.id)
+    .select("balance")
+    .lean() as any;
+  const currentTier = await VipRepository.findCurrentTierForBalance(
+    freshUserForTier?.balance,
+    options
+  );
+  const commissionPercent = Number(currentTier?.comisionrate) || 0;
 
 
 
@@ -65,45 +81,29 @@ console.log("5 - Checking order eligibility") ;
      1️⃣ COMBO MODE
   ====================================================== */
   if (isComboMode) {
-    const recordDataArray: any[] = [];
-    let totalUserEarning = 0;
+    const comboProduct = comboItem.product;
+    const comboPrice = Number(comboProduct.amount) || 0;
 
-    for (let i = 0; i < matchingComboMappings.length; i++) {
-      const mapping = matchingComboMappings[i];
+    const recordData = {
+      number: data.number,
+      product: comboProduct.id || comboProduct._id,
+      price: comboPrice,
+      commission: commissionPercent,
+      user: data.user || currentUser.id,
+      status: data.status || "pending",
+      tenant: currentTenant.id,
+      createdBy: currentUser.id,
+      updatedBy: currentUser.id,
+      date: Dates.getDate(),
+      datecreation: Dates.getTimeZoneDate(),
+    };
 
-      const productDoc = await Product(database)
-        .findById(mapping.productId)
-        .lean() as any;
-      if (!productDoc) continue;
+    const [record] = await Records(database).create([recordData]);
 
-      // comboPrice = balance + mapping.amount → so balance - comboPrice = -mapping.amount
-      const productAmount = (Number(currentUser.balance) || 0) + (Number(mapping.amount) || 0);
-      const commissionPercent = Number(productDoc.commission) || 0;
-      const earning = (commissionPercent / 100) * productAmount;
-      totalUserEarning += earning;
-
-      recordDataArray.push({
-        number: `${data.number}-${i}`,
-        product: mapping.productId,
-        price: productAmount,
-        commission: commissionPercent,
-        user: data.user || currentUser.id,
-        status: i === 0 ? (data.status || "pending") : "frozen",
-        tenant: currentTenant.id,
-        createdBy: currentUser.id,
-        updatedBy: currentUser.id,
-        date: Dates.getDate(),
-        datecreation: Dates.getTimeZoneDate(),
-      });
-    }
-
-    const records = await Records(database).create(recordDataArray);
-
-    // Increment tasksDone by the number of matched combo mappings
     await User(database).updateOne(
       { _id: currentUser.id },
       {
-        $inc: { tasksDone: matchingComboMappings.length },
+        $inc: { tasksDone: 1 },
         $set: {
           updatedAt: new Date(),
           updatedBy: currentUser.id,
@@ -111,44 +111,25 @@ console.log("5 - Checking order eligibility") ;
       }
     );
 
-    /* ================================
-       Referral commission of earnings
-    ================================= */
-    if (currentUser.invitationcode && totalUserEarning > 0) {
-      const parentUser = await User(database)
-        .findOne({ refcode: currentUser.invitationcode })
-        .lean();
+    await VipRepository.syncUserVip(currentUser.id, options);
 
-      if (parentUser) {
-        const referralReward = totalUserEarning * (referralRate / 100);
+    // Combos are a pure balance deduction — no earning, so no referral
+    // commission triggers here (see NORMAL MODE for the referral payout).
 
-        await User(database).updateOne(
-          { _id: parentUser._id },
-          {
-            $inc: { balance: referralReward },
-            $set: { updatedAt: new Date() },
-          }
-        );
-      }
-    }
+    this._createAuditLog(
+      AuditLogRepository.CREATE,
+      record.id,
+      data,
+      options
+    ).catch(console.error);
 
-    // Audit logs
-    for (const record of records) {
-      this._createAuditLog(
-        AuditLogRepository.CREATE,
-        record.id,
-        data,
-        options
-      ).catch(console.error);
-    }
-
-    return this.findById(records[0].id, options);
+    return this.findById(record.id, options);
   }
 
   /* =====================================================
      2️⃣ PRIZE MODE
   ====================================================== */
-  if (hasPrizes && isPrizesMatch) {
+  if (prizeActive) {
     const recordData = {
       ...data,
       price: currentUser.prizes?.amount || 0,
@@ -189,41 +170,17 @@ console.log("5 - Checking order eligibility") ;
      3️⃣ NORMAL MODE
   ====================================================== */
 
-  const productDoc = await Product(database)
-    .findById(data.product)
-    .lean() as any;
-  if (!productDoc) {
+  if (!productItem) {
     throw new Error400(options.language, "validation.noProductsAvailable");
   }
 
-  // Fetch user's VIP to check target profit mode
-  const userDoc = await User(database)
-    .findById(currentUser.id)
-    .populate("vip")
-    .lean() as any;
-
-  const vipDoc = userDoc?.vip;
-  const targetProfit = Number(vipDoc?.targetProfit) || 0;
-  const vipCommissionRate = Number(vipDoc?.comisionrate) || 0;
-  const sessionPrices: number[] = userDoc?.sessionPrices || [];
-  const totalTasks = Number(vipDoc?.dailyorder) || 1;
-
-  let recordPrice: number;
-  let commissionPercent: number;
-
-  if (targetProfit > 0 && vipCommissionRate > 0 && sessionPrices.length === totalTasks) {
-    // Fixed target profit mode: use pre-generated price from sessionPrices
-    recordPrice = sessionPrices[tasksDone] ?? Number(data.price) ?? 0;
-    commissionPercent = vipCommissionRate;
-  } else {
-    recordPrice = Number(data.price) || 0;
-    commissionPercent = Number(productDoc.commission) || 0;
-  }
-
+  const product = productItem.product;
+  const recordPrice = Number(product.amount) || 0;
   const profit = (commissionPercent / 100) * recordPrice;
 
   const normalRecordData = {
     ...data,
+    product: product.id || product._id,
     price: recordPrice,
     commission: commissionPercent,
     status: "completed",
@@ -236,9 +193,6 @@ console.log("5 - Checking order eligibility") ;
 
   const [normalRecord] = await Records(database).create([normalRecordData]);
 
-  const newTasksDone = tasksDone + 1;
-  const cycleComplete = newTasksDone >= totalTasks;
-
   await User(database).updateOne(
     { _id: currentUser.id },
     {
@@ -247,12 +201,34 @@ console.log("5 - Checking order eligibility") ;
         tasksDone: 1,
       },
       $set: {
-        ...(cycleComplete ? { sessionPrices: [] } : {}),
         updatedAt: new Date(),
         updatedBy: currentUser.id,
       },
     }
   );
+
+  // Referral commission on the earning. Combos no longer generate one —
+  // they're a pure deduction now, so normal-mode profit is the only real
+  // "earning" event left to share with the referrer.
+  if (currentUser.invitationcode && profit > 0) {
+    const parentUser = await User(database)
+      .findOne({ refcode: currentUser.invitationcode })
+      .lean();
+
+    if (parentUser) {
+      const referralReward = profit * (referralRate / 100);
+
+      await User(database).updateOne(
+        { _id: parentUser._id },
+        {
+          $inc: { balance: referralReward },
+          $set: { updatedAt: new Date() },
+        }
+      );
+    }
+  }
+
+  await VipRepository.syncUserVip(currentUser.id, options);
 
   await this._createAuditLog(
     AuditLogRepository.CREATE,
@@ -275,51 +251,33 @@ static async calculeGrap(data, options) {
     throw new Error("User not authenticated");
   }
 
-  // Get product
-  const currentProduct = await Product(database)
-    .findById(data.product)
-    .lean();
-
-  if (!currentProduct) {
-    throw new Error("Product not found");
-  }
-
   const userId = currentUser.id;
   const userBalance = Number(currentUser.balance) || 0;
-
-  const productAmount = Number(currentProduct.amount) || 0;
-  const commissionPercent = Number(currentProduct.commission) || 0;
+  const tasksDone = Number(currentUser.tasksDone) || 0;
+  const taskNumber = tasksDone + 1;
 
   const prizePosition = Number(currentUser.prizesNumber) || 0;
-  const tasksDone = Number(currentUser.tasksDone) || 0;
   const isPrizeMatch = tasksDone === (prizePosition - 1);
 
-  let balanceIncrement = 0;
-  let freezeAmount = 0;
-
   /* =====================================================
-     CASE 1: Combo Product Freeze
+     CASE 1: Combo Product Freeze — the position at
+     tasksDone+1 in the assigned Sequence is a combo.
+     newBalance = balance - comboPrice (can go negative).
   ====================================================== */
-  const matchingComboMappings = Array.isArray(currentUser.productItemMappings)
-    ? currentUser.productItemMappings.filter(
-        (m: any) => tasksDone === (Number(m.itemNumber) - 1)
+  const sequence = currentUser.sequence;
+  const comboItem = sequence
+    ? (sequence.combos || []).find(
+        (item: any) => item.itemNumber === taskNumber && item.product
       )
-    : [];
+    : null;
 
-  if (matchingComboMappings.length > 0) {
-    let totalDeduction = 0;
-
-    for (const mapping of matchingComboMappings) {
-      // comboPrice per mapping = balance + mapping.amount
-      // so that: balance - comboPrice = -mapping.amount
-      const mappingPrice = userBalance + (Number((mapping as any).amount) || 0);
-      totalDeduction += mappingPrice;
-    }
+  if (comboItem) {
+    const comboPrice = Number((comboItem as any).product.amount) || 0;
 
     await User(database).updateOne(
       { _id: userId },
       {
-        $inc: { balance: -totalDeduction },
+        $inc: { balance: -comboPrice },
         $set: {
           freezeblance: userBalance,
           updatedAt: new Date(),
@@ -334,64 +292,17 @@ static async calculeGrap(data, options) {
      CASE 2: Prize Unlock
   ====================================================== */
   if (currentUser.prizes && isPrizeMatch) {
-    balanceIncrement = productAmount;
+    const productAmount = Number(currentUser.prizes.amount) || 0;
 
     await User(database).updateOne(
       { _id: userId },
       {
-        $inc: { balance: balanceIncrement },
+        $inc: { balance: productAmount },
         $set: { freezeblance: 0, updatedAt: new Date() },
       }
     );
 
     return;
-  }
-
-  /* =====================================================
-     CASE 3: Normal Commission Flow
-  ====================================================== */
-
-  // Calculate user earning
-  const userEarning =
-    (commissionPercent / 100) * (Number(data.price) || 0);
-
-  if (userEarning <= 0) {
-    throw new Error("Invalid commission calculation");
-  }
-
-  balanceIncrement = userEarning;
-
-  // Update user balance first (atomic)
-  await User(database).updateOne(
-    { _id: userId },
-    {
-      $inc: { balance: balanceIncrement },
-      $set: { freezeblance: 0, updatedAt: new Date() },
-    }
-  );
-
-  /* =============================
-     Referral Commission (dynamic % of user earning)
-  ============================== */
-  const companySettingsDoc = await Company(database).findOne().lean() as any;
-  const calculeGrapReferralRate = Number(companySettingsDoc?.referralCommissionPercentage) || 20;
-
-  if (currentUser.invitationcode) {
-    const invitedUser = await User(database)
-      .findOne({ refcode: currentUser.invitationcode })
-      .lean();
-
-    if (invitedUser) {
-      const referralReward = userEarning * (calculeGrapReferralRate / 100);
-
-      await User(database).updateOne(
-        { _id: invitedUser._id },
-        {
-          $inc: { balance: referralReward },
-          $set: { updatedAt: new Date() },
-        }
-      );
-    }
   }
 
   return;
@@ -489,38 +400,37 @@ static async calculeGrap(data, options) {
 
   static async checkOrder(options) {
     const currentUser = MongooseRepository.getCurrentUser(options);
-    const currentDate = Dates.getTimeZoneDate();
 
-    // Use Promise.all for parallel execution
-    const [recordCount, userVip] = await Promise.all([
-      Records(options.database).countDocuments({
-        user: currentUser.id,
-        datecreation: currentDate
-      }),
-      // Get fresh VIP data to ensure accuracy
-      User(options.database)
-        .findById(currentUser.id)
-        .select('vip balance tasksDone')
-        .lean()
-    ]);
+    // Get fresh balance/tasksDone to ensure accuracy
+    const freshUser = await User(options.database)
+      .findById(currentUser.id)
+      .select("balance tasksDone")
+      .lean() as any;
 
-    if (!userVip?.vip) {
+    // VIP is fully automatic — the current tier is whichever one's Level
+    // Limit range contains the fresh balance.
+    const currentTier = await VipRepository.findCurrentTierForBalance(
+      freshUser?.balance,
+      options
+    );
+
+    if (!currentTier) {
       throw new Error400(
         options.language,
-        "validation.requiredSubscription"
+        "validation.noVipForBalance"
       );
     }
 
-    const dailyOrder = userVip.vip.dailyorder;
+    const dailyOrder = Number(currentTier.dailyorder) || 0;
 
-    if (userVip.tasksDone >= dailyOrder) {
+    if ((freshUser?.tasksDone || 0) >= dailyOrder) {
       throw new Error400(
         options.language,
         "validation.moretasks"
       );
     }
 
-    if (userVip.balance <= 0) {
+    if ((freshUser?.balance || 0) <= 0) {
       throw new Error400(
         options.language,
         "validation.InsufficientBalance"
@@ -649,14 +559,14 @@ static async calculeGrap(data, options) {
 
         // Calculate commission from ALL product records (both pending and frozen)
         for (const record of productRecords) {
-          if (record.product && record.product.amount && record.product.commission) {
+          if (record.product && record.product.type === "prizes" && record.product.amount) {
+            totalCommission += parseFloat(record.product.amount) || 0;
+          } else if (record.price && record.commission) {
             const recordCommission = this.calculeTotal(
-              record.product.amount,
-              record.product.commission
+              record.price,
+              record.commission
             );
             totalCommission += recordCommission;
-          } else if (record.product && record.product.type === "prizes" && record.product.amount) {
-            totalCommission += parseFloat(record.product.amount) || 0;
           }
         }
 
@@ -1177,9 +1087,8 @@ static async findAndCountAll(
     let total = 0;
 
     listitems.map((item) => {
-      let data = item.product;
       let itemTotal =
-        (parseFloat(data.commission) * parseFloat(data.amount)) / 100;
+        (parseFloat(item.commission) * parseFloat(item.price)) / 100;
 
       total += itemTotal;
     });

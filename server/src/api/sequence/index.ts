@@ -1,0 +1,26 @@
+export default (app) => {
+  app.post(
+    `/tenant/:tenantId/sequence`,
+    require('./sequenceCreate').default,
+  );
+  app.put(
+    `/tenant/:tenantId/sequence/:id`,
+    require('./sequenceUpdate').default,
+  );
+  app.delete(
+    `/tenant/:tenantId/sequence`,
+    require('./sequenceDestroy').default,
+  );
+  app.get(
+    `/tenant/:tenantId/sequence/autocomplete`,
+    require('./sequenceAutocomplete').default,
+  );
+  app.get(
+    `/tenant/:tenantId/sequence`,
+    require('./sequenceList').default,
+  );
+  app.get(
+    `/tenant/:tenantId/sequence/:id`,
+    require('./sequenceFind').default,
+  );
+};

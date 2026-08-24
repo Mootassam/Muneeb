@@ -98,6 +98,11 @@ export default (database) => {
         ref: "vip",
       },
 
+      sequence: {
+        type: Schema.Types.ObjectId,
+        ref: "sequence",
+      },
+
      
 
       itemNumber: {

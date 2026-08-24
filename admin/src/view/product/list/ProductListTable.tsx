@@ -12,7 +12,6 @@ import Spinner from 'src/view/shared/Spinner';
 import TableWrapper from 'src/view/shared/styles/TableWrapper';
 import Pagination from 'src/view/shared/table/Pagination';
 import actionsForm from 'src/modules/product/form/productFormActions';
-import VipListItem from 'src/view/vip/list/VipListItem';
 
 function ProductListTable(props) {
   const [recordIdToDestroy, setRecordIdToDestroy] = useState(null);
@@ -91,19 +90,11 @@ function ProductListTable(props) {
                     </div>
                   )}
                 </th>
-                <th 
-                  className="sortable-header" 
-                  onClick={() => doChangeSort('vip')}
-                >
-                  {i18n('entities.product.fields.vip')}
-                  {sorter.field === 'vip' && (
-                    <span className="sort-icon">
-                      {sorter.order === 'ascend' ? '↑' : '↓'}
-                    </span>
-                  )}
+                <th className="image-header">
+                  {i18n('entities.product.fields.image')}
                 </th>
-                <th 
-                  className="sortable-header" 
+                <th
+                  className="sortable-header"
                   onClick={() => doChangeSort('title')}
                 >
                   {i18n('entities.product.fields.title')}
@@ -113,8 +104,8 @@ function ProductListTable(props) {
                     </span>
                   )}
                 </th>
-                <th 
-                  className="sortable-header text-right" 
+                <th
+                  className="sortable-header text-right"
                   onClick={() => doChangeSort('amount')}
                 >
                   {i18n('entities.product.fields.amount')}
@@ -124,16 +115,8 @@ function ProductListTable(props) {
                     </span>
                   )}
                 </th>
-                <th 
-                  className="sortable-header text-right" 
-                  onClick={() => doChangeSort('commission')}
-                >
-                  {i18n('entities.product.fields.commission')}
-                  {sorter.field === 'commission' && (
-                    <span className="sort-icon">
-                      {sorter.order === 'ascend' ? '↑' : '↓'}
-                    </span>
-                  )}
+                <th className="text-center">
+                  {i18n('entities.product.fields.active')}
                 </th>
                 <th className="actions-header product-table-actions-header">
                   Actions
@@ -177,60 +160,43 @@ function ProductListTable(props) {
                         />
                       </div>
                     </td>
-                    <td className="table-cell">
-                      <div className="product-vip-cell">
-                        {row.vip ? (
-                          <div className="vip-badge">
-                            <i className="fas fa-crown vip-icon"></i>
-                            <span className="vip-name">{row.vip.title}</span>
-                          </div>
-                        ) : (
-                          <span className="no-vip">No VIP</span>
-                        )}
-                      </div>
+                    <td className="table-cell image-column">
+                      <img
+                        className="product-thumb"
+                        src={
+                          row.image ||
+                          row.photo?.[0]?.downloadUrl ||
+                          'https://via.placeholder.com/48'
+                        }
+                        alt={row.title}
+                        loading="lazy"
+                      />
                     </td>
                     <td className="table-cell">
                       <div className="product-title-cell">
                         <span className="product-title">{row.title}</span>
-                        {row.description && (
-                          <small className="product-description">{row.description}</small>
-                        )}
                       </div>
                     </td>
                     <td className="table-cell text-right">
-  <div className="amount-display">
-    {row.vip?.isFixedAmount ? (
-      <>
-        <i className="fas fa-dollar-sign amount-icon"></i>
-        <span className="amount-value">{row.amount}</span>
-        {row.currency && (
-          <span className="amount-currency">{row.currency}</span>
-        )}
-      </>
-    ) : (
-      <>
-        <span className="amount-value">{row.amount}</span>
-        <span className="amount-unit">%</span>
-      </>
-    )}
-  </div>
-</td>
-
-                    <td className="table-cell text-right">
-                      <div className="commission-display">
-                        <span className="commission-value">{row.commission}</span>
-                        <span className="commission-unit">%</span>
+                      <div className="amount-display">
+                        <span className="amount-value">{row.amount}</span>
+                        <span className="amount-currency">USDT</span>
                       </div>
+                    </td>
+                    <td className="table-cell text-center">
+                      <span
+                        className={`status-badge ${
+                          row.active === false ? 'status-badge-inactive' : 'status-badge-active'
+                        }`}
+                      >
+                        <span className="status-dot" />
+                        {row.active === false
+                          ? i18n('entities.product.enumerators.status.disable')
+                          : i18n('entities.product.enumerators.status.enable')}
+                      </span>
                     </td>
                     <td className="product-table-actions">
                       <div className="product-table-actions-content">
-                        <Link
-                          className="product-table-action-btn info"
-                          to={`/product/${row.id}`}
-                        >
-                          <i className="fas fa-eye product-table-action-icon" />
-                          View
-                        </Link>
                         {hasPermissionToEdit && (
                           <Link
                             className="product-table-action-btn primary"
@@ -288,6 +254,10 @@ function ProductListTable(props) {
 
         .text-right {
           text-align: right;
+        }
+
+        .text-center {
+          text-align: center;
         }
 
         .checkbox-column {
@@ -352,38 +322,48 @@ function ProductListTable(props) {
           vertical-align: middle;
         }
 
-        .product-vip-cell {
-          display: flex;
-          align-items: center;
+        .image-header {
+          width: 68px;
         }
 
-        .vip-badge {
+        .image-column {
+          width: 68px;
+        }
+
+        .product-thumb {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          object-fit: cover;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+        }
+
+        .status-badge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-          color: white;
-          padding: 4px 10px;
+          padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
         }
 
-        .vip-icon {
-          font-size: 10px;
+        .status-badge-active {
+          background: #dcfce7;
+          color: #15803d;
         }
 
-        .vip-name {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 100px;
+        .status-badge-inactive {
+          background: #f1f5f9;
+          color: #64748b;
         }
 
-        .no-vip {
-          color: #94a3b8;
-          font-style: italic;
-          font-size: 12px;
+        .status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: currentColor;
         }
 
         .product-title-cell {
@@ -415,11 +395,6 @@ function ProductListTable(props) {
           gap: 4px;
         }
 
-        .amount-icon {
-          color: #48bb78;
-          font-size: 12px;
-        }
-
         .amount-value {
           font-weight: 700;
           color: #2d3748;
@@ -430,41 +405,6 @@ function ProductListTable(props) {
           color: #718096;
           font-size: 12px;
           margin-left: 2px;
-        }
-
-        .commission-display {
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 8px;
-        }
-
-        .commission-value {
-          font-weight: 700;
-          color: #2d3748;
-          font-size: 16px;
-          min-width: 30px;
-          text-align: right;
-        }
-
-        .commission-unit {
-          color: #718096;
-          font-size: 12px;
-        }
-
-        .commission-bar {
-          width: 60px;
-          height: 6px;
-          background: #e2e8f0;
-          border-radius: 3px;
-          overflow: hidden;
-        }
-
-        .commission-fill {
-          height: 100%;
-          background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-          border-radius: 3px;
-          transition: width 0.3s ease;
         }
 
         .loading-cell {
@@ -641,26 +581,12 @@ function ProductListTable(props) {
             padding: 12px 4px !important;
           }
           
-          .vip-badge {
-            padding: 3px 8px;
-            font-size: 10px;
-          }
-          
-          .vip-name {
-            max-width: 60px;
-          }
-          
-          .amount-display,
-          .commission-display {
+          .amount-display {
             flex-direction: column;
             align-items: flex-end;
             gap: 2px;
           }
-          
-          .commission-bar {
-            width: 40px;
-          }
-          
+
           .product-title-cell {
             max-width: 120px;
           }

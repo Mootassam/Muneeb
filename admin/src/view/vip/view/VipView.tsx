@@ -18,19 +18,28 @@ function CouponsView(props) {
         value={record.title}
       />
 
-     
-
       <TextViewItem
-        label={i18n('entities.vip.fields.discount')}
-        value={record.amount}
+        label={i18n('entities.vip.fields.dailyorder')}
+        value={record.dailyorder}
       />
 
       <TextViewItem
-        label={i18n('entities.vip.fields.noOfTimes')}
-        value={record.commission}
+        label={i18n('entities.vip.fields.levelLimit')}
+        value={
+          record.min !== undefined && record.max !== undefined
+            ? `${record.min} - ${record.max}`
+            : null
+        }
       />
 
-      
+      <TextViewItem
+        label={i18n('entities.vip.fields.commissionrate')}
+        value={
+          record.comisionrate !== undefined
+            ? `${record.comisionrate}%`
+            : null
+        }
+      />
     </ViewWrapper>
   );
 }

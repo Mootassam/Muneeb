@@ -166,6 +166,38 @@ const privateRoutes = [
     exact: true,
   },
 
+  // combo routes
+  {
+    path: '/combo',
+    loader: () =>
+      import('src/view/combo/list/ComboListPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+
+  // sequence routes
+  {
+    path: '/sequence',
+    loader: () =>
+      import('src/view/sequence/list/SequenceListPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
+    path: '/sequence/new',
+    loader: () =>
+      import('src/view/sequence/form/SequenceFormPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
+    path: '/sequence/:id/edit',
+    loader: () =>
+      import('src/view/sequence/form/SequenceFormPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+
   // record routes
   {
     path: '/record',

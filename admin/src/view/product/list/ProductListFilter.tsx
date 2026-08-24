@@ -12,7 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import FilterPreview from 'src/view/shared/filter/FilterPreview';
 import filterRenders from 'src/modules/shared/filter/filterRenders';
 import InputFormItem from 'src/view/shared/form/items/InputFormItem';
-import VipAutocompleteFormItem from 'src/view/vip/autocomplete/VipAutocompleteFormItem';
+import SelectFormItem from 'src/view/shared/form/items/SelectFormItem';
 
 const schema = yup.object().shape({
   title: yupFilterSchemas.string(
@@ -21,8 +21,8 @@ const schema = yup.object().shape({
   amount: yupFilterSchemas.decimal(
     i18n('entities.product.fields.amount'),
   ),
-  vip: yupFilterSchemas.relationToOne(
-    i18n('entities.product.fields.vip'),
+  active: yupFilterSchemas.string(
+    i18n('entities.product.fields.active'),
   ),
 
 });
@@ -30,7 +30,7 @@ const schema = yup.object().shape({
 const emptyValues = {
   title: null,
   amount: null,
-  vip: null,
+  active: null,
 };
 
 const previewRenders = {
@@ -42,9 +42,9 @@ const previewRenders = {
     label: i18n('entities.product.fields.amount'),
     render: filterRenders.decimal(),
   },
-  vip: {
-    label: i18n('entities.product.fields.vip'),
-    render: filterRenders.relationToOne(),
+  active: {
+    label: i18n('entities.product.fields.active'),
+    render: filterRenders.generic(),
   },
 
 };
@@ -131,14 +131,24 @@ function CouponsListFilter(props) {
                   />
                 </div>
                 <div className="col-lg-6 col-12">
-                  <VipAutocompleteFormItem
-                    name="vip"
+                  <SelectFormItem
+                    name="active"
                     label={i18n(
-                      'entities.product.fields.vip',
+                      'entities.product.fields.active',
                     )}
+                    options={[
+                      {
+                        value: 'true',
+                        label: i18n('entities.product.enumerators.status.enable'),
+                      },
+                      {
+                        value: 'false',
+                        label: i18n('entities.product.enumerators.status.disable'),
+                      },
+                    ]}
                   />
                 </div>
-          
+
               </div>
 
               <div className="row">

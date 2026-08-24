@@ -5,8 +5,7 @@ import Error404 from "../../errors/Error404";
 import { IRepositoryOptions } from "./IRepositoryOptions";
 import FileRepository from "./fileRepository";
 import Vip from "../models/vip";
-import ProductRepository from "./productRepository";
-import Product from "../models/product";
+import User from "../models/user";
 
 class VipRepository {
   static async create(data, options: IRepositoryOptions) {
@@ -25,40 +24,6 @@ class VipRepository {
       ],
       options
     );
-
-    const items = {
-      vipId: record.id,
-      comisionrate: record.comisionrate,
-      min: record.min,
-      max: record.max,
-    };
-
-    // Count total VIPs
-    const totalVip = await VipRepository.count({}, options);
-
-    // Mapping between totalVip and corresponding function
-    const vipMap = {
-      1: ProductRepository.Vip1,
-      2: ProductRepository.Vip2,
-      3: ProductRepository.Vip3,
-      4: ProductRepository.Vip4,
-      5: ProductRepository.Vip5,
-    };
-
-    const vipHandler = vipMap[totalVip];
-    if (vipHandler) {
-      const values = (await vipHandler(items)) || [];
-
-      // Run product creations in parallel for better performance
-      await Promise.all(
-        values.map((item) =>
-          ProductRepository.create(
-            { ...item, tenant: currentTenant.id },
-            options
-          )
-        )
-      );
-    }
 
     // Log creation
     await this._createAuditLog(
@@ -84,11 +49,6 @@ class VipRepository {
       throw new Error404();
     }
 
-    // Check if min or max values are being updated
-    const minChanged = data.min !== undefined && data.min !== record.min;
-    const maxChanged = data.max !== undefined && data.max !== record.max;
-    const priceRangeChanged = minChanged || maxChanged;
-
     // Update the VIP record
     await Vip(options.database).updateOne(
       { _id: id },
@@ -99,15 +59,6 @@ class VipRepository {
       options
     );
 
-    // If price range changed, update all products for this VIP
-    if (priceRangeChanged) {
-      // Use the new values if provided, otherwise use the existing ones
-      const finalMin = data.min !== undefined ? data.min : record.min;
-      const finalMax = data.max !== undefined ? data.max : record.max;
-
-      await this.updateProductPricesForVip(id, finalMin, finalMax, options);
-    }
-
     await this._createAuditLog(AuditLogRepository.UPDATE, id, data, options);
 
     record = await this.findById(id, options);
@@ -116,59 +67,62 @@ class VipRepository {
   }
 
   /**
-   * Update all product prices for a specific VIP with new min/max range
+   * Finds the VIP tier whose Level Limit range [min, max] contains the
+   * given balance. VIP is fully automatic — this is the single source of
+   * truth for "which tier is a user currently in", used instead of a
+   * stored/manually-assigned vip.
    */
-  static async updateProductPricesForVip(vipId, newMin, newMax, options: IRepositoryOptions) {
-    try {
+  static async findCurrentTierForBalance(balance, options: IRepositoryOptions) {
+    const currentTenant = MongooseRepository.getCurrentTenant(options);
+    const bal = Number(balance) || 0;
 
-      // Find all products for this VIP - await the query and wrap with session if exists
-      const products = await MongooseRepository.wrapWithSessionIfExists(
-        Product(options.database).find({ vip: vipId }),
-        options
-      );
+    const vips = await MongooseRepository.wrapWithSessionIfExists(
+      Vip(options.database).find({ tenant: currentTenant.id }),
+      options
+    );
 
-      if (!products || products.length === 0) {
-        return;
-      }
+    const match = vips.find((vip) => {
+      const min = Number(vip.min);
+      const max = Number(vip.max);
+      return !isNaN(min) && !isNaN(max) && bal >= min && bal <= max;
+    });
 
-
-      // Update each product with new random price based on new range
-      const updatePromises = products.map(async (product) => {
-        const newPrice = await this.generateRandomPriceForProduct(newMin, newMax);
-
-        return Product(options.database).updateOne(
-          { _id: product._id },
-          {
-            amount: newPrice,
-            updatedBy: MongooseRepository.getCurrentUser(options).id
-          },
-          options
-        );
-      });
-
-      await Promise.all(updatePromises);
-
-
-    } catch (error) {
-      console.error(`Error updating product prices for VIP ${vipId}:`, error);
-      throw error;
-    }
+    return match || null;
   }
 
-    static async generateRandomPriceForProduct(minStr, maxStr) {
-    const min = parseFloat(minStr);
-    const max = parseFloat(maxStr);
+  /**
+   * Keeps user.vip as a cached snapshot of the live-computed current tier,
+   * so UI that reads currentUser.vip (e.g. the daily-order progress bar)
+   * stays accurate. Money calculations must NOT rely on this cache — they
+   * should call findCurrentTierForBalance directly.
+   */
+  static async syncUserVip(userId, options: IRepositoryOptions) {
+    const user = await User(options.database)
+      .findById(userId)
+      .select("balance vip")
+      .lean() as any;
 
-    if (isNaN(min) || isNaN(max)) {
-      throw new Error('Invalid min or max values for price generation');
+    if (!user) {
+      return null;
     }
 
-    // Ensure min is not greater than max
-    const actualMin = Math.min(min, max);
-    const actualMax = Math.max(min, max);
+    const currentTier = await this.findCurrentTierForBalance(
+      user.balance,
+      options
+    );
 
-    const randomPrice = (Math.random() * (actualMax - actualMin) + actualMin).toFixed(2);
-    return randomPrice;
+    const currentTierId = currentTier?.id || currentTier?._id || null;
+    const existingVipId = user.vip ? String(user.vip) : null;
+
+    if (String(currentTierId || "") !== String(existingVipId || "")) {
+      await User(options.database).updateOne(
+        { _id: userId },
+        { $set: { vip: currentTierId } },
+        options
+      );
+    }
+
+    return currentTier;
   }
 
   static async destroy(id, options: IRepositoryOptions) {
@@ -243,14 +197,6 @@ class VipRepository {
         });
       }
 
-      if (filter.levellimit) {
-        criteriaAnd.push({
-          levellimit: {
-            $regex: MongooseQueryUtils.escapeRegExp(filter.levellimit),
-            $options: "i",
-          },
-        });
-      }
     }
 
     const sort = MongooseQueryUtils.sort(orderBy || "createdAt_ASC");

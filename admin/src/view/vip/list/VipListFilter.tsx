@@ -18,14 +18,10 @@ const schema = yup.object().shape({
   title: yupFilterSchemas.string(
     i18n('entities.vip.fields.title'),
   ),
-  levellimit: yupFilterSchemas.decimal(
-    i18n('entities.vip.fields.levelLimit'),
-  ),
  });
 
 const emptyValues = {
   title: null,
-  levellimit: null,
 };
 
 const previewRenders = {
@@ -33,11 +29,6 @@ const previewRenders = {
     label: i18n('entities.vip.fields.title'),
     render: filterRenders.generic(),
   },
-  levellimit: {
-    label: i18n('entities.vip.fields.levelLimit'),
-    render: filterRenders.decimal(),
-  },
-
 };
 
 function CouponsListFilter(props) {
@@ -113,17 +104,6 @@ function CouponsListFilter(props) {
                     )}
                   />
                 </div>
-           
-                <div className="col-lg-6 col-12">
-                  <InputFormItem
-                    name="levellimit"
-                    label={i18n(
-                      'entities.vip.fields.levelLimit',
-                    )}
-                  />
-                </div>
-             
-            
               </div>
 
               <div className="row">

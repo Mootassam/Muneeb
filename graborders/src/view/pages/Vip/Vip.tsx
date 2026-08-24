@@ -1,58 +1,43 @@
-import React, { useEffect, useState, useCallback, memo } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import vipActions from "src/modules/vip/list/vipListActions";
 import vipSelectors from "src/modules/vip/list/vipListSelectors";
 import LoadingModal from "src/shared/LoadingModal";
 import authSelectors from "src/modules/auth/authSelectors";
-import authActions from "src/modules/auth/authActions";
 import SubHeader from "src/view/shared/Header/SubHeader";
 import { i18n } from "../../../i18n";
 
 interface VipItem {
   id: string;
   title: string;
-  Entrylimit: string;
-  levellimit: string;
+  min: string;
+  max: string;
   dailyorder: string;
   comisionrate: string;
-  commissionmergedata?: string;
-  tasksperday?: string;
-  setperday?: string;
   photo?: Array<{ downloadUrl: string }>;
   description?: string;
   benefits?: string[];
-  price?: string;
+}
+
+// VIP is fully automatic: a tier is "current" whenever the customer's
+// balance falls within that tier's Level Limit [min, max] range.
+function isBalanceInRange(balance: number, vip: VipItem) {
+  const min = parseFloat(vip.min);
+  const max = parseFloat(vip.max);
+  if (isNaN(min) || isNaN(max)) {
+    return false;
+  }
+  return balance >= min && balance <= max;
 }
 
 const VipLevelCard = memo(
-  ({
-    vip,
-    isCurrent,
-    canUpgrade,
-    isLoading,
-    onSelect,
-  }: {
-    vip: VipItem;
-    isCurrent: boolean;
-    canUpgrade: boolean;
-    isLoading: boolean;
-    onSelect: (vip: VipItem) => void;
-  }) => {
+  ({ vip, isCurrent }: { vip: VipItem; isCurrent: boolean }) => {
     const photoUrl = vip?.photo?.[0]?.downloadUrl;
 
     return (
       <div
-        className={`vip__card ${isCurrent ? "vip__card--current" : ""} ${
-          !canUpgrade ? "vip__card--locked" : ""
-        }`}
-        onClick={() => canUpgrade && onSelect(vip)}
+        className={`vip__card ${isCurrent ? "vip__card--current" : "vip__card--locked"}`}
       >
-        {isLoading && (
-          <div className="vip__cardLoading">
-            <div className="vip__spinner"></div>
-          </div>
-        )}
-
         <div className="vip__cardImage">
           {photoUrl ? (
             <img src={photoUrl} alt={vip?.title} loading="lazy" />
@@ -62,11 +47,7 @@ const VipLevelCard = memo(
 
           <span
             className={`vip__ribbon ${
-              isCurrent
-                ? "vip__ribbon--current"
-                : !canUpgrade
-                ? "vip__ribbon--locked"
-                : "vip__ribbon--upgrade"
+              isCurrent ? "vip__ribbon--current" : "vip__ribbon--locked"
             }`}
           >
             {isCurrent ? (
@@ -74,13 +55,11 @@ const VipLevelCard = memo(
                 <i className="fa-solid fa-crown"></i>
                 {i18n("pages.vip.currentLevel")}
               </>
-            ) : !canUpgrade ? (
+            ) : (
               <>
                 <i className="fa-solid fa-lock"></i>
                 {i18n("pages.vip.locked")}
               </>
-            ) : (
-              i18n("pages.vip.upgrade")
             )}
           </span>
         </div>
@@ -98,36 +77,20 @@ const VipLevelCard = memo(
               </span>
             </div>
 
-            {vip.commissionmergedata && (
-              <div className="vip__feature">
-                <i className="fa-solid fa-star"></i>
-                <span>
-                  {vip.commissionmergedata}% {i18n("pages.vip.premiumCommission")}
-                </span>
-              </div>
-            )}
-
             <div className="vip__feature">
               <i className="fa-solid fa-box"></i>
               <span>
-                {i18n("pages.vip.maxOrders")}: {vip.tasksperday}
+                {i18n("pages.vip.maxOrders")}: {vip.dailyorder}
               </span>
             </div>
 
             <div className="vip__feature">
-              <i className="fa-solid fa-calendar-day"></i>
+              <i className="fa-solid fa-layer-group"></i>
               <span>
-                {i18n("pages.vip.setperday")}: {vip.setperday}
+                {i18n("pages.vip.levelLimit")}: {vip.min} - {vip.max}
               </span>
             </div>
           </div>
-
-          {vip.price && (
-            <div className="vip__price">
-              <i className="fa-solid fa-tag"></i>
-              {vip.price}
-            </div>
-          )}
         </div>
       </div>
     );
@@ -143,10 +106,8 @@ function VipPage() {
   const loading = useSelector(vipSelectors.selectLoading);
   const currentUser = useSelector(authSelectors.selectCurrentUser);
 
-  const [selectedVip, setSelectedVip] = useState<VipItem | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [upgradingVipId, setUpgradingVipId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const balance = Number(currentUser?.balance) || 0;
 
   useEffect(() => {
     dispatch(vipActions.doFetch());
@@ -159,49 +120,8 @@ function VipPage() {
         vip.description?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
-  const handleShowModal = useCallback((vip: VipItem) => {
-    setSelectedVip(vip);
-    setShowModal(true);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setShowModal(false);
-    setSelectedVip(null);
-  }, []);
-
-  const handleUpgrade = useCallback(
-    async (vip: VipItem) => {
-      setUpgradingVipId(vip.id);
-      try {
-        await dispatch(authActions.doUpdateProfileMobile({ vip }));
-        setShowModal(false);
-      } catch (error) {
-        console.error("Upgrade failed:", error);
-      } finally {
-        setUpgradingVipId(null);
-      }
-    },
-    [dispatch]
-  );
-
-  const canUpgradeTo = useCallback(
-    (vip: VipItem) => {
-      if (!currentUser?.vip?.id) {
-        return true;
-      }
-
-      const currentLevel = vipRecords?.find((v: VipItem) => v.id === currentUser.vip.id);
-
-      if (currentLevel && vip) {
-        return (
-          parseInt(vip.levellimit) > parseInt(currentLevel.levellimit) ||
-          parseInt(vip.dailyorder) > parseInt(currentLevel.dailyorder)
-        );
-      }
-
-      return true;
-    },
-    [currentUser, vipRecords]
+  const currentVip = vipRecords?.find((vip: VipItem) =>
+    isBalanceInRange(balance, vip)
   );
 
   return (
@@ -211,10 +131,10 @@ function VipPage() {
       <div className="vip__page">
         <div className="vip__intro">
           <p className="vip__introText">{i18n("pages.vip.subtitle")}</p>
-          {currentUser?.vip && (
+          {currentVip && (
             <span className="vip__currentChip">
               <i className="fa-solid fa-crown"></i>
-              {i18n("pages.vip.currentlyOn")}: {currentUser.vip.title}
+              {i18n("pages.vip.currentlyOn")}: {currentVip.title}
             </span>
           )}
         </div>
@@ -250,107 +170,12 @@ function VipPage() {
               <VipLevelCard
                 key={vip.id || index}
                 vip={vip}
-                isCurrent={currentUser?.vip?.id === vip.id}
-                canUpgrade={canUpgradeTo(vip)}
-                isLoading={upgradingVipId === vip.id}
-                onSelect={handleShowModal}
+                isCurrent={isBalanceInRange(balance, vip)}
               />
             ))}
           </div>
         )}
       </div>
-
-      {selectedVip && showModal && (
-        <div className="vip__modalOverlay" onClick={handleCloseModal}>
-          <div className="vip__modalCard" onClick={(event) => event.stopPropagation()}>
-            <div className="vip__modalHeader">
-              <div className="vip__modalTitle">
-                {i18n("pages.vip.upgradeTo")} {selectedVip.title}
-              </div>
-              <i className="fa-solid fa-xmark vip__modalClose" onClick={handleCloseModal}></i>
-            </div>
-
-            <div className="vip__modalImage">
-              {selectedVip?.photo?.[0]?.downloadUrl ? (
-                <img src={selectedVip.photo[0].downloadUrl} alt={selectedVip?.title} loading="lazy" />
-              ) : (
-                <i className="fa-solid fa-crown vip__cardImagePlaceholder"></i>
-              )}
-            </div>
-
-            {selectedVip.description && (
-              <p className="vip__modalDesc">{selectedVip.description}</p>
-            )}
-
-            <div className="vip__modalDetails">
-              <div className="vip__modalDetailRow">
-                <i className="fa-solid fa-layer-group"></i>
-                <span className="vip__modalDetailLabel">{i18n("pages.vip.levelLimit")}</span>
-                <span className="vip__modalDetailValue">{selectedVip.levellimit}</span>
-              </div>
-              <div className="vip__modalDetailRow">
-                <i className="fa-solid fa-calendar-day"></i>
-                <span className="vip__modalDetailLabel">{i18n("pages.vip.setperday")}</span>
-                <span className="vip__modalDetailValue">{selectedVip.setperday}</span>
-              </div>
-              <div className="vip__modalDetailRow">
-                <i className="fa-solid fa-percent"></i>
-                <span className="vip__modalDetailLabel">{i18n("pages.vip.commissionRate")}</span>
-                <span className="vip__modalDetailValue">{selectedVip.comisionrate}%</span>
-              </div>
-              {selectedVip.commissionmergedata && (
-                <div className="vip__modalDetailRow">
-                  <i className="fa-solid fa-star"></i>
-                  <span className="vip__modalDetailLabel">{i18n("pages.vip.premiumCommission")}</span>
-                  <span className="vip__modalDetailValue">{selectedVip.commissionmergedata}%</span>
-                </div>
-              )}
-              <div className="vip__modalDetailRow">
-                <i className="fa-solid fa-box"></i>
-                <span className="vip__modalDetailLabel">{i18n("pages.vip.maxOrders")}</span>
-                <span className="vip__modalDetailValue">{selectedVip.tasksperday}</span>
-              </div>
-            </div>
-
-            {selectedVip.benefits && selectedVip.benefits.length > 0 && (
-              <div className="vip__modalBenefits">
-                <div className="vip__modalBenefitsTitle">{i18n("pages.vip.benefits")}</div>
-                <ul className="vip__benefitsList">
-                  {selectedVip.benefits.map((benefit, index) => (
-                    <li key={index} className="vip__benefitItem">
-                      <i className="fa-solid fa-check"></i>
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="vip__modalActions">
-              <button className="vip__cancelBtn" onClick={handleCloseModal}>
-                {i18n("pages.vip.cancel")}
-              </button>
-              <button
-                className="vip__confirmBtn"
-                onClick={() => handleUpgrade(selectedVip)}
-                disabled={upgradingVipId === selectedVip.id}
-              >
-                {upgradingVipId === selectedVip.id ? (
-                  <>
-                    <div className="vip__spinner vip__spinner--dark"></div>
-                    {i18n("pages.vip.upgrading")}
-                  </>
-                ) : (
-                  <>
-                    <i className="fa-solid fa-arrow-up"></i>
-                    {i18n("pages.vip.upgradeNow")}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         .vip__page {

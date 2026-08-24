@@ -77,6 +77,7 @@ require("./team").default(routes);
 require("./notification").default(routes);
 require("./vip").default(routes);
 require("./product").default(routes);
+require("./sequence").default(routes);
 require("./company").default(routes);
 // Loads the Tenant if the :tenantId param is passed
 routes.param("tenantId", tenantMiddleware);

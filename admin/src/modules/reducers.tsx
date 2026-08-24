@@ -13,6 +13,8 @@ import transaction from 'src/modules/transaction/transactionReducers'
 import deposit from 'src/modules/deposit/depositReducers'
 import withdraw from 'src/modules/withdraw/withdrawReducers'
 import product from 'src/modules/product/productReducers'
+import combo from 'src/modules/combo/comboReducers'
+import sequence from 'src/modules/sequence/sequenceReducers'
 import record from 'src/modules/record/recordReducers'
 import company from 'src/modules/company/companyReducers';
 import worker from 'src/modules/worker/workerReducers';
@@ -30,6 +32,8 @@ export default (history) =>
     deposit,
     withdraw,
     product,
+    combo,
+    sequence,
     tenant,
     user,
     company,

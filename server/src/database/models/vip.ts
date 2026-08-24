@@ -14,12 +14,6 @@ export default (database) => {
       title: {
         type: String,
       },
-      entrylimit: {
-        type: String,
-      },
-      levellimit: {
-        type: String,
-      },
       photo: [FileSchema],
       dailyorder: {
         type: String,
@@ -27,23 +21,10 @@ export default (database) => {
       comisionrate: {
         type: String,
       },
-      setperday: {
-        type: String,
-      },
-      withdrawperday: {
-        type: String
-      },
-      commissionmergedata: {
-        type: String,
-      },
-      isFixedAmount: { type: Boolean, default: true },
+      // Level Limit range — the balance interval [min, max] a user's
+      // current balance must fall within for this tier to be active.
       min: { type: String },
       max: { type: String },
-      targetProfit: { type: Number, default: 0 },
-
-
-      handlingfee: { type: String },
-      withdrawlimit: { type: String },
 
       tenant: {
         type: Schema.Types.ObjectId,

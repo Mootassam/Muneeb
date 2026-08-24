@@ -7,17 +7,19 @@ import actions from 'src/modules/product/list/productListActions';
 import selectors from 'src/modules/product/list/productListSelectors';
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
 import ConfirmModal from 'src/view/shared/modals/ConfirmModal';
 import ButtonIcon from 'src/view/shared/ButtonIcon';
 import Toolbar from 'src/view/shared/styles/Toolbar';
 import ReactTooltip from 'react-tooltip';
+import Message from 'src/view/shared/message';
+import ProductFormModal from 'src/view/product/form/ProductFormModal';
 
 function CouponsToolbar(props) {
   const [
     destroyAllConfirmVisible,
     setDestroyAllConfirmVisible,
   ] = useState(false);
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -51,6 +53,20 @@ function CouponsToolbar(props) {
 
   const doCloseDestroyAllConfirmModal = () => {
     setDestroyAllConfirmVisible(false);
+  };
+
+  const doOpenAddModal = () => {
+    setAddModalVisible(true);
+  };
+
+  const doCloseAddModal = () => {
+    setAddModalVisible(false);
+  };
+
+  const doAddSuccess = () => {
+    setAddModalVisible(false);
+    Message.success(i18n('entities.product.create.success'));
+    dispatch(actions.doFetchCurrentFilter());
   };
 
   const doExport = () => {
@@ -142,20 +158,19 @@ function CouponsToolbar(props) {
   return (
     <Toolbar>
       {hasPermissionToCreate && (
-        <Link to="/product/new">
-          <span
-            data-tip={i18n('common.new')}
-            data-for="charge-list-toolbar-new-tooltip"
+        <span
+          data-tip={i18n('common.new')}
+          data-for="charge-list-toolbar-new-tooltip"
+        >
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={doOpenAddModal}
           >
-            <button
-              className="btn btn-primary"
-              type="button"
-            >
-              <ButtonIcon iconClass="fas fa-plus" />
-            </button>
-            <ReactTooltip id="charge-list-toolbar-new-tooltip" />
-          </span>
-        </Link>
+            <ButtonIcon iconClass="fas fa-plus" />
+          </button>
+          <ReactTooltip id="charge-list-toolbar-new-tooltip" />
+        </span>
       )}
 {/* 
       {hasPermissionToImport && (
@@ -203,6 +218,13 @@ function CouponsToolbar(props) {
           onClose={() => doCloseDestroyAllConfirmModal()}
           okText={i18n('common.yes')}
           cancelText={i18n('common.no')}
+        />
+      )}
+
+      {addModalVisible && (
+        <ProductFormModal
+          onClose={doCloseAddModal}
+          onSuccess={doAddSuccess}
         />
       )}
     </Toolbar>

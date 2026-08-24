@@ -8,10 +8,8 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import InputFormItem from 'src/view/shared/form/items/InputFormItem';
 import InputNumberFormItem from 'src/view/shared/form/items/InputNumberFormItem';
-
 import ImagesFormItem from 'src/view/shared/form/items/ImagesFormItem';
 import Storage from 'src/security/storage';
-import CheckboxFormItem from 'src/view/shared/form/items/CheckboxFormItem';
 
 const schema = yup.object().shape({
   title: yupFormSchemas.string(
@@ -26,71 +24,33 @@ const schema = yup.object().shape({
       required: true,
     },
   ),
-  entrylimit: yupFormSchemas.string(
-    i18n('entities.vip.fields.entrylimit'),
-    {},
-  ),
-  levellimit: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.levelLimit'),
-    {
-      required: true,
-    },
-  ),
   dailyorder: yupFormSchemas.integer(
     i18n('entities.vip.fields.dailyorder'),
     {
       required: true,
+      min: 1,
     },
   ),
-  comisionrate: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.commissionrate'),
-    {
-      required: true,
-    },
-  ),
-
-  handlingfee: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.handlingfee'),
-    {
-      required: true,
-    },
-  ),
-  setperday: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.setperday'),
-    {
-      required: true,
-    },
-  ),
-
-
-  withdrawperday: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.withdrawperday'),
-    {
-      required: true,
-    },
-  ),
-  commissionmergedata: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.commissionmergedata'),
-    {
-      required: true,
-    },
-  ),
-
   min: yupFormSchemas.decimal(
     i18n('entities.vip.fields.min'),
     {
       required: true,
+      min: 0,
     },
   ),
   max: yupFormSchemas.decimal(
     i18n('entities.vip.fields.max'),
     {
       required: true,
+      min: 0,
     },
   ),
-  targetProfit: yupFormSchemas.decimal(
-    i18n('entities.vip.fields.targetProfit'),
-    {},
+  comisionrate: yupFormSchemas.decimal(
+    i18n('entities.vip.fields.commissionrate'),
+    {
+      required: true,
+      min: 0,
+    },
   ),
 });
 
@@ -100,19 +60,10 @@ function VipForm(props) {
     return {
       title: record.title,
       photo: record.photo || [],
-      entrylimit: record.entrylimit,
-      levellimit: record.levellimit,
       dailyorder: record.dailyorder,
-      comisionrate: record.comisionrate,
-      commissionmergedata: record.commissionmergedata,
-      isFixedAmount:record.isFixedAmount,
       min: record.min,
       max: record.max,
-      targetProfit: record.targetProfit,
-      handlingfee: record.handlingfee,
-      setperday: record.setperday,
-      withdrawperday: record.withdrawperday,
-      // withdrawlimit: record.withdrawlimit,
+      comisionrate: record.comisionrate,
     };
   });
 
@@ -147,138 +98,50 @@ function VipForm(props) {
             </div>
 
             <div className="col-lg-7 col-md-8 col-12">
-              <InputFormItem
-                name="levellimit"
-                label={i18n(
-                  'entities.vip.fields.levelLimit',
-                )}
+              <ImagesFormItem
+                name="photo"
+                label={i18n('entities.vip.fields.photo')}
                 required={true}
-                autoFocus
-              />
-            </div>
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputNumberFormItem
-                name="comisionrate"
-                label={i18n(
-                  'entities.vip.fields.commissionrate',
-                )}
-                required={true}
-              />
-            </div>
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputNumberFormItem
-                name="commissionmergedata"
-                label={i18n(
-                  'entities.vip.fields.commissionmergedata',
-                )}
-                required={true}
+                storage={Storage.values.categoryPhoto}
+                max={undefined}
               />
             </div>
 
             <div className="col-lg-7 col-md-8 col-12">
               <InputNumberFormItem
                 name="dailyorder"
-                label={i18n(
-                  'entities.vip.fields.dailyorder',
-                )}
+                label={i18n('entities.vip.fields.dailyorder')}
                 required={true}
               />
+            </div>
+
+            <div className="col-lg-7 col-md-8 col-12">
+              <div className="row">
+                <div className="col-6">
+                  <InputNumberFormItem
+                    name="min"
+                    label={i18n('entities.vip.fields.min')}
+                    required={true}
+                  />
+                </div>
+                <div className="col-6">
+                  <InputNumberFormItem
+                    name="max"
+                    label={i18n('entities.vip.fields.max')}
+                    required={true}
+                  />
+                </div>
+              </div>
+              <small className="form-text text-muted">
+                {i18n('entities.vip.fields.levelLimitHint')}
+              </small>
             </div>
 
             <div className="col-lg-7 col-md-8 col-12">
               <InputNumberFormItem
-                name="setperday"
-                label={i18n(
-                  'entities.vip.fields.setperday',
-                )}
+                name="comisionrate"
+                label={i18n('entities.vip.fields.commissionrate')}
                 required={true}
-              />
-            </div>
-            {/* 
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputFormItem
-                name="withdrawlimit"
-                label={i18n(
-                  'entities.vip.fields.withdrawlimit',
-                )}
-                required={true}
-              />
-            </div>
-*/}
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputNumberFormItem
-                name="withdrawperday"
-                label={i18n(
-                  'entities.vip.fields.withdrawperday',
-                )}
-                required={true}
-              />
-            </div>
-
-
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputNumberFormItem
-                name="handlingfee"
-                label={i18n(
-                  'entities.vip.fields.handlingfee',
-                )}
-                required={true}
-              />
-            </div>
-            <div className="col-lg-7 col-md-8 col-12">
-              <CheckboxFormItem
-                name="isFixedAmount"
-                label={i18n(
-                  'entities.vip.fields.isFixedAmount',
-                )}
-                required={true}
-              />
-            </div>
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputFormItem
-                name="min"
-                label={i18n(
-                  'entities.vip.fields.min',
-                )}
-                required={true}
-                autoFocus
-              />
-            </div>
-
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputFormItem
-                name="max"
-                label={i18n(
-                  'entities.vip.fields.max',
-                )}
-                required={true}
-                autoFocus
-              />
-            </div>
-
-            <div className="col-lg-7 col-md-8 col-12">
-              <InputNumberFormItem
-                name="targetProfit"
-                label={i18n(
-                  'entities.vip.fields.targetProfit',
-                )}
-                required={false}
-              />
-            </div>
-            <div className="col-lg-7 col-md-8 col-12">
-              <ImagesFormItem
-                name="photo"
-                label={i18n(
-                  'entities.paymentsettings.fields.photo',
-                )}
-                required={false}
-                storage={Storage.values.categoryPhoto}
-                max={undefined}
               />
             </div>
           </div>

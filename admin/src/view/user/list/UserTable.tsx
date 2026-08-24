@@ -16,7 +16,16 @@ import TableWrapper from 'src/view/shared/styles/TableWrapper';
 import recordListActions from 'src/modules/record/list/recordListActions';
 import selectorTaskdone from 'src/modules/record/list/recordListSelectors';
 import UserService from 'src/modules/user/userService';
+import SequenceService from 'src/modules/sequence/sequenceService';
 import Message from 'src/view/shared/message';
+
+function formatCurrency(value) {
+  const num = parseFloat(value) || 0;
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 // ---------- types ----------
 interface MinusRecord {
@@ -50,6 +59,59 @@ function UserTable() {
   // State for the custom minus‑balance modal
   const [minusRecord, setMinusRecord] = useState<MinusRecord | null>(null);
   const [clearingMinus, setClearingMinus] = useState(false);
+
+  // State for assigning a sequence to a user
+  const [sequenceOptions, setSequenceOptions] = useState<
+    Array<{ id: string; title: string }>
+  >([]);
+  const [sequenceAssignUser, setSequenceAssignUser] = useState<{
+    id: string;
+    sequenceId: string | null;
+  } | null>(null);
+  const [savingSequence, setSavingSequence] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await SequenceService.list(
+          {},
+          'title_ASC',
+          null,
+          null,
+        );
+        setSequenceOptions(response.rows || []);
+      } catch (error) {
+        console.error('Failed to load sequences', error);
+      }
+    })();
+  }, []);
+
+  const doOpenAssignSequence = (row: any) => {
+    setSequenceAssignUser({
+      id: row.id,
+      sequenceId: row.sequence?.id || null,
+    });
+  };
+
+  const doSaveSequence = async () => {
+    if (!sequenceAssignUser) {
+      return;
+    }
+    try {
+      setSavingSequence(true);
+      await UserService.updateSequence(
+        sequenceAssignUser.id,
+        sequenceAssignUser.sequenceId,
+      );
+      setSequenceAssignUser(null);
+      dispatch(actions.doFetchCurrentFilter());
+      Message.success('Sequence assigned successfully.');
+    } catch (error) {
+      console.error('Failed to assign sequence', error);
+    } finally {
+      setSavingSequence(false);
+    }
+  };
 
   const doDestroy = (id: string) => {
     setRecordIdToDestroy(null);
@@ -288,6 +350,104 @@ function UserTable() {
           padding: 8px;
           border-bottom: 1px solid #f0f0f0;
         }
+
+        /* Sequence column */
+        .sequence-cell {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: nowrap;
+        }
+
+        .sequence-badge {
+          display: inline-flex;
+          align-items: center;
+          max-width: 160px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          background: #6c5ce7;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 5px 12px;
+          border-radius: 20px;
+        }
+
+        .sequence-badge-empty {
+          display: inline-block;
+          width: 20px;
+          height: 8px;
+          border-radius: 4px;
+          background: #cbd5e1;
+        }
+
+        .sequence-edit-btn {
+          flex-shrink: 0;
+          width: 26px;
+          height: 26px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          background: #fff;
+          color: #64748b;
+          font-size: 11px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .sequence-edit-btn:hover {
+          background: #f8fafc;
+          color: #1a202c;
+        }
+
+        /* Combos column */
+        .combo-badges-cell {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          max-width: 220px;
+        }
+
+        .combo-price-badge {
+          background: #e53e3e;
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 9px;
+          border-radius: 6px;
+          white-space: nowrap;
+        }
+
+        /* Assign sequence modal */
+        .sequence-modal-field {
+          margin-bottom: 8px;
+        }
+
+        .sequence-modal-label {
+          display: block;
+          font-size: 13px;
+          font-weight: 600;
+          color: #1a202c;
+          margin-bottom: 6px;
+        }
+
+        .sequence-modal-select {
+          width: 100%;
+          padding: 9px 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 14px;
+          background: #fff;
+        }
+
+        .sequence-modal-select:focus {
+          outline: none;
+          border-color: #7c6cf0;
+          box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.15);
+        }
       `}</style>
 
       <div className="user-list-container">
@@ -331,6 +491,9 @@ function UserTable() {
                   </th>
 
                   <th className="table-header">
+                    {i18n('user.fields.sequence')}
+                  </th>
+                  <th className="table-header">
                     {i18n('user.fields.balance')}
                   </th>
                   <th className="table-header">
@@ -342,6 +505,9 @@ function UserTable() {
                   <th className="table-header text-center">
                     {i18n('user.fields.country')}
                   </th>
+                  <th className="table-header">
+                    {i18n('user.fields.combos')}
+                  </th>
                   {/* Sticky Actions header */}
                   <th className="actions-header text-center">
                     Actions
@@ -351,7 +517,7 @@ function UserTable() {
               <tbody className="table-body">
                 {loading && (
                   <tr>
-                    <td colSpan={7} className="loading-cell">
+                    <td colSpan={9} className="loading-cell">
                       <div className="loading-container">
                         <Spinner />
                         <span className="loading-text">
@@ -363,7 +529,7 @@ function UserTable() {
                 )}
                 {!loading && !hasRows && (
                   <tr>
-                    <td colSpan={7} className="no-data-cell">
+                    <td colSpan={9} className="no-data-cell">
                       <div className="no-data-content">
                         <i className="fas fa-database no-data-icon"></i>
                         <p>{i18n('table.noData')}</p>
@@ -377,6 +543,25 @@ function UserTable() {
                       <td className="table-cell">{row.email}</td>
                       <td className="table-cell">{row.invitationcode}</td>
                       <td className="table-cell">{row.refcode}</td>
+                      <td className="table-cell">
+                        <div className="sequence-cell">
+                          {row.sequence?.title ? (
+                            <span className="sequence-badge">
+                              {row.sequence.title}
+                            </span>
+                          ) : (
+                            <span className="sequence-badge-empty" />
+                          )}
+                          <button
+                            type="button"
+                            className="sequence-edit-btn"
+                            title="Assign sequence"
+                            onClick={() => doOpenAssignSequence(row)}
+                          >
+                            <i className="fas fa-pen" />
+                          </button>
+                        </div>
+                      </td>
                       <td className="table-cell">
                         {row.balance < 0 ? (
                           <span
@@ -415,6 +600,15 @@ function UserTable() {
                           {row.country} <br />
                           {row.ipAddress}
                         </span>
+                      </td>
+                      <td className="table-cell">
+                        <div className="combo-badges-cell">
+                          {(row.sequence?.comboBadges || []).map((badge) => (
+                            <span className="combo-price-badge" key={badge.id}>
+                              {formatCurrency(badge.amount)}$
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       {/* Sticky Actions cell */}
                       <td className="user-table-actions">
@@ -610,6 +804,62 @@ function UserTable() {
                 }}
               >
                 Tasks Completed
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Assign Sequence modal */}
+        {sequenceAssignUser && (
+          <div className="user-table-modal-overlay">
+            <div className="user-table-modal-content" style={{ maxWidth: '380px', textAlign: 'left' }}>
+              <button
+                className="user-table-modal-close"
+                onClick={() => !savingSequence && setSequenceAssignUser(null)}
+              >
+                <i className="fas fa-times" />
+              </button>
+              <h3 className="user-table-modal-text" style={{ marginBottom: '16px' }}>
+                Assign Sequence
+              </h3>
+              <div className="sequence-modal-field">
+                <label className="sequence-modal-label">
+                  {i18n('entities.sequence.fields.title')}
+                </label>
+                <select
+                  className="sequence-modal-select"
+                  value={sequenceAssignUser.sequenceId || ''}
+                  onChange={(e) =>
+                    setSequenceAssignUser({
+                      ...sequenceAssignUser,
+                      sequenceId: e.target.value || null,
+                    })
+                  }
+                >
+                  <option value="">— No sequence —</option>
+                  {sequenceOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="minus-modal-actions">
+                <button
+                  className="minus-modal-btn yes"
+                  style={{ background: '#6c5ce7' }}
+                  disabled={savingSequence}
+                  onClick={doSaveSequence}
+                >
+                  {savingSequence ? 'Saving...' : i18n('common.save')}
+                </button>
+                <button
+                  className="minus-modal-btn no"
+                  disabled={savingSequence}
+                  onClick={() => setSequenceAssignUser(null)}
+                >
+                  {i18n('common.cancel')}
+                </button>
               </div>
             </div>
           </div>

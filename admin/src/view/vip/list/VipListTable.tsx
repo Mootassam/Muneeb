@@ -84,8 +84,11 @@ function CouponsListTable(props) {
                     </div>
                   )}
                 </th>
-                <th 
-                  className="sortable-header" 
+                <th className="image-header">
+                  {i18n('entities.vip.fields.photo')}
+                </th>
+                <th
+                  className="sortable-header"
                   onClick={() => doChangeSort('title')}
                 >
                   {i18n('entities.vip.fields.title')}
@@ -117,12 +120,12 @@ function CouponsListTable(props) {
                     </span>
                   )}
                 </th>
-                <th 
-                  className="sortable-header text-right" 
-                  onClick={() => doChangeSort('levellimit')}
+                <th
+                  className="sortable-header text-right"
+                  onClick={() => doChangeSort('min')}
                 >
                   {i18n('entities.vip.fields.levelLimit')}
-                  {sorter.field === 'levellimit' && (
+                  {sorter.field === 'min' && (
                     <span className="sort-icon">
                       {sorter.order === 'ascend' ? '↑' : '↓'}
                     </span>
@@ -170,6 +173,17 @@ function CouponsListTable(props) {
                         />
                       </div>
                     </td>
+                    <td className="table-cell image-column">
+                      <img
+                        className="vip-thumb"
+                        src={
+                          row.photo?.[0]?.downloadUrl ||
+                          'https://via.placeholder.com/44'
+                        }
+                        alt={row.title}
+                        loading="lazy"
+                      />
+                    </td>
                     <td className="table-cell">
                       <div className="vip-title-cell">
                         <span className="vip-title">{row.title}</span>
@@ -194,8 +208,9 @@ function CouponsListTable(props) {
                     <td className="table-cell text-right">
                       <div className="level-limit-display">
                         <i className="fas fa-layer-group level-limit-icon"></i>
-                        <span className="level-limit-value">{row.levellimit}</span>
-                        <span className="level-limit-label"> levels</span>
+                        <span className="level-limit-value">
+                          {row.min} - {row.max}
+                        </span>
                       </div>
                     </td>
                     <td className="coupons-table-actions">
@@ -330,6 +345,23 @@ function CouponsListTable(props) {
           font-size: 14px;
           color: #475569;
           vertical-align: middle;
+        }
+
+        .image-header {
+          width: 64px;
+        }
+
+        .image-column {
+          width: 64px;
+        }
+
+        .vip-thumb {
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          object-fit: cover;
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
         }
 
         .vip-title-cell {

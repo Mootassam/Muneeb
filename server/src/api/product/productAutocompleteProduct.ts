@@ -11,7 +11,8 @@ export default async (req, res, next) => {
 
     const payload = await new ProductServices(req).findAllAutocompleteProduct(
       req.query.query,
-      req.query.limit
+      req.query.limit,
+      req.query.type
     );
 
     await ApiResponseHandler.success(req, res, payload);

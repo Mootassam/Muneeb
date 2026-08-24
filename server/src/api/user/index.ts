@@ -15,6 +15,10 @@ export default (app) => {
     `/tenant/:tenantId/user/:id/reset-task`,
     require('./userResetTasks').default,
   );
+  app.post(
+    `/tenant/:tenantId/user/:id/sequence`,
+    require('./userUpdateSequence').default,
+  );
   app.put(
     `/tenant/:tenantId/user`,
     require('./userEdit').default,

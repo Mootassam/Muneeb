@@ -17,8 +17,9 @@ export default (database) => {
       amount: {
         type: String,
       },
-      commission: {
-        type: String,
+      active: {
+        type: Boolean,
+        default: true,
       },
       photo: [FileSchema],
       image: { type: String },
@@ -29,11 +30,6 @@ export default (database) => {
         default: "normal",
       },
 
-      vip: {
-        type: Schema.Types.ObjectId,
-        ref: "vip",
-        required: true,
-      },
       tenant: {
         type: Schema.Types.ObjectId,
         ref: "tenant",

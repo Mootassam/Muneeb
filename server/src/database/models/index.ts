@@ -10,6 +10,7 @@ const models = [
   require('./social').default,
   require('./vip').default,
   require('./product').default,
+  require('./sequence').default,
   require('./records').default,
   require("./company").default,
   require('./notification').default,

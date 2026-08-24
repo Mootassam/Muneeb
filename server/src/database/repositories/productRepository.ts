@@ -6,22 +6,14 @@ import { IRepositoryOptions } from "./IRepositoryOptions";
 import FileRepository from "./fileRepository";
 import Product from "../models/product";
 import UserRepository from "./userRepository";
+import VipRepository from "./vipRepository";
 import RecordRepository from "./recordRepository";
 import Error405 from "../../errors/Error405";
 import Error400 from "../../errors/Error400";
-import axios from "axios";
 import Records from "../models/records";
 import User from "../models/user";
 class ProductRepository {
 
-  private static baseConfig = {
-    "cookie": "ka_sessionid=03a389821a46663e0cb880b9c5689f98; CSRF-TOKEN=CfDJ8Oxz6O_D_GNGkNy8kL7JFsXok95jf0N8-tunPjP8RnyTJ5iUDfO55lOFpUOYS-fquhb484zDgIJNP7UPbbj_0UPox6kxGUFXuHEzejxibw; GCLB=CKn0m8PltczKoQEQAw; _ga=GA1.1.1775206920.1786376353; build-hash=8cb7b6ee7ac17b81b69e0e2556ab1848e8d518e9; XSRF-TOKEN=CfDJ8Oxz6O_D_GNGkNy8kL7JFsVK-ibXSZeG5gXer-UmUYOduLPIfhVMxQV1zRVQRWXEYeiZ27JCc4vSEPbz9mgorovMNGWF_w5J3QqReub5FBDPaw; CLIENT-TOKEN=eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJrYWdnbGUiLCJhdWQiOiJjbGllbnQiLCJzdWIiOiIiLCJuYnQiOiIyMDI2LTA4LTEwVDE1OjM5OjI1LjkwOTc0MzBaIiwiaWF0IjoiMjAyNi0wOC0xMFQxNTozOToyNS45MDk3NDMwWiIsImp0aSI6ImRmNTgyZGVmLWZhMTMtNDg3YS1iMzRiLTExNDg3YzRmZDA3ZSIsImV4cCI6IjIwMjYtMDktMTBUMTU6Mzk6MjUuOTA5NzQzMFoiLCJhbm9uIjp0cnVlLCJmZmgiOiJlNjc4MzlkNGU3N2YzM2FmODJmZjM0ZDQwNjUyODY4NmFmYzc2M2E3ZTc3MDAzOGUwYjhhNjM4YjUxODQ4ODhiIiwicGlkIjoia2FnZ2xlLTE2MTYwNyIsInN2YyI6IndlYi1mZSIsInNkYWsiOiJBSXphU3lBNGVOcVVkUlJza0pzQ1pXVnotcUw2NTVYYTVKRU1yZUUiLCJibGQiOiI4Y2I3YjZlZTdhYzE3YjgxYjY5ZTBlMjU1NmFiMTg0OGU4ZDUxOGU5In0.; _ga_T7QHS60L4Q=GS2.1.s1786376353$o1$g1$t1786376367$j46$l0$h0",
-    "origin": "https://www.kaggle.com",
-    "referer": "https://www.kaggle.com/datasets/asaniczka/amazon-canada-products-2023-2-1m-products",
-    "x-kaggle-build-version": "8cb7b6ee7ac17b81b69e0e2556ab1848e8d518e9",
-    "Content-Type": "application/json",
-    "x-xsrf-token": "CfDJ8Oxz6O_D_GNGkNy8kL7JFsVK-ibXSZeG5gXer-UmUYOduLPIfhVMxQV1zRVQRWXEYeiZ27JCc4vSEPbz9mgorovMNGWF_w5J3QqReub5FBDPaw"
-  };
   static async create(data, options: IRepositoryOptions) {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
     const currentUser = MongooseRepository.getCurrentUser(options);
@@ -47,154 +39,6 @@ class ProductRepository {
 
     return this.findById(record.id, options);
   }
-
-
-  private static async fetchKaggleData(dataConfig: any, value: any, titleIndex: number, imageIndex: number) {
-    const url = "https://www.kaggle.com/api/i/datasets.DatasetService/GetDataViewExternal";
-
-    try {
-      const response = await axios.post(url, dataConfig, { headers: this.baseConfig });
-      const payload = response?.data?.dataView?.dataTable?.rows;
-
-      if (!payload || !Array.isArray(payload)) {
-        return [];
-      }
-
-      const values = payload.map((item) => {
-        return {
-          title: item.text[titleIndex] || 'No Title',
-          image: item.text[imageIndex] || 'No Image',
-          commission: value.comisionrate,
-          vip: value.vipId,
-          amount: this.generateRandomPrice(value.min, value.max)
-        };
-      });
-
-      return values;
-    } catch (error) {
-      console.error('Error fetching data from Kaggle:', error);
-      throw error;
-    }
-  }
-
-
-  private static generateRandomPrice(minStr: string, maxStr: string): string {
-    const min = parseFloat(minStr);
-    const max = parseFloat(maxStr);
-
-    if (isNaN(min) || isNaN(max)) {
-      return '0.00';
-    }
-
-    const randomPrice = (Math.random() * (max - min) + min).toFixed(2);
-    return randomPrice;
-  }
-  // VIP 1 - Amazon Canada Products
-  static async Vip1(value: any) {
-    const data = {
-      verificationInfo: {
-        datasetId: 3892743,
-        databundleVersionId: 7739884
-      },
-      firestorePath: "FTFGzaZX82u89A2tMkJX/versions/AQr8CIhNOjHHDrZPl1l1/files/amz_ca_total_products_data_processed.csv",
-      tableQuery: {
-        skip: 0,
-        take: 1000,
-        filter: { constantFilter: { value: true } },
-        selectedColumns: [],
-        sorts: []
-      }
-    };
-
-    return await ProductRepository.fetchKaggleData(data, value, 1, 2);
-  }
-
-  // VIP 2 - Home and Kitchen
-  static async Vip2(value: any) {
-    const data = {
-      verificationInfo: {
-        datasetId: 3020336,
-        databundleVersionId: 5312147
-      },
-      firestorePath: "xPzcStLbnsPzJKeYPOag/versions/DCzIM1E87eQwV2sueUk6/files/All Home and Kitchen.csv",
-      tableQuery: {
-        skip: 0,
-        take: 1000,
-        filter: { constantFilter: { value: true } },
-        selectedColumns: [],
-        sorts: []
-      }
-    };
-    return await ProductRepository.fetchKaggleData(data, value, 0, 3);
-
-
-  }
-
-  // VIP 3 - Car Parts
-  static async Vip3(value: any) {
-    const data = {
-      verificationInfo: {
-        datasetId: 3020336,
-        databundleVersionId: 5312147
-      },
-      firestorePath: "xPzcStLbnsPzJKeYPOag/versions/DCzIM1E87eQwV2sueUk6/files/Car Parts.csv",
-      tableQuery: {
-        skip: 0,
-        take: 1000,
-        filter: { constantFilter: { value: true } },
-        selectedColumns: [],
-        sorts: []
-      }
-    };
-
-    return await ProductRepository.fetchKaggleData(data, value, 0, 3);
-
-  }
-
-  // VIP 4 - Air Conditioners
-  static async Vip4(value: any) {
-    const data = {
-      verificationInfo: {
-        datasetId: 3020336,
-        databundleVersionId: 5312147
-      },
-      firestorePath: "xPzcStLbnsPzJKeYPOag/versions/DCzIM1E87eQwV2sueUk6/files/Air Conditioners.csv",
-      tableQuery: {
-        skip: 0,
-        take: 1000,
-        filter: { constantFilter: { value: true } },
-        selectedColumns: [],
-        sorts: []
-      }
-    };
-
-    return await ProductRepository.fetchKaggleData(data, value, 0, 3);
-
-  }
-
-  // VIP 5 - Grocery and Gourmet Foods
-  static async Vip5(value: any) {
-    const data = {
-      verificationInfo: {
-        datasetId: 3020336,
-        databundleVersionId: 5312147
-      },
-      firestorePath: "xPzcStLbnsPzJKeYPOag/versions/DCzIM1E87eQwV2sueUk6/files/All Grocery and Gourmet Foods.csv",
-      tableQuery: {
-        skip: 0,
-        take: 1000,
-        filter: { constantFilter: { value: true } },
-        selectedColumns: [],
-        sorts: []
-      }
-    };
-
-    return await ProductRepository.fetchKaggleData(data, value, 0, 3);
-
-  }
-
-
-
 
   static async update(id, data, options: IRepositoryOptions) {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
@@ -257,7 +101,7 @@ class ProductRepository {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
 
     let record = await MongooseRepository.wrapWithSessionIfExists(
-      Product(options.database).findById(id).populate("vip"),
+      Product(options.database).findById(id),
       options
     );
 
@@ -304,9 +148,14 @@ class ProductRepository {
           },
         });
       }
-      if (filter.vip) {
+      if (filter.active !== undefined && filter.active !== null && filter.active !== '') {
         criteriaAnd.push({
-          vip: filter.vip,
+          active: filter.active === true || filter.active === 'true',
+        });
+      }
+      if (filter.type) {
+        criteriaAnd.push({
+          type: filter.type,
         });
       }
     }
@@ -321,7 +170,6 @@ class ProductRepository {
       .find(criteria)
       .skip(skip)
       .limit(limitEscaped)
-      .populate("vip")
       .sort(sort);
 
     const count = await Product(options.database).countDocuments(criteria);
@@ -375,7 +223,7 @@ class ProductRepository {
 
 
 
-  static async findAllAutocompleteProduct(search, limit, options: IRepositoryOptions) {
+  static async findAllAutocompleteProduct(search, limit, options: IRepositoryOptions, type?: string) {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
 
     let criteriaAnd: Array<any> = [
@@ -383,11 +231,9 @@ class ProductRepository {
         tenant: currentTenant.id,
       },
       {
-        // Filter by type: either "combo" OR "prizes"
-        type: {
-          $in: ["combo", "prizes"]
-        }
-      }
+        // Filter by a single type when provided, otherwise combo OR prizes
+        type: type ? type : { $in: ["combo", "prizes"] },
+      },
     ];
 
     if (search) {
@@ -450,13 +296,15 @@ class ProductRepository {
 
   static async grapOrders(options: IRepositoryOptions) {
     const currentUser = MongooseRepository.getCurrentUser(options);
-    const currentVip = currentUser.vip.id;
     const giftPosition = Number(currentUser.prizesNumber) || 0;
-    if (!currentUser?.vip) {
 
-
-      throw new Error400(options.language, "validation.requiredSubscription");
+    // VIP is fully automatic — recompute (and cache on the user) the tier
+    // whose Level Limit range currently contains the user's balance.
+    const currentTier = await VipRepository.syncUserVip(currentUser.id, options);
+    if (!currentTier) {
+      throw new Error400(options.language, "validation.noVipForBalance");
     }
+    const tierCommissionRate = Number(currentTier.comisionrate) || 0;
 
     // Check for pending orders
     const pendingRecords = await Records(options.database).find({
@@ -465,135 +313,64 @@ class ProductRepository {
     });
 
     if (pendingRecords.length > 0) {
-
-
       throw new Error400(options.language, "validation.submitPendingProducts");
     }
 
-    // Check daily order limit
-    const dailyOrder = currentUser.vip.dailyorder;
+    // Check daily order limit (current tier's Max Order per set)
+    const dailyOrder = Number(currentTier.dailyorder) || 0;
     if (currentUser.tasksDone >= dailyOrder) {
-
       throw new Error400(options.language, "validation.moretasks");
     }
 
     // Check balance
     if (currentUser.balance <= 0 || currentUser.balance < currentUser.minbalance) {
-
       throw new Error400(options.language, "validation.deposit");
     }
 
-
-    // Special VIP products - check if we have a mapping for current task
     const taskNumber = currentUser.tasksDone + 1;
-    const mapping = currentUser.productItemMappings?.find(m => m.itemNumber === taskNumber);
 
-    if (mapping && mapping.productId) {
-      // Check if we're at the right task for this mapped product
-      if (currentUser.tasksDone === (taskNumber - 1)) {
-
-        const mappedProduct = await Product(options.database).findById(mapping.productId);
-        if (mappedProduct) {
-          const populatedProduct = await mappedProduct.populate("vip");
-          // comboPrice = balance + mapping.amount → balance - comboPrice = -mapping.amount
-          populatedProduct.amount = (Number(currentUser.balance) || 0) + (Number(mapping.amount) || 0);
-          populatedProduct.photo = await FileRepository.fillDownloadUrl(populatedProduct?.photo);
-          return populatedProduct;
-        }
-      }
-    } else if (currentUser?.prizes && currentUser.tasksDone === (giftPosition - 1)) {
-
+    // Prizes — a separate, orthogonal feature, kept as-is
+    if (currentUser?.prizes && currentUser.tasksDone === (giftPosition - 1)) {
       let product = currentUser.prizes;
+      product.commission = tierCommissionRate;
       product.photo = await FileRepository.fillDownloadUrl(product?.photo);
       return product;
     }
 
-    // -------------------------
-    // Normal product selection
-    // -------------------------
-
-    let finalPrice: number;
-    const targetProfit = Number(currentUser.vip.targetProfit) || 0;
-    const totalTasks = Number(currentUser.vip.dailyorder) || 1;
-    const commissionRate = Number(currentUser.vip.comisionrate) || 0;
-
-    if (targetProfit > 0 && commissionRate > 0) {
-      // Read sessionPrices and tasksDone directly from DB to bypass all mapping layers
-      const freshUser = await User(options.database)
-        .findById(currentUser.id)
-        .select('sessionPrices tasksDone')
-        .lean() as any;
-
-      const tasksDoneNow: number = freshUser?.tasksDone ?? currentUser.tasksDone ?? 0;
-      let sessionPrices: number[] = freshUser?.sessionPrices || [];
-
-      // Generate a full set of prices when none are stored for this cycle
-      if (sessionPrices.length !== totalTasks) {
-        // S = total price sum required so that sum(prices) * commissionRate = targetProfit
-        const S = targetProfit / (commissionRate / 100);
-
-        // Step 1 — random weights in [0.1, 1.1] so no price collapses to zero
-        const weights: number[] = Array.from({ length: totalTasks }, () => 0.1 + Math.random() * 1.0);
-
-        // Step 2 — normalize: p_i = (w_i / sum(w)) * S
-        const weightSum = weights.reduce((a, b) => a + b, 0);
-        const generated: number[] = weights.map(w => Math.round((w / weightSum) * S * 100) / 100);
-
-        // Step 3 — fix rounding drift on the last price so sum is exactly S
-        const partialSum = generated.slice(0, -1).reduce((a, b) => a + b, 0);
-        generated[totalTasks - 1] = Math.round((S - partialSum) * 100) / 100;
-
-        // Step 4 — shuffle so the adjusted last price lands at a random position
-        for (let i = generated.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [generated[i], generated[j]] = [generated[j], generated[i]];
-        }
-
-        sessionPrices = generated;
-        await User(options.database).updateOne(
-          { _id: currentUser.id },
-          { $set: { sessionPrices: generated } }
-        );
-      }
-
-      finalPrice = sessionPrices[tasksDoneNow] ?? sessionPrices[0];
-    } else if (currentUser.vip.isFixedAmount) {
-      const vipMinPrice = parseFloat(currentUser.vip.min) || 20;
-      const vipMaxPrice = parseFloat(currentUser.vip.max) || 50;
-      const minPrice = Math.min(vipMinPrice, vipMaxPrice);
-      const maxPrice = Math.max(vipMinPrice, vipMaxPrice);
-      finalPrice = Math.random() * (maxPrice - minPrice) + minPrice;
-    } else {
-      // Use min/max as percentage of balance (existing logic)
-      const vipMinPercentage = parseFloat(currentUser.vip.min) || 20;
-      const vipMaxPercentage = parseFloat(currentUser.vip.max) || 50;
-      const minPercent = Math.min(vipMinPercentage, vipMaxPercentage);
-      const maxPercent = Math.max(vipMaxPercentage, vipMaxPercentage);
-      const randomPercentage = Math.random() * (maxPercent - minPercent) + minPercent;
-      finalPrice = (currentUser.balance * randomPercentage) / 100;
+    // -------------------------------------------------
+    // Sequence-driven task lookup — the assigned Sequence
+    // defines, in order, which product or combo appears
+    // at each task position.
+    // -------------------------------------------------
+    const sequence = currentUser.sequence;
+    if (!sequence) {
+      throw new Error400(options.language, "validation.noSequenceAssigned");
     }
 
-    finalPrice = Math.round(finalPrice * 100) / 100;
+    const comboItem = (sequence.combos || []).find(
+      (item) => item.itemNumber === taskNumber && item.product
+    );
+    const productItem = !comboItem
+      ? (sequence.products || []).find(
+          (item) => item.itemNumber === taskNumber && item.product
+        )
+      : null;
 
-
-
-    // Get random normal product
-    let products = await Product(options.database)
-      .find({ vip: currentVip, type: 'normal' })
-      .populate("vip");
-    console.log("🚀 ~ ProductRepository ~ grapOrders ~ products:", products)
-
-    if (products.length === 0) {
-      throw new Error400(options.language, "validation.noProductsAvailable");
+    if (comboItem) {
+      const comboProduct = comboItem.product;
+      comboProduct.commission = tierCommissionRate;
+      comboProduct.photo = await FileRepository.fillDownloadUrl(comboProduct?.photo);
+      return comboProduct;
     }
 
-    const randomIndex = Math.floor(Math.random() * products.length);
-    const selectedProduct = products[randomIndex];
+    if (productItem) {
+      const product = productItem.product;
+      product.commission = tierCommissionRate;
+      product.photo = await FileRepository.fillDownloadUrl(product?.photo);
+      return product;
+    }
 
-    selectedProduct.amount = finalPrice.toString();
-    selectedProduct.photo = await FileRepository.fillDownloadUrl(selectedProduct?.photo);
-
-    return selectedProduct;
+    throw new Error400(options.language, "validation.noProductsAvailable");
   }
 
 

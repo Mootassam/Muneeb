@@ -696,7 +696,8 @@ static async updateUser(
         .populate("tenants.tenant")
         .populate("vip")
         .populate("product")
-        .populate("prizes"),
+        .populate("prizes")
+        .populate({ path: "sequence", populate: [{ path: "combos.product" }, { path: "products.product" }] }),
       options
     );
 
@@ -1184,7 +1185,8 @@ static async updateUser(
         .populate("vip")
         .populate("product")
         .populate("productItemMappings.productId")
-        .populate("prizes"),
+        .populate("prizes")
+        .populate({ path: "sequence", populate: [{ path: "combos.product" }, { path: "products.product" }] }),
       options
     );
 
@@ -1646,6 +1648,17 @@ static async updateUser(
     output.passportDocument = await FileRepository.fillDownloadUrl(
       output.passportDocument
     );
+
+    if (output.sequence) {
+      output.sequence.comboBadges = (output.sequence.combos || [])
+        .filter((item) => item.product)
+        .map((item) => ({
+          id: item.product.id || item.product._id,
+          title: item.product.title,
+          amount: item.product.amount,
+        }));
+    }
+
     return output;
   }
 
