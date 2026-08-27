@@ -18,6 +18,9 @@ function GrapModal(props) {
   const commissionAmount = (orderAmount * commissionRate) / 100;
   const expectedIncome = orderAmount + commissionAmount;
 
+  // A combo can only be submitted once the customer's balance already
+  // covers its price — submitting never deducts anything, this is just a
+  // qualifying-balance requirement to unlock the commission.
   const balance = parseFloat(currentUser?.balance) || 0;
   const isCombo = items?.type === 'combo';
   const insufficient = isCombo && orderAmount > balance;

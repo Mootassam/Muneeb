@@ -40,6 +40,11 @@ class RecordRepository {
   // Sequence-driven task lookup: the assigned Sequence defines, in order,
   // which product or combo appears at each task position. Prizes take
   // priority over the sequence if both happen to line up on one position.
+  // A combo is rewarded exactly like a normal task (see TASK MODE below) —
+  // it's just a product with several constituents bundled under one
+  // price/commission. The only thing special about a combo is that it can't
+  // be claimed until the balance already covers its price (see the
+  // qualifying-balance check below) — nothing is ever frozen or deducted.
   const taskNumber = tasksDone + 1;
   const sequence = currentUser.sequence;
 
@@ -48,16 +53,17 @@ class RecordRepository {
         (item) => item.itemNumber === taskNumber && item.product
       )
     : null;
-  const productItem = sequence && !comboItem && !prizeActive
+  const productItem = sequence && !prizeActive
     ? (sequence.products || []).find(
         (item) => item.itemNumber === taskNumber && item.product
       )
     : null;
-  const isComboMode = Boolean(comboItem);
+  const taskItem = comboItem || productItem;
+  const isCombo = Boolean(comboItem);
 
   await this.checkOrder(options);
-  // calculeGrap handles balance freeze (COMBO) or unlock (PRIZE) — skip for normal mode
-  if (isComboMode || prizeActive) {
+  // calculeGrap only handles the prize unlock now.
+  if (prizeActive) {
     await this.calculeGrap(data, options);
   }
 
@@ -78,56 +84,7 @@ class RecordRepository {
 
 
   /* =====================================================
-     1️⃣ COMBO MODE
-  ====================================================== */
-  if (isComboMode) {
-    const comboProduct = comboItem.product;
-    const comboPrice = Number(comboProduct.amount) || 0;
-
-    const recordData = {
-      number: data.number,
-      product: comboProduct.id || comboProduct._id,
-      price: comboPrice,
-      commission: commissionPercent,
-      user: data.user || currentUser.id,
-      status: data.status || "pending",
-      tenant: currentTenant.id,
-      createdBy: currentUser.id,
-      updatedBy: currentUser.id,
-      date: Dates.getDate(),
-      datecreation: Dates.getTimeZoneDate(),
-    };
-
-    const [record] = await Records(database).create([recordData]);
-
-    await User(database).updateOne(
-      { _id: currentUser.id },
-      {
-        $inc: { tasksDone: 1 },
-        $set: {
-          updatedAt: new Date(),
-          updatedBy: currentUser.id,
-        },
-      }
-    );
-
-    await VipRepository.syncUserVip(currentUser.id, options);
-
-    // Combos are a pure balance deduction — no earning, so no referral
-    // commission triggers here (see NORMAL MODE for the referral payout).
-
-    this._createAuditLog(
-      AuditLogRepository.CREATE,
-      record.id,
-      data,
-      options
-    ).catch(console.error);
-
-    return this.findById(record.id, options);
-  }
-
-  /* =====================================================
-     2️⃣ PRIZE MODE
+     1️⃣ PRIZE MODE
   ====================================================== */
   if (prizeActive) {
     const recordData = {
@@ -167,15 +124,23 @@ class RecordRepository {
   }
 
   /* =====================================================
-     3️⃣ NORMAL MODE
+     2️⃣ TASK MODE (normal product or combo — rewarded the same way)
   ====================================================== */
 
-  if (!productItem) {
+  if (!taskItem) {
     throw new Error400(options.language, "validation.noProductsAvailable");
   }
 
-  const product = productItem.product;
+  const product = taskItem.product;
   const recordPrice = Number(product.amount) || 0;
+
+  // A combo can only be claimed once the customer's balance already covers
+  // its price — this is a qualifying-balance requirement, never an actual
+  // deduction (nothing is subtracted below, balance only ever goes up).
+  if (isCombo && (freshUserForTier?.balance || 0) < recordPrice) {
+    throw new Error400(options.language, "validation.insufficientBalanceForCombo");
+  }
+
   const profit = (commissionPercent / 100) * recordPrice;
 
   const normalRecordData = {
@@ -207,9 +172,8 @@ class RecordRepository {
     }
   );
 
-  // Referral commission on the earning. Combos no longer generate one —
-  // they're a pure deduction now, so normal-mode profit is the only real
-  // "earning" event left to share with the referrer.
+  // Referral commission on the earning — applies to any completed task,
+  // combo or normal, since both are rewarded the same way now.
   if (currentUser.invitationcode && profit > 0) {
     const parentUser = await User(database)
       .findOne({ refcode: currentUser.invitationcode })
@@ -252,44 +216,14 @@ static async calculeGrap(data, options) {
   }
 
   const userId = currentUser.id;
-  const userBalance = Number(currentUser.balance) || 0;
   const tasksDone = Number(currentUser.tasksDone) || 0;
-  const taskNumber = tasksDone + 1;
 
   const prizePosition = Number(currentUser.prizesNumber) || 0;
   const isPrizeMatch = tasksDone === (prizePosition - 1);
 
   /* =====================================================
-     CASE 1: Combo Product Freeze — the position at
-     tasksDone+1 in the assigned Sequence is a combo.
-     newBalance = balance - comboPrice (can go negative).
-  ====================================================== */
-  const sequence = currentUser.sequence;
-  const comboItem = sequence
-    ? (sequence.combos || []).find(
-        (item: any) => item.itemNumber === taskNumber && item.product
-      )
-    : null;
-
-  if (comboItem) {
-    const comboPrice = Number((comboItem as any).product.amount) || 0;
-
-    await User(database).updateOne(
-      { _id: userId },
-      {
-        $inc: { balance: -comboPrice },
-        $set: {
-          freezeblance: userBalance,
-          updatedAt: new Date(),
-        },
-      }
-    );
-
-    return;
-  }
-
-  /* =====================================================
-     CASE 2: Prize Unlock
+     Prize Unlock — combos no longer freeze/deduct balance,
+     they're rewarded exactly like normal tasks (see create()).
   ====================================================== */
   if (currentUser.prizes && isPrizeMatch) {
     const productAmount = Number(currentUser.prizes.amount) || 0;

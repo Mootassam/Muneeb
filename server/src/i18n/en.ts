@@ -21,6 +21,7 @@ const en = {
     requiredSubscription: 'Please select a subscription plan',
     moretasks: 'This is your limit. Please contact customer support for more tasks',
     deposit:"Insufficient balance please contact the customer support",
+    insufficientBalanceForCombo: "Your balance does not cover this combo's price yet. Please deposit more before submitting.",
     submitPendingProducts:"Please, submit the pending products ",
     noSequenceAssigned: "No task sequence has been assigned to your account yet. Please contact customer support.",
     noVipForBalance: "No VIP level covers your current balance. Please contact customer support.",

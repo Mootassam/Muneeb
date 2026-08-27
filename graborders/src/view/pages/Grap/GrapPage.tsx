@@ -126,7 +126,7 @@ const Grappage = () => {
       product: items?.id,
       price: items?.amount,
       commission: items?.commission,
-      status: items?.type === "combo" ? "pending" : "completed",
+      status: "completed",
       user: currentUser.id,
     };
     await dispatch(recordActions.doCreate(values));
