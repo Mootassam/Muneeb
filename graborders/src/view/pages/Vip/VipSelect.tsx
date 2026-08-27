@@ -191,7 +191,7 @@ function VipSelect() {
       <style>{`
         .vsel__root {
           min-height: 100vh;
-          background: #eaeded;
+          background: var(--bg-page);
         }
 
         .vsel__page {
@@ -209,7 +209,7 @@ function VipSelect() {
         .vsel__pageTitle {
           font-size: 22px;
           font-weight: 700;
-          color: #0f1111;
+          color: var(--text-primary);
           margin: 4px 2px 16px;
         }
 
@@ -221,18 +221,18 @@ function VipSelect() {
         }
 
         .vsel__card {
-          background: #fff;
-          border: 1px solid #e7e7e7;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 16px;
           overflow: hidden;
           position: relative;
-          box-shadow: 0 2px 8px rgba(15, 17, 17, 0.06);
+          box-shadow: 0 2px 8px var(--shadow-color);
           transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
         }
 
         .vsel__card--active {
           cursor: pointer;
-          border-color: #ffb84d;
+          border-color: var(--accent-grad-start);
           box-shadow: 0 8px 20px -8px rgba(255, 138, 0, 0.4);
         }
 
@@ -277,12 +277,12 @@ function VipSelect() {
         }
 
         .vsel__card--locked .vsel__badgeIcon {
-          background: #eef0f2;
+          background: var(--bg-surface-2);
           box-shadow: none;
         }
 
         .vsel__card--locked .vsel__badgeIcon i {
-          color: #b7bbc0;
+          color: var(--placeholder);
         }
 
         .vsel__card--locked .vsel__badgeIcon img {
@@ -297,7 +297,7 @@ function VipSelect() {
           width: 19px;
           height: 19px;
           border-radius: 50%;
-          background: #767676;
+          background: var(--text-tertiary);
           border: 2px solid var(--bg-card);
           display: flex;
           align-items: center;
@@ -320,14 +320,14 @@ function VipSelect() {
         .vsel__cardTitle {
           font-size: 15.5px;
           font-weight: 700;
-          color: #0f1111;
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
         .vsel__card--locked .vsel__cardTitle {
-          color: #767676;
+          color: var(--text-tertiary);
         }
 
         .vsel__ribbon {
@@ -344,18 +344,18 @@ function VipSelect() {
         }
 
         .vsel__ribbon--active {
-          background: #fff2e5;
-          color: #d1650a;
+          background: var(--bg-tint);
+          color: var(--accent-strong);
         }
 
         .vsel__ribbon--locked {
-          background: #f0f1f3;
-          color: #9aa0a6;
+          background: var(--bg-surface-2);
+          color: var(--text-muted);
         }
 
         .vsel__cardBody {
           padding: 14px 16px 16px;
-          border-top: 1px solid #f0f1f3;
+          border-top: 1px solid var(--border-soft);
         }
 
         .vsel__featureGrid {
@@ -369,11 +369,11 @@ function VipSelect() {
           display: flex;
           align-items: center;
           gap: 6px;
-          background: #f7f8fa;
+          background: var(--bg-card-alt);
           border-radius: 8px;
           padding: 7px 9px;
           font-size: 10.5px;
-          color: #444;
+          color: var(--text-secondary);
         }
 
         .vsel__feature:first-child {
@@ -381,17 +381,17 @@ function VipSelect() {
         }
 
         .vsel__feature i {
-          color: #ff8a00;
+          color: var(--accent-grad-end);
           font-size: 10.5px;
           flex-shrink: 0;
         }
 
         .vsel__card--locked .vsel__feature {
-          color: #9aa0a6;
+          color: var(--text-muted);
         }
 
         .vsel__card--locked .vsel__feature i {
-          color: #b7bbc0;
+          color: var(--placeholder);
         }
 
         .vsel__startBtn {
@@ -417,16 +417,16 @@ function VipSelect() {
           gap: 6px;
           font-size: 11.5px;
           font-weight: 600;
-          color: #9aa0a6;
-          background: #f7f8fa;
+          color: var(--text-muted);
+          background: var(--bg-card-alt);
           border-radius: 10px;
           padding: 9px;
           margin-bottom: 10px;
         }
 
         .vsel__requirement--met {
-          color: #1a9e5c;
-          background: #e7f8ef;
+          color: var(--success);
+          background: var(--success-bg);
         }
 
         .vsel__joinBtn {
@@ -446,15 +446,15 @@ function VipSelect() {
         }
 
         .vsel__joinBtn:disabled {
-          background: #f0f1f3;
-          color: #9aa0a6;
+          background: var(--bg-surface-2);
+          color: var(--text-muted);
           cursor: not-allowed;
         }
 
         .vsel__modalOverlay {
           position: fixed;
           inset: 0;
-          background: rgba(15, 17, 17, 0.6);
+          background: var(--overlay);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -465,7 +465,7 @@ function VipSelect() {
         .vsel__modalCard {
           width: 100%;
           max-width: 340px;
-          background: #fff;
+          background: var(--bg-card);
           border-radius: 20px;
           padding: 28px 24px 24px;
           text-align: center;
@@ -477,27 +477,27 @@ function VipSelect() {
           height: 56px;
           margin: 0 auto 16px;
           border-radius: 50%;
-          background: #fdecea;
+          background: var(--danger-bg);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .vsel__modalIcon i {
-          color: #d13212;
+          color: var(--danger);
           font-size: 22px;
         }
 
         .vsel__modalTitle {
           font-size: 17px;
           font-weight: 700;
-          color: #0f1111;
+          color: var(--text-primary);
           margin-bottom: 10px;
         }
 
         .vsel__modalText {
           font-size: 13px;
-          color: #767676;
+          color: var(--text-tertiary);
           line-height: 1.6;
           margin: 0 0 22px;
         }
@@ -510,10 +510,10 @@ function VipSelect() {
         .vsel__modalCancelBtn {
           flex: 1;
           margin: 0;
-          border: 1px solid #e7e7e7;
-          background: #fff;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
           border-radius: 12px;
-          color: #0f1111;
+          color: var(--text-primary);
           font-size: 13.5px;
           font-weight: 700;
           padding: 12px 0;
@@ -540,8 +540,8 @@ function VipSelect() {
           align-items: center;
           justify-content: space-between;
           gap: 10px;
-          background: #fff;
-          border: 1px dashed #d5d9d9;
+          background: var(--bg-card);
+          border: 1px dashed var(--border-strong);
           border-radius: 14px;
           padding: 14px 16px;
           margin-top: 18px;
@@ -550,31 +550,31 @@ function VipSelect() {
         }
 
         .vsel__upsell:hover {
-          border-color: #ff6a00;
+          border-color: var(--accent);
         }
 
         .vsel__upsell i {
-          color: #ff6a00;
+          color: var(--accent);
           font-size: 13px;
         }
 
         .vsel__upsellTitle {
           font-size: 13.5px;
           font-weight: 700;
-          color: #0f1111;
+          color: var(--text-primary);
         }
 
         .vsel__upsellSub {
           font-size: 11.5px;
-          color: #767676;
+          color: var(--text-tertiary);
           margin-top: 2px;
         }
 
         .vsel__empty {
           text-align: center;
           padding: 50px 16px;
-          background: #fff;
-          border: 1px solid #e7e7e7;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 16px;
         }
 
@@ -587,7 +587,7 @@ function VipSelect() {
         .vsel__emptyTitle {
           font-size: 13.5px;
           font-weight: 700;
-          color: #0f1111;
+          color: var(--text-primary);
         }
       `}</style>
     </div>

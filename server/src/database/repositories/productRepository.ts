@@ -14,9 +14,40 @@ import Records from "../models/records";
 import User from "../models/user";
 class ProductRepository {
 
+  static async _priceCombo(data, options: IRepositoryOptions) {
+    if (data.type !== "combo") {
+      return data;
+    }
+
+    const currentTenant = MongooseRepository.getCurrentTenant(options);
+
+    const ids = (Array.isArray(data.products) ? data.products : [])
+      .map((p) => p.product?.id || p.product?.value || p.product || p)
+      .filter(Boolean);
+
+    const constituents = await Product(options.database).find({
+      _id: { $in: ids },
+      tenant: currentTenant.id,
+      type: "normal",
+    });
+
+    const sum = constituents.reduce(
+      (total, p) => total + (parseFloat(p.amount) || 0),
+      0
+    );
+
+    return {
+      ...data,
+      products: constituents.map((p) => ({ product: p.id })),
+      amount: String(sum.toFixed(2)),
+    };
+  }
+
   static async create(data, options: IRepositoryOptions) {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
     const currentUser = MongooseRepository.getCurrentUser(options);
+
+    data = await this._priceCombo(data, options);
 
     const [record] = await Product(options.database).create(
       [
@@ -51,6 +82,8 @@ class ProductRepository {
     if (!record || String(record.tenant) !== String(currentTenant.id)) {
       throw new Error404();
     }
+
+    data = await this._priceCombo(data, options);
 
     await Product(options.database).updateOne(
       { _id: id },
@@ -101,7 +134,7 @@ class ProductRepository {
     const currentTenant = MongooseRepository.getCurrentTenant(options);
 
     let record = await MongooseRepository.wrapWithSessionIfExists(
-      Product(options.database).findById(id),
+      Product(options.database).findById(id).populate("products.product"),
       options
     );
 
@@ -170,7 +203,8 @@ class ProductRepository {
       .find(criteria)
       .skip(skip)
       .limit(limitEscaped)
-      .sort(sort);
+      .sort(sort)
+      .populate("products.product");
 
     const count = await Product(options.database).countDocuments(criteria);
 
@@ -291,6 +325,18 @@ class ProductRepository {
     const output = record.toObject ? record.toObject() : record;
     output.photo = await FileRepository.fillDownloadUrl(output.photo);
 
+    if (output.type === "combo" && output.products?.length) {
+      await Promise.all(
+        output.products.map(async (item) => {
+          if (item.product && !item.product.image && item.product.photo) {
+            item.product.photo = await FileRepository.fillDownloadUrl(
+              item.product.photo
+            );
+          }
+        })
+      );
+    }
+
     return output;
   }
 
@@ -320,11 +366,6 @@ class ProductRepository {
     const dailyOrder = Number(currentTier.dailyorder) || 0;
     if (currentUser.tasksDone >= dailyOrder) {
       throw new Error400(options.language, "validation.moretasks");
-    }
-
-    // Check balance
-    if (currentUser.balance <= 0 || currentUser.balance < currentUser.minbalance) {
-      throw new Error400(options.language, "validation.deposit");
     }
 
     const taskNumber = currentUser.tasksDone + 1;
@@ -360,6 +401,17 @@ class ProductRepository {
       const comboProduct = comboItem.product;
       comboProduct.commission = tierCommissionRate;
       comboProduct.photo = await FileRepository.fillDownloadUrl(comboProduct?.photo);
+      if (comboProduct.products?.length) {
+        await Promise.all(
+          comboProduct.products.map(async (item) => {
+            if (item.product && !item.product.image && item.product.photo) {
+              item.product.photo = await FileRepository.fillDownloadUrl(
+                item.product.photo
+              );
+            }
+          })
+        );
+      }
       return comboProduct;
     }
 

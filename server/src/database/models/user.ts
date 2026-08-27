@@ -49,11 +49,6 @@ export default (database) => {
         default: false,
 
       },
-      minbalance: { 
-        type:Number, 
-        default:50,
-      },
-
       balance: {
         type: Number,
         default: 50,

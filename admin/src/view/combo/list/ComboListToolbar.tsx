@@ -10,13 +10,11 @@ import ConfirmModal from 'src/view/shared/modals/ConfirmModal';
 import ButtonIcon from 'src/view/shared/ButtonIcon';
 import Toolbar from 'src/view/shared/styles/Toolbar';
 import ReactTooltip from 'react-tooltip';
-import Message from 'src/view/shared/message';
-import ProductFormModal from 'src/view/product/form/ProductFormModal';
+import { getHistory } from 'src/modules/store';
 
 function ComboListToolbar(props) {
   const [destroyAllConfirmVisible, setDestroyAllConfirmVisible] =
     useState(false);
-  const [addModalVisible, setAddModalVisible] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -36,20 +34,6 @@ function ComboListToolbar(props) {
 
   const doCloseDestroyAllConfirmModal = () => {
     setDestroyAllConfirmVisible(false);
-  };
-
-  const doOpenAddModal = () => {
-    setAddModalVisible(true);
-  };
-
-  const doCloseAddModal = () => {
-    setAddModalVisible(false);
-  };
-
-  const doAddSuccess = () => {
-    setAddModalVisible(false);
-    Message.success(i18n('entities.combo.create.success'));
-    dispatch(actions.doFetchCurrentFilter());
   };
 
   const doDestroyAllSelected = () => {
@@ -105,7 +89,7 @@ function ComboListToolbar(props) {
           <button
             className="btn btn-primary"
             type="button"
-            onClick={doOpenAddModal}
+            onClick={() => getHistory().push('/combo/new')}
           >
             <ButtonIcon iconClass="fas fa-plus" />
           </button>
@@ -122,17 +106,6 @@ function ComboListToolbar(props) {
           onClose={() => doCloseDestroyAllConfirmModal()}
           okText={i18n('common.yes')}
           cancelText={i18n('common.no')}
-        />
-      )}
-
-      {addModalVisible && (
-        <ProductFormModal
-          entity="combo"
-          type="combo"
-          showActive={false}
-          submitLabel={i18n('common.save')}
-          onClose={doCloseAddModal}
-          onSuccess={doAddSuccess}
         />
       )}
     </Toolbar>

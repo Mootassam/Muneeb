@@ -9,14 +9,10 @@ import { useDispatch, useSelector } from "react-redux";
 import actions from "src/modules/auth/authActions";
 import InputFormItem from "src/shared/form/InputFormItem";
 import selector from "src/modules/auth/authSelectors";
-import SelectFormItem from "src/shared/form/SelectFormItem";
-import userEnumerators from "src/modules/user/userEnumerators";
+
+const NETWORK = "USDT · TRC-20";
 
 const schema = yup.object().shape({
-  preferredcoin: yupFormSchemas.enumerator(i18n("user.fields.status"), {
-    options: userEnumerators.wallet,
-    required: true,
-  }),
   trc20: yupFormSchemas.string(i18n("user.fields.walletAddress"), {
     required: true,
   }),
@@ -38,18 +34,16 @@ function Wallet() {
       walletname: "" || currentUser.walletname,
       usernamewallet: "" || currentUser.usernamewallet,
       balance: currentUser?.balance,
-      preferredcoin: currentUser?.preferredcoin
     };
   });
-  
+
   const form = useForm({
     resolver: yupResolver(schema),
     mode: "onSubmit",
     defaultValues: initialValues,
   });
-  
+
   const onSubmit = ({
-    preferredcoin,
     withdrawPassword,
     trc20,
     walletname,
@@ -61,7 +55,7 @@ function Wallet() {
       usernamewallet: usernamewallet,
       balance: currentUser?.balance,
       withdrawPassword: withdrawPassword,
-      preferredcoin: preferredcoin
+      preferredcoin: "trc20",
     };
     dispatch(actions.doUpdateProfileWallet(values));
   };
@@ -103,17 +97,9 @@ function Wallet() {
 
                 <div className="wal__group">
                   <div className="wal__label">
-                    <span className="wal__required">{i18n('pages.wallet.requiredField')}</span>
-                    <span>{i18n('pages.wallet.choosePreferredCoin')}:</span>
+                    <span>{i18n('pages.withdraw.network')}</span>
                   </div>
-                  <SelectFormItem
-                    name="preferredcoin"
-                    options={userEnumerators.wallet.map((value) => ({
-                      value,
-                      label: i18n(`user.enumerators.status.${value}`),
-                    }))}
-                    required={true}
-                  />
+                  <span className="wal__networkChip">{NETWORK}</span>
                 </div>
 
                 <div className="wal__group">
@@ -124,9 +110,12 @@ function Wallet() {
                   <InputFormItem
                     type="text"
                     name="trc20"
-                    placeholder={i18n("user.fields.walletAddress")}
+                    placeholder={i18n("pages.withdraw.withdrawAddressPlaceholder")}
                     className="wal__input"
                   />
+                  <div className="wal__hint">
+                    {i18n('pages.wallet.usdtTrc20Note')}
+                  </div>
                 </div>
 
                 <div className="wal__group">
@@ -242,6 +231,25 @@ function Wallet() {
         .wal__group .invalid-feedback {
           color: var(--danger);
           font-size: 12px;
+          margin-top: 2px;
+        }
+
+        .wal__networkChip {
+          display: inline-flex;
+          align-items: center;
+          align-self: flex-start;
+          padding: 7px 16px;
+          border-radius: 999px;
+          font-size: 12.5px;
+          font-weight: 700;
+          background: linear-gradient(180deg, #ffb84d, #ff8a00);
+          color: #17130d;
+        }
+
+        .wal__hint {
+          font-size: 11.5px;
+          color: var(--text-tertiary);
+          line-height: 1.5;
           margin-top: 2px;
         }
 

@@ -776,6 +776,35 @@ class AuthService {
     );
   }
 
+  static async changeWithdrawPassword(
+    oldWithdrawPassword,
+    newWithdrawPassword,
+    options
+  ) {
+    const currentUser = options.currentUser;
+
+    // The withdraw password is stored and compared as plain text — same as
+    // everywhere else it's used (Wallet updates, withdrawal submission).
+    // No old password is required the first time it's being set.
+    if (currentUser.withdrawPassword) {
+      if (
+        !oldWithdrawPassword ||
+        oldWithdrawPassword !== currentUser.withdrawPassword
+      ) {
+        throw new Error400(
+          options.language,
+          "auth.withdrawPasswordChange.invalidPassword"
+        );
+      }
+    }
+
+    return UserRepository.updateWithdrawPassword(
+      currentUser.id,
+      newWithdrawPassword,
+      options
+    );
+  }
+
   static async signinFromSocial(
     provider,
     providerId,

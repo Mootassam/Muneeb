@@ -30,6 +30,13 @@ export default (database) => {
         default: "normal",
       },
 
+      products: [
+        new Schema(
+          { product: { type: Schema.Types.ObjectId, ref: "product" } },
+          { _id: false }
+        ),
+      ],
+
       tenant: {
         type: Schema.Types.ObjectId,
         ref: "tenant",

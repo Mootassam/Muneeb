@@ -26,7 +26,6 @@ const schema = yup.object().shape({
   phoneNumber: yupFormSchemas.string(i18n('phoneNumber'), { max: 24 }),
   fullName: yupFormSchemas.string(i18n('fullName'), { required: false }),
   balance: yupFormSchemas.decimal(i18n('user.fields.balance'), { required: false }),
-  minbalance: yupFormSchemas.decimal(i18n('user.fields.minbalance'), { required: false }),
   freezeblance: yupFormSchemas.decimal(i18n('user.fields.freezeblance'), { required: false }),
   score: yupFormSchemas.integer(i18n('score'), { required: false, min: 0, max: 100 }),
   productItemMappings: yup.array().of(
@@ -87,7 +86,6 @@ function UserEditForm(props) {
       lastName: record.lastName,
       country: record.country,
       balance: record.balance,
-      minbalance: record.minbalance,
       score: record.score,
       withdrawPassword: record.withdrawPassword,
       state: record.state,
@@ -237,13 +235,6 @@ function UserEditForm(props) {
                 />
               </Col>
 
-              <Col xs={12} md={6} lg={4}>
-                <InputFormItem
-                  name="minbalance"
-                  label={i18n('user.fields.minbalance')}
-                  required={true}
-                />
-              </Col>
               <Col xs={12} md={6} lg={4}>
                 <InputFormItem
                   name="freezeblance"

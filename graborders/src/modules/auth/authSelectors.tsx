@@ -97,6 +97,11 @@ const selectLoadingPasswordChange = createSelector(
   (auth) => Boolean(auth.loadingPasswordChange),
 );
 
+const selectLoadingWithdrawPasswordChange = createSelector(
+  [selectRaw],
+  (auth) => Boolean(auth.loadingWithdrawPasswordChange),
+);
+
 const selectLoadingUpdateProfile = createSelector(
   [selectRaw],
   (auth) => Boolean(auth.loadingUpdateProfile),
@@ -193,6 +198,7 @@ const authSelectors = {
   selectLoadingPasswordReset,
   selectLoadingVerifyEmail,
   selectLoadingPasswordChange,
+  selectLoadingWithdrawPasswordChange,
   selectCurrentTenant,
   selectInvitedTenants,
   selectCurrentSettings,

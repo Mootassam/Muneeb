@@ -294,7 +294,6 @@ const ptBR = {
       withdrawalMethod: "Informações do método de saque",
       username: "Nome de Usuário",
       walletName: "Nome da Carteira",
-      choosePreferredCoin: "Escolha a moeda preferida",
       walletAddress: "Endereço da Carteira",
       withdrawPassword: "Senha de Saque",
       submit: "Enviar",

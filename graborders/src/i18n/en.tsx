@@ -251,6 +251,8 @@ const en = {
       security: "Security",
       notifications: "Notifications",
       languages: "Languages",
+      addWithdrawPassword: "Add withdraw password",
+      changeWithdrawPassword: "Change withdraw password",
 
       // Buttons
       logout: "Logout",
@@ -420,6 +422,16 @@ const en = {
       secured: "Secured · 256-bit encryption"
     },
 
+    changeWithdrawPassword: {
+      addTitle: "Add Withdraw Password",
+      changeTitle: "Change Withdraw Password",
+      oldPassword: "Current Withdraw Password",
+      newPassword: "New Withdraw Password",
+      confirmPassword: "Confirm Withdraw Password",
+      submit: "Submit",
+      note: "This password is required to add/change your wallet and to submit withdrawals. Please keep it safe.",
+    },
+
 
     deposit: {
       title: "Deposit",
@@ -457,6 +469,9 @@ const en = {
       withdrawAddress: "Withdrawal address",
       withdrawAddressPlaceholder: "Enter your USDT (TRC-20) address",
       addressRequired: "Please enter a valid withdrawal address",
+      noWalletAddress: "You haven't added a withdrawal wallet yet.",
+      addWalletLink: "Add your wallet",
+      addWalletFirst: "Please add your USDT (TRC-20) wallet address before withdrawing.",
       success: "Withdrawal request submitted, awaiting confirmation.",
       withdrawAmount: "Withdraw Amount",
       withdrawPassword: "Withdraw Password",
@@ -477,8 +492,8 @@ const en = {
       withdrawalMethod: "Withdrawal method information",
       username: "Username",
       walletName: "Wallet Name",
-      choosePreferredCoin: "Choose preferred coin",
       walletAddress: "Wallet Address",
+      usdtTrc20Note: "We only support the USDT (TRC-20) network. Please make sure you add a USDT-TRC20 wallet address.",
       withdrawPassword: "Withdraw Password",
       submit: "Submit",
       note: "Please be careful when filling out this information",
@@ -513,18 +528,30 @@ const en = {
 
       // Insufficient balance banner
       insufficientBalance: "Insufficient balance! You need to deposit:",
-      depositNow: "Deposit Now"
+      depositNow: "Deposit Now",
+
+      processingOrder: {
+        title: "Processing Order",
+        initiatingOrder: "Initiating Order",
+        searchingMarketplaces: "Searching Marketplaces",
+        searchingMerchants: "Searching Merchants",
+        orderFound: "Order Found",
+        matchingSuccessful: "Matching Successful"
+      }
     },
 
     grapModal: {
       orderTime: "Order Time",
       orderNumber: "Order Number",
-      totalOrderAmount: "Total Amount",
-      commission: "Commission",
-      estimatedReturn: "PROFIT",
+      totalOrderAmount: "Order amount",
+      commission: "Commissions",
+      estimatedReturn: "Expected income",
+      insufficientBalanceMessage: "Your account balance is not enough, you need to recharge {0} to submit this order",
+      redirectToDepositMessage: "Thanks! Please top up your balance to continue.",
+      goToDeposit: "Go to Deposit",
       cancel: "Cancel",
       submit: "Submit",
-      quantity: "X 1",
+      quantity: "x{0}",
       currency: "USD"
     },
 
@@ -983,6 +1010,9 @@ const en = {
       title: "Change Password",
       success: "Password successfully changed",
       mustMatch: "Passwords must match",
+    },
+    withdrawPasswordChange: {
+      success: "Withdraw password successfully saved",
     },
     emailAddressVerificationEmail: {
       error: `Email not recognized`,

@@ -75,6 +75,11 @@ export default (app) => {
   );
 
   app.put(
+    `/auth/withdraw-password-change`,
+    require('./authWithdrawPasswordChange').default,
+  );
+
+  app.put(
     `/auth/verify-email`,
     require('./authVerifyEmail').default,
   );

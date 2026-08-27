@@ -49,6 +49,9 @@ const en = {
     passwordChange: {
       invalidPassword: 'The old password is invalid',
     },
+    withdrawPasswordChange: {
+      invalidPassword: 'The current withdraw password is invalid',
+    },
   },
 
   user: {

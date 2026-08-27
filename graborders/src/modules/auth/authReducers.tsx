@@ -158,6 +158,27 @@ export default (state = initialData, { type, payload }) => {
     };
   }
 
+  if (type === actions.WITHDRAW_PASSWORD_CHANGE_START) {
+    return {
+      ...state,
+      loadingWithdrawPasswordChange: true,
+    };
+  }
+
+  if (type === actions.WITHDRAW_PASSWORD_CHANGE_SUCCESS) {
+    return {
+      ...state,
+      loadingWithdrawPasswordChange: false,
+    };
+  }
+
+  if (type === actions.WITHDRAW_PASSWORD_CHANGE_ERROR) {
+    return {
+      ...state,
+      loadingWithdrawPasswordChange: false,
+    };
+  }
+
   if (type === actions.AUTH_INIT_SUCCESS) {
     return {
       ...state,

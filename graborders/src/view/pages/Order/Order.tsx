@@ -7,6 +7,7 @@ import LoadingModal from "src/shared/LoadingModal";
 import Dates from "src/view/shared/utils/Dates";
 import Nodata from "src/view/shared/Nodata";
 import { i18n } from "../../../i18n";
+import GrapProductList from "src/view/pages/Grap/GrapProductList";
 
 function Portfolio() {
   const [active, setActive] = useState("completed");
@@ -60,31 +61,39 @@ function Portfolio() {
               </span>
             </div>
 
-            <div className="ord__product">
-              <div className="ord__thumb">
-                {item?.product && (
-                  <img
-                    src={
-                      item?.product?.image ||
-                      item?.product?.photo?.[0]?.downloadUrl ||
-                      "https://via.placeholder.com/70x70/181a20/f0b90b?text=%20"
-                    }
-                    alt={item?.title || item?.product?.title}
-                    loading="lazy"
-                  />
+            {productType === "combo" ? (
+              <GrapProductList
+                products={(item?.product?.products || []).map(
+                  (p) => p.product,
                 )}
-              </div>
-              <div className="ord__productInfo">
-                <div className="ord__productName">{item?.product?.title}</div>
-                <div className="ord__productQty">
-                  {i18n("pages.portfolio.quantity")}
+              />
+            ) : (
+              <div className="ord__product">
+                <div className="ord__thumb">
+                  {item?.product && (
+                    <img
+                      src={
+                        item?.product?.image ||
+                        item?.product?.photo?.[0]?.downloadUrl ||
+                        "https://via.placeholder.com/70x70/181a20/f0b90b?text=%20"
+                      }
+                      alt={item?.title || item?.product?.title}
+                      loading="lazy"
+                    />
+                  )}
                 </div>
-                <div className="ord__productDate">
-                  <i className="fa-regular fa-clock"></i>
-                  {Dates.currentDate(item?.date)}
+                <div className="ord__productInfo">
+                  <div className="ord__productName">{item?.product?.title}</div>
+                  <div className="ord__productQty">
+                    {i18n("pages.portfolio.quantity")}
+                  </div>
+                  <div className="ord__productDate">
+                    <i className="fa-regular fa-clock"></i>
+                    {Dates.currentDate(item?.date)}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="ord__divider" />
 

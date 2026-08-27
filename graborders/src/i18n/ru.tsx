@@ -283,7 +283,6 @@ const ru = {
       withdrawalMethod: "Информация о методе вывода",
       username: "Имя Пользователя",
       walletName: "Название Кошелька",
-      choosePreferredCoin: "Выберите предпочтительную монету",
       walletAddress: "Адрес Кошелька",
       withdrawPassword: "Пароль Вывода",
       submit: "Отправить",

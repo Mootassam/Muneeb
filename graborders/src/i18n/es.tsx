@@ -291,7 +291,6 @@ const es = {
       withdrawalMethod: "Información del método de retiro",
       username: "Nombre de Usuario",
       walletName: "Nombre de Billetera",
-      choosePreferredCoin: "Elige la moneda preferida",
       walletAddress: "Dirección de Billetera",
       withdrawPassword: "Contraseña de Retiro",
       submit: "Enviar",

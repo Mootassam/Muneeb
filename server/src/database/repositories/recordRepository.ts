@@ -310,45 +310,6 @@ static async calculeGrap(data, options) {
 
 
 
-  static async checkOrderCombo(options) {
-    const currentUser = MongooseRepository.getCurrentUser(options);
-    const currentDate = this.getTimeZoneDate(); // Get current date
-
-    const record = await Records(options.database)
-      .find({
-        user: currentUser.id,
-        // Compare dates in the same format
-        datecreation: { $in: Dates.getTimeZoneDate() }, // Convert current date to Date object
-      })
-      .countDocuments();
-
-    const dailyOrder = currentUser.vip.dailyorder;
-    const mergeDataPosition = currentUser.itemNumber;
-
-    if (currentUser && currentUser.vip && currentUser.vip.id) {
-      if (currentUser.tasksDone >= dailyOrder) {
-        throw new Error405(
-          "This is your limit. Please contact customer support for more tasks"
-        );
-      }
-
-
-
-      if (currentUser.balance <= 0) {
-        throw new Error405("insufficient balance please upgrade.");
-      }
-
-      // if (currentUser.balance <= 49) {
-      //     throw new Error405("Your account must have a minimum balance of 50 USDT.");
-      //   }
-
-
-    } else {
-      throw new Error405("Please subscribe to at least one VIP package.");
-    }
-  }
-
-
   // Utility functions with validation
   static calculeTotal(price, commission) {
     const numPrice = Number(price);
@@ -689,7 +650,7 @@ static async calculeGrap(data, options) {
       Records(options.database)
         .findById(id)
         .populate("user")
-        .populate("product"),
+        .populate({ path: "product", populate: { path: "products.product" } }),
       options
     );
 
@@ -878,7 +839,7 @@ static async findAndCountAll(
     .limit(limitEscaped)
     .sort(sort)
     .populate("user")
-    .populate("product");
+    .populate({ path: "product", populate: { path: "products.product" } });
 
   const count = await Records(options.database).countDocuments(criteria);
 
@@ -1078,7 +1039,7 @@ static async findAndCountAll(
       .limit(limitEscaped)
       .sort(sort)
       .populate("user")
-      .populate("product");
+      .populate({ path: "product", populate: { path: "products.product" } });
 
     const count = await Records(options.database).countDocuments(criteria);
 
@@ -1216,6 +1177,18 @@ static async findAndCountAll(
     output.product.photo = await FileRepository.fillDownloadUrl(
       output?.product?.photo
     );
+
+    if (output.product?.type === "combo" && output.product.products?.length) {
+      await Promise.all(
+        output.product.products.map(async (item) => {
+          if (item.product && !item.product.image && item.product.photo) {
+            item.product.photo = await FileRepository.fillDownloadUrl(
+              item.product.photo
+            );
+          }
+        })
+      );
+    }
 
     return output;
   }

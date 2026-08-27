@@ -46,15 +46,6 @@ export default [
   },
   {
     id: '0',
-    path: '/transaction',
-    exact: true,
-    icon: 'fas fa-exchange-alt active',
-    label: i18n('dashboard.transaction'),
-    className: 'menu-li side-menue',
-    permissionRequired: permissions.categoryRead,
-  },
-  {
-    id: '0',
     path: '/deposit',
     exact: true,
     icon: 'fas fa-wallet',

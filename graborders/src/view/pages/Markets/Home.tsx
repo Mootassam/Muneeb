@@ -72,9 +72,6 @@ function Home() {
         </div>
 
         <div className="home__topActions">
-          <Link to="/search" className="home__iconBtn" aria-label="Search">
-            <i className="fa-solid fa-magnifying-glass"></i>
-          </Link>
           <Link to="/notifications" className="home__iconBtn" aria-label="Notifications">
             <i className="fa-solid fa-bell"></i>
             {unread > 0 && <span className="home__iconBadge">{unread > 99 ? "99+" : unread}</span>}

@@ -294,7 +294,6 @@ const de = {
       withdrawalMethod: "Informationen zur Auszahlungsmethode",
       username: "Benutzername",
       walletName: "Wallet-Name",
-      choosePreferredCoin: "Bevorzugte Münze wählen",
       walletAddress: "Wallet-Adresse",
       withdrawPassword: "Auszahlungspasswort",
       submit: "Absenden",

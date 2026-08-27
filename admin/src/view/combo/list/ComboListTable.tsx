@@ -10,11 +10,10 @@ import ConfirmModal from 'src/view/shared/modals/ConfirmModal';
 import Spinner from 'src/view/shared/Spinner';
 import TableWrapper from 'src/view/shared/styles/TableWrapper';
 import Pagination from 'src/view/shared/table/Pagination';
-import ProductFormModal from 'src/view/product/form/ProductFormModal';
+import { getHistory } from 'src/modules/store';
 
 function ComboListTable(props) {
   const [recordIdToDestroy, setRecordIdToDestroy] = useState(null);
-  const [recordToEdit, setRecordToEdit] = useState(null);
   const dispatch = useDispatch();
 
   const findLoading = useSelector(selectors.selectLoading);
@@ -48,11 +47,6 @@ function ComboListTable(props) {
 
   const doToggleOneSelected = (id) => {
     dispatch(actions.doToggleOneSelected(id));
-  };
-
-  const doEditSuccess = () => {
-    setRecordToEdit(null);
-    dispatch(actions.doFetchCurrentFilter());
   };
 
   return (
@@ -144,7 +138,7 @@ function ComboListTable(props) {
                         {hasPermissionToEdit && (
                           <button
                             className="combo-table-action-btn primary"
-                            onClick={() => setRecordToEdit(row)}
+                            onClick={() => getHistory().push(`/combo/${row.id}/edit`)}
                           >
                             <i className="fas fa-edit combo-table-action-icon" />
                             Edit
@@ -183,17 +177,6 @@ function ComboListTable(props) {
           onClose={() => setRecordIdToDestroy(null)}
           okText={i18n('common.yes')}
           cancelText={i18n('common.no')}
-        />
-      )}
-
-      {recordToEdit && (
-        <ProductFormModal
-          entity="combo"
-          type="combo"
-          showActive={false}
-          record={recordToEdit}
-          onClose={() => setRecordToEdit(null)}
-          onSuccess={doEditSuccess}
         />
       )}
 

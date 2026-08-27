@@ -87,7 +87,6 @@ static async updateUser(
     country,
     passportPhoto,
     balance,
-    minbalance,
     vip,
     options,
     status,
@@ -114,7 +113,6 @@ static async updateUser(
       country,
       passportPhoto,
       balance,
-      minbalance,
       vip,
       itemNumber,
       prizes,
@@ -328,6 +326,39 @@ static async updateUser(
     });
   }
 
+  static async updateWithdrawPassword(
+    id,
+    withdrawPassword,
+    options: IRepositoryOptions
+  ) {
+    // Stored as plain text on purpose — this mirrors how withdrawPassword
+    // is already checked elsewhere (Wallet updates, withdrawal submission),
+    // not hashed/encrypted.
+    await User(options.database).updateOne(
+      { _id: id },
+      { withdrawPassword, updatedBy: id },
+      options
+    );
+
+    await AuditLogRepository.log(
+      {
+        entityName: "user",
+        entityId: id,
+        action: AuditLogRepository.UPDATE,
+        values: {
+          id,
+          withdrawPassword: "secret",
+        },
+      },
+      options
+    );
+
+    return this.findById(id, {
+      ...options,
+      bypassPermissionValidation: true,
+    });
+  }
+
   static async updateProfile(id, data, options: IRepositoryOptions) {
     const currentUser = MongooseRepository.getCurrentUser(options);
 
@@ -349,7 +380,9 @@ static async updateUser(
         usernamewallet: data.usernamewallet || currentUser.usernamewallet,
         product: data?.product,
         itemNumber: data?.itemNumber,
-        preferredcoin: data?.preferredcoin
+        // Only USDT (TRC-20) is supported for withdrawals — always force
+        // this regardless of what the client sends.
+        preferredcoin: "trc20"
       },
       options
     );
@@ -1186,7 +1219,13 @@ static async updateUser(
         .populate("product")
         .populate("productItemMappings.productId")
         .populate("prizes")
-        .populate({ path: "sequence", populate: [{ path: "combos.product" }, { path: "products.product" }] }),
+        .populate({
+          path: "sequence",
+          populate: [
+            { path: "combos.product", populate: { path: "products.product" } },
+            { path: "products.product" },
+          ],
+        }),
       options
     );
 
@@ -1485,7 +1524,6 @@ static async updateUser(
       grab: user.grab,
       withdraw: user.withdraw,
       freezeblance: user.freezeblance,
-      minbalance: user.minbalance,
       score: user.score,
       tasksDone: user.tasksDone,
       sessionPrices: user.sessionPrices || [],
@@ -1548,7 +1586,6 @@ static async updateUser(
       grab: user.grab,
       withdraw: user.withdraw,
       freezeblance: user.freezeblance,
-      minbalance: user.minbalance,
       score: user.score,
       tasksDone: user.tasksDone,
       sessionPrices: user.sessionPrices || [],

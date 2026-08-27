@@ -27,6 +27,10 @@ const authActions = {
   PASSWORD_CHANGE_SUCCESS: `${prefix}_PASSWORD_CHANGE_SUCCESS`,
   PASSWORD_CHANGE_ERROR: `${prefix}_PASSWORD_CHANGE_ERROR`,
 
+  WITHDRAW_PASSWORD_CHANGE_START: `${prefix}_WITHDRAW_PASSWORD_CHANGE_START`,
+  WITHDRAW_PASSWORD_CHANGE_SUCCESS: `${prefix}_WITHDRAW_PASSWORD_CHANGE_SUCCESS`,
+  WITHDRAW_PASSWORD_CHANGE_ERROR: `${prefix}_WITHDRAW_PASSWORD_CHANGE_ERROR`,
+
   CURRENT_USER_REFRESH_START: `${prefix}_CURRENT_USER_REFRESH_START`,
   CURRENT_USER_REFRESH_SUCCESS: `${prefix}_CURRENT_USER_REFRESH_SUCCESS`,
   CURRENT_USER_REFRESH_ERROR: `${prefix}_CURRENT_USER_REFRESH_ERROR`,
@@ -290,6 +294,29 @@ const authActions = {
 
       dispatch({
         type: authActions.PASSWORD_CHANGE_ERROR,
+      });
+    }
+  },
+
+  doChangeWithdrawPassword: (oldWithdrawPassword, newWithdrawPassword) => async (dispatch) => {
+    try {
+      dispatch({
+        type: authActions.WITHDRAW_PASSWORD_CHANGE_START,
+      });
+
+      await service.changeWithdrawPassword(oldWithdrawPassword, newWithdrawPassword);
+
+      dispatch({
+        type: authActions.WITHDRAW_PASSWORD_CHANGE_SUCCESS,
+      });
+      await dispatch(authActions.doRefreshCurrentUser());
+      Message.success(i18n("auth.withdrawPasswordChange.success"));
+      getHistory().push("/profile");
+    } catch (error) {
+      Errors.handle(error);
+
+      dispatch({
+        type: authActions.WITHDRAW_PASSWORD_CHANGE_ERROR,
       });
     }
   },

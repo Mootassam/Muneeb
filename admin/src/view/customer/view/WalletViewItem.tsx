@@ -47,19 +47,13 @@ function WalletViewItem(props) {
           paddingBottom: '10px',
         }}
       >
-        <Col sm={4}>
-          <TextViewItem
-            label={i18n('Preferred coin')}
-            value={user.preferredcoin}
-          />
-        </Col>
-        <Col sm={4}>
+        <Col sm={6}>
           <TextViewItem
             label={i18n('Wallet Address')}
             value={user.trc20}
           />
         </Col>
-        <Col sm={4}>
+        <Col sm={6}>
           <TextViewItem
             label={i18n('Balance')}
             value={user.balance}

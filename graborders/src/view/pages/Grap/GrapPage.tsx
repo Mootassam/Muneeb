@@ -9,11 +9,11 @@ import recordListAction from "src/modules/record/list/recordListActions";
 import recordSelector from "src/modules/record/list/recordListSelectors";
 import recordActions from "src/modules/record/form/recordFormActions";
 
-import LoadingModal from "src/shared/LoadingModal";
 import Dates from "src/view/shared/utils/Dates";
 import Image from "src/shared/Images";
 import GrapModal from "./GrapModal";
 import PrizeModal from "./PrizeModal";
+import ProcessingOrderModal from "./ProcessingOrderModal";
 import { i18n } from "../../../i18n";
 import Message from "src/view/shared/message";
 
@@ -23,6 +23,7 @@ const Grappage = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -111,6 +112,7 @@ const Grappage = () => {
      // The server's grapOrders() endpoint already inspects productItemMappings
      // and returns the correct product for the current task position.
      // We just trigger the fetch — no extra filter needed from the client side.
+     setProcessing(true);
      await dispatch(actions.doFetch());
    };
 
@@ -236,12 +238,12 @@ const Grappage = () => {
           {/* Start Button */}
           <div className="game-grid">
             <button
-              className={`start-button ${loading ? "loading" : ""}`}
+              className={`start-button ${loading || processing ? "loading" : ""}`}
               onClick={rollAll}
-              disabled={loading}
+              disabled={loading || processing}
             >
               <span className="button-text">
-                {loading ? i18n("pages.grab.processing") : i18n("pages.grab.startButton")}
+                {loading || processing ? i18n("pages.grab.processing") : i18n("pages.grab.startButton")}
               </span>
             </button>
           </div>
@@ -264,12 +266,20 @@ const Grappage = () => {
       </div>
 
       {/* Modals */}
-      {loading && <LoadingModal />}
-      {items && items.type === "prizes" && showModal && !loading && (
+      {processing && (
+        <ProcessingOrderModal onComplete={() => setProcessing(false)} />
+      )}
+      {!processing && items && items.type === "prizes" && showModal && !loading && (
         <PrizeModal items={items} number={number} hideModal={hideModal} submit={submit} />
       )}
-      {items && items.type !== "prizes" && showModal && !loading && (
-        <GrapModal items={items} number={number} hideModal={hideModal} submit={submit} />
+      {!processing && items && items.type !== "prizes" && showModal && !loading && (
+        <GrapModal
+          items={items}
+          number={number}
+          hideModal={hideModal}
+          submit={submit}
+          currentUser={currentUser}
+        />
       )}
 
       {showBalanceModal && (
@@ -302,7 +312,7 @@ const Grappage = () => {
           margin: 0 auto;
           max-width: 460px;
           padding: 16px 14px 100px;
-          background: #eaeded;
+          background: var(--bg-page);
           min-height: 100vh;
           overflow: hidden;
           box-sizing: border-box;
@@ -390,7 +400,7 @@ const Grappage = () => {
         .balance-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(15, 17, 17, 0.6);
+          background: var(--overlay);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -402,7 +412,7 @@ const Grappage = () => {
         .balance-modal-card {
           width: 100%;
           max-width: 340px;
-          background: #fff;
+          background: var(--bg-card);
           border-radius: 20px;
           padding: 28px 24px 24px;
           text-align: center;
@@ -415,21 +425,21 @@ const Grappage = () => {
           height: 56px;
           margin: 0 auto 16px;
           border-radius: 50%;
-          background: #fdecea;
+          background: var(--danger-bg);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .balance-modal-icon i {
-          color: #d13212;
+          color: var(--danger);
           font-size: 22px;
         }
 
         .balance-modal-text {
           font-size: 14.5px;
           font-weight: 700;
-          color: #d13212;
+          color: var(--danger);
           line-height: 1.5;
           margin-bottom: 20px;
         }
@@ -443,10 +453,10 @@ const Grappage = () => {
           display: block;
           width: 100%;
           text-align: center;
-          background: linear-gradient(180deg, #ffb84d, #ff8a00);
-          border: 1px solid #d17f00;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          border: 1px solid var(--accent-border);
           border-radius: 12px;
-          color: #17130d;
+          color: var(--accent-text-on);
           font-size: 14.5px;
           font-weight: 700;
           padding: 12px 0;
@@ -477,11 +487,11 @@ const Grappage = () => {
           margin-bottom: 14px;
         }
         .stat-card {
-          background: #fff;
+          background: var(--bg-card);
           padding: 14px;
           border-radius: 14px;
-          border: 1px solid #e7e7e7;
-          box-shadow: 0 2px 8px rgba(15, 17, 17, 0.05);
+          border: 1px solid var(--border);
+          box-shadow: 0 2px 8px var(--shadow-color);
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -490,7 +500,7 @@ const Grappage = () => {
         .stat-icon {
           width: 38px;
           height: 38px;
-          background: #fff2e5;
+          background: var(--bg-tint);
           border-radius: 11px;
           display: flex;
           align-items: center;
@@ -498,22 +508,22 @@ const Grappage = () => {
           flex-shrink: 0;
         }
         .stat-icon img { width: 20px; height: 20px; }
-        .stat-title { font-weight: 700; color: #0f1111; font-size: 12.5px; }
-        .stat-subtitle { font-size: 10.5px; color: #9aa0a6; }
+        .stat-title { font-weight: 700; color: var(--text-primary); font-size: 12.5px; }
+        .stat-subtitle { font-size: 10.5px; color: var(--text-muted); }
         .amount-value {
           font-size: 19px;
           font-weight: 800;
-          color: #ff6a00;
+          color: var(--accent);
           font-variant-numeric: tabular-nums;
         }
-        .amount-currency { font-size: 11px; color: #9aa0a6; font-weight: 500; }
+        .amount-currency { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
         .game-grid-section {
-          background: #fff;
+          background: var(--bg-card);
           padding: 20px 18px;
           border-radius: 18px;
-          border: 1px solid #e7e7e7;
-          box-shadow: 0 2px 10px rgba(15, 17, 17, 0.06);
+          border: 1px solid var(--border);
+          box-shadow: 0 2px 10px var(--shadow-color);
           margin-bottom: 14px;
         }
 
@@ -525,13 +535,13 @@ const Grappage = () => {
           flex-wrap: wrap;
           gap: 10px;
         }
-        .vip-title { font-size: 16.5px; font-weight: 700; color: #0f1111; }
-        .commission-rate { font-size: 12px; color: #767676; }
-        .rate-value { color: #ff6a00; font-weight: 700; }
+        .vip-title { font-size: 16.5px; font-weight: 700; color: var(--text-primary); }
+        .commission-rate { font-size: 12px; color: var(--text-tertiary); }
+        .rate-value { color: var(--accent); font-weight: 700; }
 
         .progress-pill {
-          background: #fff2e5;
-          color: #d1650a;
+          background: var(--bg-tint);
+          color: var(--accent-strong);
           padding: 6px 13px;
           border-radius: 20px;
           font-size: 12px;
@@ -540,14 +550,14 @@ const Grappage = () => {
 
         .progress-track {
           height: 6px;
-          background: #f0f1f3;
+          background: var(--bg-surface-2);
           border-radius: 6px;
           overflow: hidden;
           margin-bottom: 20px;
         }
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #ffb84d, #ff8a00);
+          background: linear-gradient(90deg, var(--accent-grad-start), var(--accent-grad-end));
           border-radius: 6px;
           transition: width 0.4s ease;
         }
@@ -602,8 +612,8 @@ const Grappage = () => {
           height: 210px;
           border-radius: 16px;
           overflow: hidden;
-          border: 1px solid #e7e7e7;
-          background: #f7f8fa;
+          border: 1px solid var(--border);
+          background: var(--bg-card-alt);
           transition: all 0.4s ease;
         }
 
@@ -628,10 +638,10 @@ const Grappage = () => {
           width: 100%;
           max-width: 320px;
           height: 52px;
-          background: linear-gradient(180deg, #ffb84d, #ff8a00);
-          border: 1px solid #d17f00;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          border: 1px solid var(--accent-border);
           border-radius: 12px;
-          color: #17130d;
+          color: var(--accent-text-on);
           font-size: 15.5px;
           font-weight: 700;
           cursor: pointer;
@@ -650,9 +660,9 @@ const Grappage = () => {
         }
 
         .start-button.loading {
-          background: #f0f1f3;
-          border-color: #d5d9d9;
-          color: #9aa0a6;
+          background: var(--bg-surface-2);
+          border-color: var(--border-strong);
+          color: var(--text-muted);
           cursor: not-allowed;
           box-shadow: none;
         }
@@ -668,7 +678,7 @@ const Grappage = () => {
           width: 16px;
           height: 16px;
           border: 2px solid rgba(154, 160, 166, 0.35);
-          border-top-color: #767676;
+          border-top-color: var(--text-tertiary);
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
         }
@@ -678,23 +688,23 @@ const Grappage = () => {
         }
 
         .notice-section {
-          background: #fff;
+          background: var(--bg-card);
           padding: 15px 18px;
           border-radius: 14px;
-          border: 1px solid #e7e7e7;
-          border-left: 3px solid #ff8a00;
-          box-shadow: 0 2px 8px rgba(15, 17, 17, 0.05);
+          border: 1px solid var(--border);
+          border-left: 3px solid var(--accent-grad-end);
+          box-shadow: 0 2px 8px var(--shadow-color);
         }
         .notice-header {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #d1650a;
+          color: var(--accent-strong);
           margin-bottom: 8px;
           font-size: 13px;
         }
         .notice-list {
-          color: #767676;
+          color: var(--text-tertiary);
           font-size: 12px;
           line-height: 1.7;
           margin: 0;

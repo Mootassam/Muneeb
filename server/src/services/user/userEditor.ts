@@ -88,7 +88,6 @@ export default class UserEditor {
       this.data.country,
       this.data.passportPhoto,
       this.data.balance,
-      this.data.minbalance,
       vipId,
       this.options,
       this.data.status,

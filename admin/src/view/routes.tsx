@@ -174,6 +174,20 @@ const privateRoutes = [
     permissionRequired: permissions.categoryRead,
     exact: true,
   },
+  {
+    path: '/combo/new',
+    loader: () =>
+      import('src/view/combo/form/ComboFormPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
+  {
+    path: '/combo/:id/edit',
+    loader: () =>
+      import('src/view/combo/form/ComboFormPage'),
+    permissionRequired: permissions.categoryRead,
+    exact: true,
+  },
 
   // sequence routes
   {

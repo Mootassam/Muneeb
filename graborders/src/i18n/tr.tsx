@@ -300,7 +300,6 @@ const tr = {
       withdrawalMethod: "Çekim yöntemi bilgileri",
       username: "Kullanıcı Adı",
       walletName: "Cüzdan Adı",
-      choosePreferredCoin: "Tercih edilen coin'i seçin",
       walletAddress: "Cüzdan Adresi",
       withdrawPassword: "Çekim Şifresi",
       submit: "Gönder",

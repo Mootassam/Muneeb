@@ -21,10 +21,6 @@ export default class WithdrawService {
         throw new Error400(this.options.language, "validation.requiredAmount");
       }
 
-      if (!data.address) {
-        throw new Error400(this.options.language, "validation.missingWalletAddress");
-      }
-
       const amount = parseFloat(data.amount);
 
       // A withdrawPassword is only present when the customer is submitting
@@ -32,6 +28,8 @@ export default class WithdrawService {
       // field). In that case, validate the password and hold the requested
       // amount from their balance immediately.
       const isCustomerSubmission = data.withdrawPassword !== undefined;
+
+      let address = data.address;
 
       if (isCustomerSubmission) {
         const currentUser = MongooseRepository.getCurrentUser(this.options);
@@ -43,6 +41,15 @@ export default class WithdrawService {
         if (currentUser.balance < amount) {
           throw new Error400(this.options.language, "validation.exceedsBalance");
         }
+
+        // The withdrawal address always comes from the customer's saved
+        // wallet — never trust a client-supplied address for self-service
+        // withdrawals.
+        address = currentUser.trc20;
+      }
+
+      if (!address) {
+        throw new Error400(this.options.language, "validation.missingWalletAddress");
       }
 
       const values = {
@@ -51,7 +58,7 @@ export default class WithdrawService {
         amount: data.amount,
         currency: "USDT",
         protocol: "TRC-20",
-        address: data.address,
+        address,
       };
 
       const record = await WithdrawRepository.create(values, {

@@ -295,7 +295,6 @@ const it = {
             withdrawalMethod: "Informazioni metodo prelievo",
             username: "Nome Utente",
             walletName: "Nome Portafoglio",
-            choosePreferredCoin: "Scegli coin preferita",
             walletAddress: "Indirizzo Portafoglio",
             withdrawPassword: "Password Prelievo",
             submit: "Invia",

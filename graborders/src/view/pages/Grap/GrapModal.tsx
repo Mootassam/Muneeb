@@ -1,14 +1,32 @@
 import React from 'react';
 import Dates from 'src/view/shared/utils/Dates';
+import { getHistory } from 'src/modules/store';
+import Message from 'src/view/shared/message';
 import { i18n } from '../../../i18n';
+import GrapProductList from './GrapProductList';
 
 function GrapModal(props) {
-  const { items, number, hideModal, submit } = props;
+  const { items, number, hideModal, submit, currentUser } = props;
 
-  const calculateProfit = (price, commission) => {
-    const p = parseFloat(price) || 0;
-    const c = parseFloat(commission) || 0;
-    return ((p * c) / 100).toFixed(3);
+  const productList =
+    items?.type === 'combo'
+      ? (items.products || []).map((p) => p.product).filter(Boolean)
+      : [items];
+
+  const orderAmount = parseFloat(items?.amount) || 0;
+  const commissionRate = parseFloat(items?.commission) || 0;
+  const commissionAmount = (orderAmount * commissionRate) / 100;
+  const expectedIncome = orderAmount + commissionAmount;
+
+  const balance = parseFloat(currentUser?.balance) || 0;
+  const isCombo = items?.type === 'combo';
+  const insufficient = isCombo && orderAmount > balance;
+  const deficit = (orderAmount - balance).toFixed(4);
+
+  const doRedirectToDeposit = () => {
+    hideModal();
+    Message.success(i18n('pages.grapModal.redirectToDepositMessage'));
+    getHistory().push('/deposit');
   };
 
   return (
@@ -18,62 +36,9 @@ function GrapModal(props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-contents">
-        
-
-          {/* PRODUCT */}
-          <div className="product-display">
-            <div className="product-image-container">
-              <img
-                src={
-                  items?.image ||
-                  items?.photo?.[0]?.downloadUrl ||
-                  'https://via.placeholder.com/150'
-                }
-                alt={items?.title}
-                loading="lazy"
-                className="product-image"
-              />
-            </div>
-
-            <div className="product-details">
-              <div className="product-name">{items?.title}</div>
-            </div>
-          </div>
-
-          {/* SUMMARY */}
-          <div className="order-summary">
-            <div className="summary-row">
-              <span className="summary-label">
-                {i18n('pages.grapModal.totalOrderAmount')}
-              </span>
-              <span className="summary-value">
-                {items?.amount} {i18n('pages.grapModal.currency')}
-              </span>
-            </div>
-
-            <div className="summary-row">
-              <span className="summary-label">
-                {i18n('pages.grapModal.estimatedReturn')}
-              </span>
-              <span className="summary-value">
-                {calculateProfit(
-                  items?.price ?? items?.amount,
-                  items?.commission
-                )}{' '}
-                {i18n('pages.grapModal.currency')}
-              </span>
-            </div>
-          </div>
 
           {/* INFO */}
-          <div className="order-info">
-            <div className="info-row">
-              <span className="info-label">
-                {i18n('pages.grapModal.orderTime')}
-              </span>
-              <span className="info-value">{Dates.current()}</span>
-            </div>
-
+          <div className="order-info order-info-top">
             <div className="info-row">
               <span className="info-label">
                 {i18n('pages.grapModal.orderNumber')}
@@ -82,10 +47,62 @@ function GrapModal(props) {
             </div>
           </div>
 
+          {/* PRODUCTS */}
+          <GrapProductList products={productList} />
+
+          {/* SUMMARY */}
+          <div className="order-details">
+            <div className="detail-row">
+              <span className="detail-label">
+                {i18n('pages.grapModal.orderTime')}
+              </span>
+              <span className="detail-value">{Dates.current()}</span>
+            </div>
+
+            <div className="detail-row">
+              <span className="detail-label">
+                {i18n('pages.grapModal.totalOrderAmount')}
+              </span>
+              <span className="detail-value">
+                {orderAmount.toFixed(2)}{i18n('pages.grapModal.currency')}
+              </span>
+            </div>
+
+            <div className="detail-row">
+              <span className="detail-label">
+                {i18n('pages.grapModal.commission')}
+              </span>
+              <span className="detail-value">
+                {commissionAmount.toFixed(3)}{i18n('pages.grapModal.currency')}
+              </span>
+            </div>
+
+            <div className="detail-row">
+              <span className="detail-label">
+                {i18n('pages.grapModal.estimatedReturn')}
+              </span>
+              <span className="detail-value detail-value-highlight">
+                {expectedIncome.toFixed(3)}{i18n('pages.grapModal.currency')}
+              </span>
+            </div>
+          </div>
+
+          {/* INSUFFICIENT BALANCE */}
+          {insufficient && (
+            <div className="insufficient-banner">
+              {i18n('pages.grapModal.insufficientBalanceMessage', deficit)}
+            </div>
+          )}
+
           {/* ACTION */}
           <div className="modal-actions">
-            <button className="submit-button" onClick={submit}>
-              {i18n('pages.grapModal.submit')}
+            <button
+              className="submit-button"
+              onClick={insufficient ? doRedirectToDeposit : submit}
+            >
+              {insufficient
+                ? i18n('pages.grapModal.goToDeposit')
+                : i18n('pages.grapModal.submit')}
             </button>
           </div>
         </div>
@@ -97,7 +114,7 @@ function GrapModal(props) {
         .modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.7);
+          background: var(--overlay);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -113,8 +130,8 @@ function GrapModal(props) {
         }
 
         .modal-contents {
-          background: #fff;
-          border: 1px solid #e7e7e7;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 16px;
           padding: 24px;
           max-height: 90vh;
@@ -122,118 +139,92 @@ function GrapModal(props) {
           box-shadow: 0 25px 60px -15px rgba(15, 17, 17, 0.35);
         }
 
-        /* HEADER */
-        .modal-header {
-          text-align: center;
-          margin-bottom: 24px;
-        }
-
-        .modal-title {
-          font-size: 22px;
-          font-weight: 700;
-          color: #0f1111;
-        }
-
-        /* PRODUCT */
-        .product-display {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 14px;
-          margin-bottom: 22px;
-        }
-
-        .product-image-container {
-          width: 100px;
-          aspect-ratio: 1 / 1;
-          border-radius: 14px;
-          overflow: hidden;
-          border: 2px solid #ff8a00;
-          background: #f7f8fa;
-          flex-shrink: 0;
-        }
-
-        .product-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .product-name {
-          font-size: 17px;
-          font-weight: 600;
-          color: #0f1111;
-          text-align: center;
-        }
-
         /* SUMMARY */
-        .order-summary {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
+        .order-details {
           margin-bottom: 16px;
         }
 
-        .summary-row {
-          flex: 1;
-          min-width: 140px;
-          background: #fff2e5;
-          border: 1px solid #ffe0b8;
-          border-radius: 10px;
-          padding: 14px;
-          text-align: center;
+        .detail-row {
           display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          gap: 6px;
+          justify-content: space-between;
+          align-items: baseline;
+          padding: 9px 0;
+          border-bottom: 1px solid var(--border-soft);
         }
 
-        .summary-label {
-          font-size: 12.5px;
-          color: #9a6a2e;
+        .detail-row:last-child {
+          border-bottom: none;
         }
 
-        .summary-value {
-          font-size: 17px;
-          font-weight: 700;
-          color: #d1650a;
+        .detail-label {
+          font-size: 13.5px;
+          color: var(--text-tertiary);
+        }
+
+        .detail-value {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .detail-value-highlight {
+          font-size: 20px;
+          font-weight: 800;
+          color: var(--accent);
         }
 
         /* INFO */
         .order-info {
-          background: #f7f8fa;
-          border: 1px solid #e7e7e7;
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
           border-radius: 10px;
-          padding: 14px 16px;
-          margin-bottom: 22px;
+          padding: 10px 16px;
+          margin-bottom: 16px;
+        }
+
+        .order-info-top {
+          margin-bottom: 14px;
         }
 
         .info-row {
           display: flex;
           justify-content: space-between;
-          padding: 6px 0;
+          padding: 4px 0;
         }
 
         .info-label {
-          color: #767676;
+          color: var(--text-tertiary);
           font-size: 13px;
         }
 
         .info-value {
           font-weight: 600;
-          color: #0f1111;
+          color: var(--text-primary);
           font-size: 13px;
+        }
+
+        /* INSUFFICIENT BALANCE */
+        .insufficient-banner {
+          background: var(--danger-bg);
+          border: 1px solid var(--danger);
+          color: var(--danger);
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1.5;
+          text-align: center;
+          border-radius: 10px;
+          padding: 12px 14px;
+          margin-bottom: 16px;
         }
 
         /* ACTION */
         .submit-button {
           width: 100%;
           min-height: 48px;
-          border: 1px solid #d17f00;
+          border: 1px solid var(--accent-border);
           border-radius: 10px;
-          background: linear-gradient(180deg, #ffb84d, #ff8a00);
-          color: #17130d;
+          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          color: var(--accent-text-on);
           font-size: 15.5px;
           font-weight: 700;
           cursor: pointer;

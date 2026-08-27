@@ -87,6 +87,8 @@ function Profile() {
     }
   };
 
+  const hasWithdrawPassword = Boolean(currentUser?.withdrawPassword);
+
   const links = [
     {
       icon: "fa-solid fa-clock-rotate-left",
@@ -104,6 +106,13 @@ function Profile() {
       url: "/security"
     },
     {
+      icon: "fa-solid fa-key",
+      name: hasWithdrawPassword
+        ? i18n('pages.profile.changeWithdrawPassword')
+        : i18n('pages.profile.addWithdrawPassword'),
+      url: "/withdraw-password"
+    },
+    {
       icon: "fa-solid fa-bell",
       name: i18n('pages.profile.notifications'),
       url: "/notifications"
@@ -117,7 +126,6 @@ function Profile() {
 
   const scorePct = currentUser?.score || 100;
   const balance = currentUser?.balance?.toFixed(2) || "0.00";
-  const frozen = currentUser?.freezeblance?.toFixed(2) || "0.00";
 
   return (
     <div className="acc__page">
@@ -171,10 +179,6 @@ function Profile() {
           <div className="acc__statCol">
             <div className="acc__statValue">{totalperday}</div>
             <div className="acc__statLabel">{i18n('pages.profile.todayProfit')}</div>
-          </div>
-          <div className="acc__statCol">
-            <div className="acc__statValue">{frozen}</div>
-            <div className="acc__statLabel">{i18n('pages.profile.frozenAmount')}</div>
           </div>
         </div>
 
@@ -424,7 +428,7 @@ function Profile() {
         /* stat strip */
         .acc__statStrip {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;

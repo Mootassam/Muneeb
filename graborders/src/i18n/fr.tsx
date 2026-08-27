@@ -269,7 +269,6 @@ tabBottomNavigator: {
       withdrawalMethod: "Informations sur la méthode de retrait",
       username: "Nom d'utilisateur",
       walletName: "Nom du portefeuille",
-      choosePreferredCoin: "Choisir la pièce préférée",
       walletAddress: "Adresse du portefeuille",
       withdrawPassword: "Mot de passe de retrait",
       submit: "Soumettre",

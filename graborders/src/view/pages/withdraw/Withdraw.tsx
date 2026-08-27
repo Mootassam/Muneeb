@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import SubHeader from "src/view/shared/Header/SubHeader";
 import authSelectors from "src/modules/auth/authSelectors";
 import yupFormSchemas from "src/modules/shared/yup/yupFormSchemas";
@@ -20,10 +21,6 @@ const schema = yup.object().shape({
     required: true,
     min: 50,
   }),
-  address: yupFormSchemas.string(i18n("pages.withdraw.withdrawAddress"), {
-    required: true,
-    min: 10,
-  }),
   withdrawPassword: yupFormSchemas.string(
     i18n("user.fields.withdrawPassword"),
     {
@@ -41,19 +38,19 @@ function Withdraw() {
     await dispatch(authActions.doRefreshCurrentUser());
   }, [dispatch]);
 
-  const onSubmit = async ({ amount, address, withdrawPassword }) => {
+  const onSubmit = async ({ amount, withdrawPassword }) => {
     setSubmitting(true);
 
     try {
       await WithdrawService.create({
         user: currentUser ? currentUser.id : null,
         amount,
-        address,
+        address: currentUser?.trc20,
         withdrawPassword,
       });
 
       Message.success(i18n("pages.withdraw.success"));
-      form.reset({ amount: "", address: "", withdrawPassword: "" });
+      form.reset({ amount: "", withdrawPassword: "" });
       await refreshItems();
     } catch (error) {
       Errors.handle(error);
@@ -64,7 +61,6 @@ function Withdraw() {
 
   const [initialValues] = useState({
     amount: "",
-    address: "",
   });
   const form = useForm({
     resolver: yupResolver(schema),
@@ -72,7 +68,8 @@ function Withdraw() {
     defaultValues: initialValues,
   });
 
-  const canWithdraw = Boolean(currentUser?.withdraw);
+  const hasWallet = Boolean(currentUser?.trc20);
+  const canWithdraw = Boolean(currentUser?.withdraw) && hasWallet;
 
   return (
     <div>
@@ -103,15 +100,18 @@ function Withdraw() {
           <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="wd__formGroup">
-                <label className="wd__label" htmlFor="address">
+                <label className="wd__label">
                   {i18n("pages.withdraw.withdrawAddress")}
                 </label>
-                <InputFormItem
-                  type="text"
-                  name="address"
-                  placeholder={i18n("pages.withdraw.withdrawAddressPlaceholder")}
-                  className="wd__input"
-                />
+                {hasWallet ? (
+                  <div className="wd__addressDisplay">{currentUser.trc20}</div>
+                ) : (
+                  <div className="wd__addressMissing">
+                    <i className="fa-solid fa-triangle-exclamation"></i>
+                    {i18n("pages.withdraw.noWalletAddress")}{" "}
+                    <Link to="/wallet">{i18n("pages.withdraw.addWalletLink")}</Link>
+                  </div>
+                )}
               </div>
 
               <div className="wd__formGroup">
@@ -149,7 +149,9 @@ function Withdraw() {
               {!canWithdraw && (
                 <div className="wd__disabledNote">
                   <i className="fa-solid fa-lock"></i>
-                  {i18n("pages.withdraw.disabledNote")}
+                  {!hasWallet
+                    ? i18n("pages.withdraw.addWalletFirst")
+                    : i18n("pages.withdraw.disabledNote")}
                 </div>
               )}
             </form>
@@ -280,6 +282,38 @@ function Withdraw() {
 
         .wd__page .wd__input.__danger {
           border-color: var(--danger);
+        }
+
+        .wd__addressDisplay {
+          width: 100%;
+          background: var(--bg-card-alt);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 12px 14px;
+          font-size: 13.5px;
+          color: var(--text-primary);
+          word-break: break-all;
+          box-sizing: border-box;
+        }
+
+        .wd__addressMissing {
+          display: flex;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 6px;
+          background: var(--bg-tint);
+          border: 1px solid var(--tint-border);
+          border-radius: 12px;
+          padding: 10px 12px;
+          font-size: 12px;
+          color: var(--tint-text);
+          line-height: 1.5;
+        }
+
+        .wd__addressMissing a {
+          color: var(--accent);
+          font-weight: 700;
+          text-decoration: underline;
         }
 
         .wd__page .invalid-feedback {
