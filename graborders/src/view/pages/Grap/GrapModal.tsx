@@ -16,7 +16,6 @@ function GrapModal(props) {
   const orderAmount = parseFloat(items?.amount) || 0;
   const commissionRate = parseFloat(items?.commission) || 0;
   const commissionAmount = (orderAmount * commissionRate) / 100;
-  const expectedIncome = orderAmount + commissionAmount;
 
   // A combo can only be submitted once the customer's balance already
   // covers its price — submitting never deducts anything, this is just a
@@ -24,7 +23,11 @@ function GrapModal(props) {
   const balance = parseFloat(currentUser?.balance) || 0;
   const isCombo = items?.type === 'combo';
   const insufficient = isCombo && orderAmount > balance;
-  const deficit = (orderAmount - balance).toFixed(4);
+  const depositNeeded = Math.max(orderAmount - balance, 0);
+  const deficit = depositNeeded.toFixed(4);
+  // For a combo, "expecting commission" is the commission plus whatever
+  // still needs to be deposited to unlock it.
+  const expectedIncome = commissionAmount + depositNeeded;
 
   const doRedirectToDeposit = () => {
     hideModal();
@@ -75,19 +78,21 @@ function GrapModal(props) {
               <span className="detail-label">
                 {i18n('pages.grapModal.commission')}
               </span>
-              <span className="detail-value">
+              <span className={`detail-value ${!isCombo ? 'detail-value-accent' : ''}`}>
                 {commissionAmount.toFixed(3)}{i18n('pages.grapModal.currency')}
               </span>
             </div>
 
-            <div className="detail-row">
-              <span className="detail-label">
-                {i18n('pages.grapModal.estimatedReturn')}
-              </span>
-              <span className="detail-value detail-value-highlight">
-                {expectedIncome.toFixed(3)}{i18n('pages.grapModal.currency')}
-              </span>
-            </div>
+            {isCombo && (
+              <div className="detail-row">
+                <span className="detail-label">
+                  {i18n('pages.grapModal.estimatedReturn')}
+                </span>
+                <span className="detail-value detail-value-highlight">
+                  {expectedIncome.toFixed(3)}{i18n('pages.grapModal.currency')}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* INSUFFICIENT BALANCE */}
@@ -173,6 +178,10 @@ function GrapModal(props) {
         .detail-value-highlight {
           font-size: 20px;
           font-weight: 800;
+          color: var(--accent);
+        }
+
+        .detail-value-accent {
           color: var(--accent);
         }
 

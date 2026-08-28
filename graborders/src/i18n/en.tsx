@@ -44,7 +44,7 @@ const en = {
   },
 
   app: {
-    title: "E-clicks Digital",
+    title: "Luxora Mall",
   },
 
   api: {
@@ -335,7 +335,9 @@ const en = {
       title: "Customer Service",
       description: "If you have any questions or encounter issues, please chat with our online customer support team.",
       contactWhatsApp: "Contact on WhatsApp",
-      contactTelegram: "Contact on Telegram"
+      contactTelegram: "Contact on Telegram",
+      unavailableTitle: "No Support Agents Available",
+      unavailableMessage: "Our customer service team isn't available right now. Please check back later."
     },
 
     notifications: {

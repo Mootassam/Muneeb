@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
 import actions from "src/modules/category/list/categoryListActions";
 import selector from "src/modules/category/list/categoryListSelectors";
 import LoadingModal from "src/shared/LoadingModal";
@@ -32,22 +31,21 @@ function Online() {
           <p className="hlp__heroText">{i18n("pages.online.description")}</p>
         </div>
 
-        {/* Live chat, elevated as the primary channel */}
-        <Link to="/LiveChat" className="hlp__liveChat">
-          <span className="hlp__liveChatPulse">
-            <i className="fa-solid fa-comment-dots"></i>
-          </span>
-          <span className="hlp__liveChatBody">
-            <span className="hlp__liveChatTitle">
-              Live Chat
-              <span className="hlp__onlineDot"></span>
-            </span>
-            <span className="hlp__liveChatSubtitle">Fastest way to reach our team</span>
-          </span>
-          <i className="fa-solid fa-chevron-right hlp__liveChatArrow"></i>
-        </Link>
-
         {loading && <LoadingModal />}
+
+        {!loading && (!record || record.length === 0) && (
+          <div className="hlp__empty">
+            <span className="hlp__emptyIcon">
+              <i className="fa-solid fa-headset"></i>
+            </span>
+            <div className="hlp__emptyTitle">
+              {i18n("pages.online.unavailableTitle")}
+            </div>
+            <p className="hlp__emptyText">
+              {i18n("pages.online.unavailableMessage")}
+            </p>
+          </div>
+        )}
 
         {!loading && record && record.length > 0 && (
           <>
@@ -148,67 +146,45 @@ function Online() {
           margin-right: auto;
         }
 
-        .hlp__liveChat {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: var(--bg-tint);
-          border: 1px solid var(--tint-border);
-          border-radius: 16px;
-          padding: 14px;
-          text-decoration: none;
-          margin-bottom: 24px;
+        .hlp__empty {
+          text-align: center;
+          padding: 40px 20px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 20px;
         }
 
-        .hlp__liveChatPulse {
-          flex-shrink: 0;
-          width: 46px;
-          height: 46px;
+        .hlp__emptyIcon {
+          width: 56px;
+          height: 56px;
+          margin: 0 auto 16px;
           border-radius: 50%;
-          background: linear-gradient(180deg, var(--accent-grad-start), var(--accent-grad-end));
+          background: var(--bg-tint);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .hlp__liveChatPulse i {
-          color: var(--accent-text-on);
-          font-size: 19px;
+        .hlp__emptyIcon i {
+          color: var(--accent);
+          font-size: 22px;
         }
 
-        .hlp__liveChatBody {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .hlp__liveChatTitle {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          font-size: 15px;
+        .hlp__emptyTitle {
+          font-size: 15.5px;
           font-weight: 700;
           color: var(--text-primary);
+          margin-bottom: 8px;
         }
 
-        .hlp__onlineDot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: var(--success);
-          box-shadow: 0 0 0 3px rgba(14, 203, 129, 0.18);
-        }
-
-        .hlp__liveChatSubtitle {
-          display: block;
-          font-size: 11.5px;
+        .hlp__emptyText {
+          font-size: 12.5px;
           color: var(--text-muted);
-          margin-top: 2px;
-        }
-
-        .hlp__liveChatArrow {
-          flex-shrink: 0;
-          color: var(--accent);
-          font-size: 13px;
+          line-height: 1.6;
+          margin: 0;
+          max-width: 300px;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .hlp__eyebrow {

@@ -2,7 +2,7 @@
 
 const ptBR = {
   app: {
-    title: "E-clicks Digital"
+    title: "Luxora Mall"
   },
   inputs: {
     username: "Nome de Usuário",
@@ -23,7 +23,7 @@ const ptBR = {
       levels: "Níveis VIP",
       chooseLevel: "Escolha seu nível para maximizar seus ganhos",
       welcome: "Bem-vindo",
-      announcement: "Caros usuários, a plataforma E-clicks Digital está de volta ao melhor e normal, continuem a ganhar o máximo possível da plataforma",
+      announcement: "Caros usuários, a plataforma Luxora Mall está de volta ao melhor e normal, continuem a ganhar o máximo possível da plataforma",
 
       // Action Buttons
       services: "Serviços",
@@ -193,7 +193,9 @@ const ptBR = {
       title: "Serviço ao Cliente",
       description: "Se você tiver alguma dúvida ou encontrar problemas, por favor envie-nos um e-mail ou converse com nossa equipe de suporte ao cliente online.",
       contactWhatsApp: "Contatar no WhatsApp",
-      contactTelegram: "Contatar no Telegram"
+      contactTelegram: "Contatar no Telegram",
+      unavailableTitle: "Nenhum agente de suporte disponível",
+      unavailableMessage: "Nossa equipe de atendimento ao cliente não está disponível no momento. Volte mais tarde."
     },
 
     notifications: {

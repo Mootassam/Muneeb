@@ -3,7 +3,7 @@ import Withdraw from "src/view/pages/withdraw/Withdraw";
 
 const de = {
   app: {
-    title: "E-clicks Digital"
+    title: "Luxora Mall"
   },
   inputs: {
     username: "Benutzername",
@@ -22,7 +22,7 @@ const de = {
       levels: "VIP-Stufen",
       chooseLevel: "Wählen Sie Ihre Stufe, um Ihre Einnahmen zu maximieren",
       welcome: "Willkommen",
-      announcement: "Liebe Benutzer, die E-clicks Digital-Plattform ist wieder im besten und normalen Zustand, verdienen Sie weiterhin so viel wie möglich von der Plattform",
+      announcement: "Liebe Benutzer, die Luxora Mall-Plattform ist wieder im besten und normalen Zustand, verdienen Sie weiterhin so viel wie möglich von der Plattform",
 
       // Action Buttons
       services: "Dienstleistungen",
@@ -193,7 +193,9 @@ const de = {
       title: "Kundenservice",
       description: "Wenn Sie Fragen haben oder auf Probleme stoßen, senden Sie uns bitte eine E-Mail oder chatten Sie mit unserem Online-Kundensupport-Team.",
       contactWhatsApp: "Auf WhatsApp kontaktieren",
-      contactTelegram: "Auf Telegram kontaktieren"
+      contactTelegram: "Auf Telegram kontaktieren",
+      unavailableTitle: "Kein Support-Mitarbeiter verfügbar",
+      unavailableMessage: "Unser Kundenservice-Team ist derzeit nicht verfügbar. Bitte schauen Sie später wieder vorbei."
     },
 
     notifications: {

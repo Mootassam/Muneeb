@@ -79,13 +79,6 @@ function Signin() {
   return (
     <div className="asg__page">
       <header className="asg__topbar">
-        <Link to="/" className="asg__brand">
-          <span className="asg__brandMark">E</span>
-          <span className="asg__brandWord">
-            clicks<span className="asg__brandDot">.</span>
-          </span>
-        </Link>
-
         <div
           className={`asg__langSwitcher ${langOpen ? "__open" : ""}`}
           ref={langRef}
@@ -163,6 +156,19 @@ function Signin() {
       </header>
 
       <div className="asg__wrap">
+        <Link to="/" className="asg__logo">
+          <img
+            className="asg__logoImg asg__logoImg--light"
+            src="/icons/light.png"
+            alt="Luxora Mall"
+          />
+          <img
+            className="asg__logoImg asg__logoImg--dark"
+            src="/icons/dark.png"
+            alt="Luxora Mall"
+          />
+        </Link>
+
         <div className="asg__card">
           <h1 className="asg__title">{i18n("pages.auth.signin.welcomeBack")}</h1>
           <p className="asg__subtitle">
@@ -239,7 +245,7 @@ function Signin() {
               </button>
 
               <p className="asg__terms">
-                By continuing, you agree to E-clicks'{" "}
+                By continuing, you agree to Luxora Mall's{" "}
                 <a href="#" onClick={(e) => e.preventDefault()}>
                   Conditions of Use
                 </a>{" "}
@@ -286,7 +292,7 @@ function Signin() {
             Help
           </a>
         </div>
-        <p>© {new Date().getFullYear()} E-clicks Digital. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Luxora Mall. All rights reserved.</p>
       </footer>
 
       <CsPage />
@@ -304,47 +310,52 @@ function Signin() {
         .asg__topbar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-end;
           gap: 12px;
-          padding: 22px 20px 10px;
+          padding: 22px 20px 0;
           max-width: 460px;
           width: 100%;
           margin: 0 auto;
           box-sizing: border-box;
         }
 
-        .asg__brand {
-          display: inline-flex;
-          align-items: center;
-          gap: 2px;
-          text-decoration: none;
-          line-height: 1;
-        }
-
-        .asg__brandMark {
-          width: 30px;
-          height: 30px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #ff9900, #ff5c00);
-          color: #fff;
-          font-weight: 700;
-          font-size: 16px;
+        .asg__logo {
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 10px rgba(255, 92, 0, 0.28);
+          text-decoration: none;
+          line-height: 1;
+          margin: 4px 0 22px;
         }
 
-        .asg__brandWord {
-          font-size: 22px;
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-left: 6px;
-          letter-spacing: -0.2px;
+        .asg__logoImg {
+          height: 76px;
+          width: auto;
+          max-width: 100%;
+          object-fit: contain;
+          filter: drop-shadow(0 6px 14px rgba(255, 106, 0, 0.18));
         }
 
-        .asg__brandDot {
-          color: #ff6a00;
+        .asg__logoImg--light {
+          display: block;
+        }
+
+        .asg__logoImg--dark {
+          display: none;
+        }
+
+        [data-theme="dark"] .asg__logoImg--light {
+          display: none;
+        }
+
+        [data-theme="dark"] .asg__logoImg--dark {
+          display: block;
+        }
+
+        @media (max-width: 380px) {
+          .asg__logoImg {
+            height: 62px;
+          }
         }
 
         .asg__langSwitcher {

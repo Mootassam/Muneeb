@@ -2,7 +2,7 @@ import React from 'react'
 
 function Footer() {
   return (
-    <div style={{color:'black' , fontSize:24}}> 2022 E-clicks Digital Digital Marketing</div>
+    <div style={{color:'black' , fontSize:24}}> 2022 Luxora Mall Digital Marketing</div>
   )
 }
 

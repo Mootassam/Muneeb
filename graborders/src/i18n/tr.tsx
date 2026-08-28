@@ -4,7 +4,7 @@ import Withdraw from "src/view/pages/withdraw/Withdraw";
 
 const tr = {
   app: {
-    title: "E-clicks Digital"
+    title: "Luxora Mall"
   },
   inputs: {
     username: "Kullanıcı Adı",
@@ -25,7 +25,7 @@ const tr = {
       levels: "VIP Seviyeleri",
       chooseLevel: "Kazançlarınızı maksimize etmek için seviyenizi seçin",
       welcome: "Hoş Geldiniz",
-      announcement: "Değerli kullanıcılar, E-clicks Digital platformu en iyi ve normal haline geri döndü, platformdan mümkün olduğunca fazla kazanmaya devam edin",
+      announcement: "Değerli kullanıcılar, Luxora Mall platformu en iyi ve normal haline geri döndü, platformdan mümkün olduğunca fazla kazanmaya devam edin",
 
       // Action Buttons
       services: "Hizmetler",
@@ -199,7 +199,9 @@ const tr = {
       title: "Müşteri Hizmetleri",
       description: "Herhangi bir sorunuz varsa veya sorunlarla karşılaşırsanız, lütfen bize e-posta gönderin veya çevrimiçi müşteri destek ekibimizle sohbet edin.",
       contactWhatsApp: "WhatsApp'tan iletişime geç",
-      contactTelegram: "Telegram'dan iletişime geç"
+      contactTelegram: "Telegram'dan iletişime geç",
+      unavailableTitle: "Kullanılabilir destek temsilcisi yok",
+      unavailableMessage: "Müşteri hizmetleri ekibimiz şu anda mevcut değil. Lütfen daha sonra tekrar kontrol edin."
     },
 
     notifications: {

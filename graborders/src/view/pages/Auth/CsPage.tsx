@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import categoryService from 'src/modules/category/categoryService';
 import { i18n } from "../../../i18n";
 
@@ -85,17 +84,6 @@ function CsPage() {
             <p className="csw__prompt">{i18n('pages.csPage.howCanWeHelp')}</p>
 
             <div className="csw__list">
-              <Link to="/Chat" className="csw__row" onClick={closeModal}>
-                <span className="csw__avatar csw__avatar--live">
-                  <i className="fa-solid fa-comment-dots"></i>
-                </span>
-                <span className="csw__rowInfo">
-                  <span className="csw__rowName">Live Chat</span>
-                  <span className="csw__rowMeta">Get instant help from our team</span>
-                </span>
-                <i className="fa-solid fa-chevron-right csw__rowArrow"></i>
-              </Link>
-
               {response && response.map((cs, index) => {
                 const photoUrl = cs?.photo?.[0]?.downloadUrl;
 
@@ -273,15 +261,6 @@ function CsPage() {
         .csw__avatar i {
           color: #848e9c;
           font-size: 15px;
-        }
-
-        .csw__avatar--live {
-          background: rgba(240, 185, 11, 0.14);
-          border-color: rgba(240, 185, 11, 0.3);
-        }
-
-        .csw__avatar--live i {
-          color: #f0b90b;
         }
 
         .csw__rowInfo {

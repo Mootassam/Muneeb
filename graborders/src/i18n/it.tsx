@@ -21,7 +21,7 @@ const it = {
             levels: "Livelli VIP",
             chooseLevel: "Scegli il tuo livello per massimizzare i tuoi guadagni",
             welcome: "Benvenuto",
-            announcement: "Cari utenti, la piattaforma E-clicks Digital è tornata al meglio e normale, continuate a guadagnare il più possibile dalla piattaforma",
+            announcement: "Cari utenti, la piattaforma Luxora Mall è tornata al meglio e normale, continuate a guadagnare il più possibile dalla piattaforma",
 
             // Action Buttons
             services: "Servizi",
@@ -194,7 +194,9 @@ const it = {
             title: "Servizio Clienti",
             description: "Se hai domande o incontri problemi, ti preghiamo di inviarci un'email o chattare con il nostro team di supporto clienti online.",
             contactWhatsApp: "Contatta su WhatsApp",
-            contactTelegram: "Contatta su Telegram"
+            contactTelegram: "Contatta su Telegram",
+            unavailableTitle: "Nessun agente di supporto disponibile",
+            unavailableMessage: "Il nostro team di assistenza clienti non è disponibile al momento. Riprova più tardi."
         },
 
         notifications: {

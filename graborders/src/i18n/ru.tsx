@@ -2,7 +2,7 @@ import Withdraw from "src/view/pages/withdraw/Withdraw";
 
 const ru = {
   app: {
-    title: "E-clicks Digital"
+    title: "Luxora Mall"
   },
 
 
@@ -13,7 +13,7 @@ const ru = {
       levels: "VIP Уровни",
       chooseLevel: "Выберите свой уровень, чтобы максимизировать доход",
       welcome: "Добро пожаловать",
-      announcement: "Уважаемые пользователи, платформа E-clicks Digital вернулась к лучшему и нормальному состоянию, продолжайте зарабатывать как можно больше с платформы",
+      announcement: "Уважаемые пользователи, платформа Luxora Mall вернулась к лучшему и нормальному состоянию, продолжайте зарабатывать как можно больше с платформы",
 
       // Action Buttons
       services: "Сервисы",
@@ -182,7 +182,9 @@ const ru = {
       title: "Служба Поддержки",
       description: "Если у вас есть вопросы или возникли проблемы, пожалуйста, напишите нам или пообщайтесь с нашей онлайн-службой поддержки.",
       contactWhatsApp: "Связаться в WhatsApp",
-      contactTelegram: "Связаться в Telegram"
+      contactTelegram: "Связаться в Telegram",
+      unavailableTitle: "Нет доступных агентов поддержки",
+      unavailableMessage: "Наша служба поддержки клиентов сейчас недоступна. Пожалуйста, зайдите позже."
     },
 
     notifications: {

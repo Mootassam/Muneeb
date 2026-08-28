@@ -390,7 +390,7 @@ function Signup() {
               </button>
 
               <p className="asg__terms">
-                By continuing, you agree to E-clicks'{" "}
+                By continuing, you agree to Luxora Mall's{" "}
                 <a href="#" onClick={(e) => e.preventDefault()}>
                   Conditions of Use
                 </a>{" "}
@@ -437,7 +437,7 @@ function Signup() {
             Help
           </a>
         </div>
-        <p>© {new Date().getFullYear()} E-clicks Digital. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Luxora Mall. All rights reserved.</p>
       </footer>
 
       <CsPage />
