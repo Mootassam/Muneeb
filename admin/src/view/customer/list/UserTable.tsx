@@ -1,26 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import userSelectors from 'src/modules/user/userSelectors';
 import selectors from 'src/modules/user/list/userListSelectors';
 import actions from 'src/modules/user/list/userListActions';
-import { Link } from 'react-router-dom';
 import { i18n } from 'src/i18n';
 import Pagination from 'src/view/shared/table/Pagination';
 import Spinner from 'src/view/shared/Spinner';
 import TableColumnHeader from 'src/view/shared/table/TableColumnHeader';
-import ConfirmModal from 'src/view/shared/modals/ConfirmModal';
 import Roles from 'src/security/roles';
 import UserStatusView from 'src/view/customer/view/UserStatusView';
 import Avatar from 'src/view/shared/Avatar';
 import TableWrapper from 'src/view/shared/styles/TableWrapper';
 import recordListActions from 'src/modules/record/list/recordListActions';
 import selectorTaskdone from 'src/modules/record/list/recordListSelectors';
-import UserService from 'src/modules/user/userService';
 
 function UserTable() {
   const dispatch = useDispatch();
-  const [recordIdToDestroy, setRecordIdToDestroy] =
-    useState(null);
   const [totalTask, setTotalTasks] = useState('');
   const tasksdone = useSelector(
     selectorTaskdone.selectCountRecord,
@@ -42,17 +36,6 @@ function UserTable() {
   const isAllSelected = useSelector(
     selectors.selectIsAllSelected,
   );
-  const hasPermissionToEdit = useSelector(
-    userSelectors.selectPermissionToEdit,
-  );
-  const hasPermissionToDestroy = useSelector(
-    userSelectors.selectPermissionToDestroy,
-  );
-
-  const doDestroy = (id) => {
-    setRecordIdToDestroy(null);
-    dispatch(actions.doDestroy(id));
-  };
 
   const doChangeSort = (field) => {
     const order =
@@ -87,10 +70,7 @@ function UserTable() {
   };
 
   useEffect(() => { }, [dispatch, tasksdone]);
-  const oneClick = async (id) => {
-    await UserService.doOneClickLogin(id);
-  };
-  
+
   return (
     <div className="user-list-container">
       <TableWrapper>
@@ -165,8 +145,24 @@ function UserTable() {
                   <tr key={row.id} className="table-row">
                 
                     <td className="table-cell">{row.email}</td>
-                    <td className="table-cell">{row.invitationcode}</td>
-                    <td className="table-cell">{row.refcode}</td>
+                    <td className="table-cell">
+                      <div className="parent-code-cell">
+                        <span className="parent-code-value">{row.invitationcode}</span>
+                        {row.parentUser && (
+                          <span className="parent-code-name">
+                            {row.parentUser.fullName || row.parentUser.email}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="table-cell">
+                      <div className="parent-code-cell">
+                        <span className="parent-code-value">{row.refcode}</span>
+                        <span className="parent-code-name">
+                          {row.fullName || row.email}
+                        </span>
+                      </div>
+                    </td>
 
                     <td className="table-cell">
                       {row.roles.map((roleId) => (
@@ -184,15 +180,6 @@ function UserTable() {
                  <td className="user-table-actions">
   <div className="user-table-actions-content">
 
-    {/* Login */}
-   {/* <button
-      className="user-table-action-btn primary"
-      onClick={() => oneClick(row.id)}
-    >
-      <i className="fas fa-sign-in-alt user-table-action-icon" />
-      Login
-    </button>*/}
-
     {/* Tasks */}
     <button
       className="user-table-action-btn success"
@@ -206,47 +193,6 @@ function UserTable() {
       <i className="fas fa-tasks user-table-action-icon" />
       Tasks
     </button>
-
-    {/* Password */}
-    <Link
-      className="user-table-action-btn info"
-      to={`/password-reset/${row.id}`}
-    >
-      <i className="fas fa-key user-table-action-icon" />
-      Password
-    </Link>
-
-    {/* View */}
-    <Link
-      className="user-table-action-btn warning"
-      to={`/user/${row.id}`}
-    >
-      <i className="fas fa-eye user-table-action-icon" />
-      View
-    </Link>
-
-    {/* Edit */}
-      <Link
-        className="user-table-action-btn primary"
-        to={`/user/${row.id}/edit`}
-      >
-        <i className="fas fa-edit user-table-action-icon" />
-        Edit
-      </Link>
-
-
-    {/* Freeze */}
-    {hasPermissionToDestroy && (
-      <button
-        className="user-table-action-btn danger"
-        onClick={() =>
-          setRecordIdToDestroy(row.id)
-        }
-      >
-        <i className="fas fa-lock user-table-action-icon" />
-        Freeze
-      </button>
-    )}
 
   </div>
 </td>
@@ -265,16 +211,6 @@ function UserTable() {
           />
         </div>
       </TableWrapper>
-
-      {recordIdToDestroy && (
-        <ConfirmModal
-          title={i18n('common.areYouSure')}
-          onConfirm={() => doDestroy(recordIdToDestroy)}
-          onClose={() => setRecordIdToDestroy(null)}
-          okText={i18n('common.yes')}
-          cancelText={i18n('common.no')}
-        />
-      )}
 
       {!LoadingTasksDone && showTask && (
         <div className="user-table-modal-overlay">
@@ -366,6 +302,23 @@ function UserTable() {
           font-size: 14px;
           color: #475569;
           vertical-align: middle;
+        }
+
+        .parent-code-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .parent-code-value {
+          font-family: 'Consolas', 'Courier New', monospace;
+          font-size: 12px;
+          color: #94a3b8;
+        }
+
+        .parent-code-name {
+          font-weight: 500;
+          color: #334155;
         }
 
         .text-center {

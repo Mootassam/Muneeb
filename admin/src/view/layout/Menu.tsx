@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { i18n } from 'src/i18n';
 import authSelectors from 'src/modules/auth/authSelectors';
 import PermissionChecker from 'src/modules/auth/permissionChecker';
+import Permissions from 'src/security/permissions';
 import actions from 'src/modules/layout/layoutActions';
 import layoutSelectors from 'src/modules/layout/layoutSelectors';
 import MenuWrapper from 'src/view/layout/styles/MenuWrapper';
@@ -89,6 +90,13 @@ function Menu(props) {
       permission,
     );
   };
+
+  // Agents navigate exclusively through the "My Customer" / "Withdraw"
+  // links in the top header — no left sidebar for that role.
+  const isAgent = match(Permissions.values.orderRead);
+  if (isAgent) {
+    return null;
+  }
 
   return (
     <MenuWrapper

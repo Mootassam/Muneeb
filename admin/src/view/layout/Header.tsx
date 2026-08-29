@@ -56,19 +56,19 @@ function Header(props) {
 
   return (
     <HeaderWrapper className="navbar sticky-top navbar-light bg-white border-bottom">
-      <button
-        type="button"
-        onClick={doToggleMenu}
-        className="menu-toggle-button"
-      >
-        <i className="fas fa-bars" />
-      </button>
+      {!hasPermissionToEdit && (
+        <button
+          type="button"
+          onClick={doToggleMenu}
+          className="menu-toggle-button"
+        >
+          <i className="fas fa-bars" />
+        </button>
+      )}
       {hasPermissionToEdit && (
         <div className="menu-links">
           <Link to="/customer">My Customer</Link>
-          <Link to="/transaction">Transaction</Link>
-          <Link to="/record">Records</Link>
-          <Link to="/product">Products</Link>
+          <Link to="/withdraw">Withdraw</Link>
         </div>)}
       <div>
 

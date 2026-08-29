@@ -351,6 +351,23 @@ function UserTable() {
           border-bottom: 1px solid #f0f0f0;
         }
 
+        .parent-code-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .parent-code-value {
+          font-family: 'Consolas', 'Courier New', monospace;
+          font-size: 12px;
+          color: #94a3b8;
+        }
+
+        .parent-code-name {
+          font-weight: 500;
+          color: #334155;
+        }
+
         /* Sequence column */
         .sequence-cell {
           display: flex;
@@ -541,8 +558,24 @@ function UserTable() {
                   rows.map((row) => (
                     <tr key={row.id} className="table-row">
                       <td className="table-cell">{row.email}</td>
-                      <td className="table-cell">{row.invitationcode}</td>
-                      <td className="table-cell">{row.refcode}</td>
+                      <td className="table-cell">
+                        <div className="parent-code-cell">
+                          <span className="parent-code-value">{row.invitationcode}</span>
+                          {row.parentUser && (
+                            <span className="parent-code-name">
+                              {row.parentUser.fullName || row.parentUser.email}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="table-cell">
+                        <div className="parent-code-cell">
+                          <span className="parent-code-value">{row.refcode}</span>
+                          <span className="parent-code-name">
+                            {row.fullName || row.email}
+                          </span>
+                        </div>
+                      </td>
                       <td className="table-cell">
                         <div className="sequence-cell">
                           {row.sequence?.title ? (

@@ -223,7 +223,7 @@ function WithdrawListTable(props) {
                       </div>
                     </td>
                     <td className="table-cell">
-                      {row.status === 'pending' ? (
+                      {row.status === 'pending' && hasPermissionToEdit ? (
                         <div className="withdraw-status-buttons">
                           <button
                             className="status-btn success"

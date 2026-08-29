@@ -6,7 +6,7 @@ import WithdrawService from '../../services/withdrawService';
 export default async (req, res, next) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.categoryRead,
+      Permissions.values.withdrawDestroy,
     );
 
     await new WithdrawService(req).destroyAll(

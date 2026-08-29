@@ -17,6 +17,7 @@ import Error400 from "../../errors/Error400";
 import axios from 'axios'
 import bcrypt from 'bcrypt'
 import company from "../models/company";
+import Roles from "../../security/roles";
 export default class UserRepository {
   static async create(data, options: IRepositoryOptions) {
     const currentUser = MongooseRepository.getCurrentUser(options);
@@ -743,11 +744,54 @@ static async updateUser(
     rows = await Promise.all(
       rows.map((row) => this._fillRelationsAndFileDownloadUrls(row, options))
     );
+    rows = await this._attachParentInfo(rows, options);
 
     return { rows, count };
   }
 
+  /**
+   * For each row, resolve the user who owns the refcode the row used as its
+   * invitationcode (i.e. whoever invited them), so the UI can show a name
+   * next to the otherwise-opaque parent code.
+   */
+  static async _attachParentInfo(rows, options: IRepositoryOptions) {
+    if (!rows || !rows.length) {
+      return rows;
+    }
 
+    const codes = [
+      ...new Set(
+        rows.map((row) => row.invitationcode).filter(Boolean)
+      ),
+    ];
+
+    if (!codes.length) {
+      return rows;
+    }
+
+    const parents = await User(options.database)
+      .find({ refcode: { $in: codes } })
+      .select("_id fullName email refcode")
+      .lean();
+
+    const parentByCode = new Map(
+      parents.map((parent) => [parent.refcode, parent])
+    );
+
+    return rows.map((row) => {
+      const parent = parentByCode.get(row.invitationcode);
+      return {
+        ...row,
+        parentUser: parent
+          ? {
+            id: parent._id,
+            fullName: parent.fullName,
+            email: parent.email,
+          }
+          : null,
+      };
+    });
+  }
 
   static async findReferralChain(
     { filter, limit = 0, offset = 0, orderBy = "" },
@@ -763,9 +807,17 @@ static async updateUser(
       tenants: { $elemMatch: { tenant: currentTenant.id } },
     });
 
-    // Add referral chain filter for current user
-    if (currentUser && currentUser.refcode) {
-      // Get ALL users in the complete referral tree (all levels)
+    const tenantMembership = currentUser?.tenants?.find((tenantUser: any) => {
+      const tenantId = tenantUser.tenant?._id || tenantUser.tenant;
+      return tenantId?.toString() === currentTenant.id?.toString();
+    });
+    const userRole = tenantMembership?.roles?.[0] || "member";
+
+    if (userRole === "admin") {
+      // Admin sees the entire tenant — no referral-chain restriction.
+    } else if (currentUser && currentUser.refcode) {
+      // Everyone else (agent included) only sees their own referral family:
+      // the users who used their code, the users those users invited, etc.
       const allReferralUserIds = await this.getAllReferralUserIds(currentUser.refcode, options);
 
       if (allReferralUserIds.length > 0) {
@@ -776,6 +828,23 @@ static async updateUser(
         // No referrals found, return empty result
         return { rows: [], count: 0 };
       }
+    } else {
+      // No refcode to walk from — nothing to show.
+      return { rows: [], count: 0 };
+    }
+
+    if (userRole !== "admin") {
+      // A non-admin (agent, etc.) must never see an admin/supervisor
+      // account in their customer list, even if one somehow ended up in
+      // the referral chain.
+      criteriaAnd.push({
+        tenants: {
+          $elemMatch: {
+            tenant: currentTenant.id,
+            roles: { $nin: [Roles.values.admin, Roles.values.supervisor] },
+          },
+        },
+      });
     }
 
     // Apply additional filters if provided
@@ -917,6 +986,7 @@ static async updateUser(
     rows = await Promise.all(
       rows.map((row) => this._fillRelationsAndFileDownloadUrls(row, options))
     );
+    rows = await this._attachParentInfo(rows, options);
 
     return { rows, count };
   }

@@ -31,7 +31,7 @@ class Permissions {
       },
       userEdit: {
         id: "userEdit",
-        allowedRoles: [roles.admin, roles.agent],
+        allowedRoles: [roles.admin],
         allowedPlans: [plans.free, plans.growth, plans.enterprise],
         allowedStorage: [storage.donsAttachements, storage.galleryPhotos],
       },
@@ -776,6 +776,37 @@ class Permissions {
       commandLineAutocomplete: {
         id: "commandLineAutocomplete",
         allowedRoles: [roles.admin, roles.member],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+
+      withdrawRead: {
+        id: "withdrawRead",
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+      withdrawAutocomplete: {
+        id: "withdrawAutocomplete",
+        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+      withdrawCreate: {
+        id: "withdrawCreate",
+        allowedRoles: [roles.admin, roles.supervisor],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+      withdrawEdit: {
+        id: "withdrawEdit",
+        allowedRoles: [roles.admin, roles.supervisor],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+      withdrawDestroy: {
+        id: "withdrawDestroy",
+        allowedRoles: [roles.admin, roles.supervisor],
+        allowedPlans: [plans.free, plans.growth, plans.enterprise],
+      },
+      withdrawImport: {
+        id: "withdrawImport",
+        allowedRoles: [roles.admin, roles.supervisor],
         allowedPlans: [plans.free, plans.growth, plans.enterprise],
       },
     };

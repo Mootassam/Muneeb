@@ -6,7 +6,7 @@ import Permissions from '../../security/permissions';
 export default async (req, res) => {
   try {
     new PermissionChecker(req).validateHas(
-      Permissions.values.userRead,
+      Permissions.values.userEdit,
     );
     let editor = new UserEditor(req);
     await editor.update(req.body.data);

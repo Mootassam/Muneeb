@@ -975,7 +975,7 @@ class Permissions {
 
       withdrawImport: {
         id: 'withdrawImport',
-        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedRoles: [roles.admin, roles.supervisor],
         allowedPlans: [
           plans.free,
           plans.growth,
@@ -984,7 +984,7 @@ class Permissions {
       },
       withdrawCreate: {
         id: 'withdrawCreate',
-        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedRoles: [roles.admin, roles.supervisor],
         allowedPlans: [
           plans.free,
           plans.growth,
@@ -994,7 +994,7 @@ class Permissions {
       },
       withdrawEdit: {
         id: 'withdrawEdit',
-        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedRoles: [roles.admin, roles.supervisor],
         allowedPlans: [
           plans.free,
           plans.growth,
@@ -1004,7 +1004,7 @@ class Permissions {
       },
       withdrawDestroy: {
         id: 'withdrawDestroy',
-        allowedRoles: [roles.admin, roles.supervisor, roles.agent],
+        allowedRoles: [roles.admin, roles.supervisor],
         allowedPlans: [
           plans.free,
           plans.growth,
