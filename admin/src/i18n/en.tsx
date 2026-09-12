@@ -1898,6 +1898,9 @@ const en = {
         product: 'Product',
         total: 'Total',
         searchByName: 'Search by name...',
+        minPrice: 'Min price',
+        maxPrice: 'Max price',
+        clearPriceFilter: 'Clear',
       },
     },
 

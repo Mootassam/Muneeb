@@ -26,6 +26,7 @@ const en = {
     noSequenceAssigned: "No task sequence has been assigned to your account yet. Please contact customer support.",
     noVipForBalance: "No VIP level covers your current balance. Please contact customer support.",
     noProductsAvailable: "No product is available for this task. Please contact customer support.",
+    pendingDepositExists: "You already have a deposit under review. Please wait until it is approved or rejected before submitting a new one.",
   },
 
 

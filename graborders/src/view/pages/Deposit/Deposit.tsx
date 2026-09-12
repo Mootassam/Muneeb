@@ -7,6 +7,7 @@ import DepositService from "src/modules/deposit/depositService";
 import SettingsService from "src/modules/settings/settingsService";
 import Errors from "src/modules/shared/error/errors";
 import Message from "src/view/shared/message";
+import LoadingModal from "src/shared/LoadingModal";
 import { i18n } from "../../../i18n";
 
 const DEFAULT_SYMBOL = "USDT";
@@ -24,6 +25,27 @@ function Deposit() {
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [pendingDeposit, setPendingDeposit] = useState<any>(null);
+  const [checkingPending, setCheckingPending] = useState(true);
+
+  useEffect(() => {
+    const loadPendingDeposit = async () => {
+      try {
+        const response = await DepositService.listByUser(
+          { status: "pending" },
+          "createdAt_DESC",
+          1,
+        );
+        setPendingDeposit(response?.rows?.[0] || null);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setCheckingPending(false);
+      }
+    };
+
+    loadPendingDeposit();
+  }, []);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -83,14 +105,14 @@ function Deposit() {
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    if (!amount || Number(amount) < MIN_AMOUNT || !address) {
+    if (!amount || Number(amount) < MIN_AMOUNT || !address || pendingDeposit) {
       return;
     }
 
     setSubmitting(true);
 
     try {
-      await DepositService.create({
+      const record = await DepositService.create({
         user: currentUser ? currentUser.id : null,
         amount,
         currency: CURRENCY,
@@ -98,6 +120,7 @@ function Deposit() {
         protocol: PROTOCOL,
       });
 
+      setPendingDeposit(record);
       setShowReviewModal(true);
     } catch (error) {
       Errors.handle(error);
@@ -117,6 +140,28 @@ function Deposit() {
       <SubHeader title={i18n("pages.deposit.title")} path="/profile" />
 
       <div className="dep__page">
+        {checkingPending ? (
+          <LoadingModal />
+        ) : pendingDeposit ? (
+          <div className="dep__card">
+            <div className="dep__pendingIcon">
+              <i className="fa-solid fa-clock-rotate-left"></i>
+            </div>
+            <div className="dep__pendingTitle">
+              {i18n("pages.deposit.pendingReview.title")}
+            </div>
+            <p className="dep__pendingMessage">
+              {i18n(
+                "pages.deposit.pendingReview.message",
+                pendingDeposit.amount,
+                pendingDeposit.currency || CURRENCY,
+              )}
+            </p>
+            <p className="dep__pendingNote">
+              {i18n("pages.deposit.pendingReview.note")}
+            </p>
+          </div>
+        ) : (
         <div className="dep__card">
           <div className="dep__optionGroup">
             <div className="dep__optionLabel">{i18n("pages.deposit.paymentMethod")}</div>
@@ -214,6 +259,7 @@ function Deposit() {
             {i18n("pages.deposit.note")}
           </div>
         </div>
+        )}
       </div>
 
       {showReviewModal && (
@@ -467,6 +513,46 @@ function Deposit() {
         .dep__note i {
           color: var(--text-muted);
           margin-top: 1px;
+        }
+
+        .dep__pendingIcon {
+          width: 56px;
+          height: 56px;
+          margin: 4px auto 16px;
+          border-radius: 50%;
+          background: var(--bg-tint);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .dep__pendingIcon i {
+          color: var(--accent);
+          font-size: 22px;
+        }
+
+        .dep__pendingTitle {
+          text-align: center;
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 10px;
+        }
+
+        .dep__pendingMessage {
+          text-align: center;
+          font-size: 13.5px;
+          color: var(--text-primary);
+          line-height: 1.6;
+          margin: 0 0 8px;
+        }
+
+        .dep__pendingNote {
+          text-align: center;
+          font-size: 12px;
+          color: var(--text-muted);
+          line-height: 1.6;
+          margin: 0;
         }
 
         .dep__modalOverlay {

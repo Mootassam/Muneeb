@@ -24,9 +24,21 @@ export default class UserService {
 
     const token = response.data.token;
 
-    // open new tab already logged as the user
-    const appUrl = `http://159.198.77.158:3018/impersonate?token=${token}`;
-    window.open(appUrl, '_blank');
+    // The customer-facing app is a separate frontend on its own port (3018),
+    // but hosted alongside the API — reuse the API's host/protocol instead
+    // of hardcoding an IP that goes stale whenever authAxios points elsewhere.
+    const apiUrl = new URL(authAxios.defaults.baseURL as string);
+    const appUrl = `${apiUrl.protocol}//${apiUrl.hostname}:3018/impersonate?token=${encodeURIComponent(token)}`;
+
+    // A fixed, named target (not '_blank') is important here: it makes every
+    // click reuse the same already-open window instead of trying to open a
+    // brand new popup each time. Navigating an existing window is not subject
+    // to popup-blocker/user-gesture rules the way opening a new one is, so
+    // this reliably works even though the token above is fetched
+    // asynchronously first (which would otherwise risk the popup being
+    // silently blocked, or a stale tab reference being left showing the
+    // previous account).
+    window.open(appUrl, 'graborders_impersonate');
   }
 
   static async destroy(ids) {

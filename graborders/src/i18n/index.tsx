@@ -9,6 +9,8 @@ import { setLocale as setYupLocale } from 'yup';
 
 let currentLanguageCode = '';
 
+const RTL_LANGUAGE_CODES = ['ar', 'fa'];
+
 const languages: {
   [key: string]: {
     id: string;
@@ -18,6 +20,22 @@ const languages: {
     dictionary: any;
   };
 } = {
+
+  ar: {
+    id: 'ar',
+    label: 'العربية',
+    flag: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAbCAMAAAA5zj1cAAAAQlBMVEUAVDBvnoohakoTYD9bkHkGWDU7e2ACVTFDgWaBq5kmbU95pZJRinFVjXU1d1pLhm2Os6OiwbMtclRkl4EKWje50MYuwG0pAAAAnklEQVQ4y+XTuQ4DMQgEULABj+9r9/9/NV0qK0qRajP1k9AgoEBfJdBDoRJdpD5cpEtTUtJ0HWEraXNp1sCoq0ssUo/QbY3ZyoZUKa5ice9H2GXbkI6SknCrSFHkCCtszlmQMTJ2he98Hg0Doy1nc9y5GXuzcoQ2B3oemfdwbQgyO3feYwruIu+8Nu8V60FHoZ/K+BzfueOUf3iFH8EXincH0Y/Lci4AAAAASUVORK5CYII=',
+    dateFns: null,
+    dictionary: null,
+  },
+
+  fa: {
+    id: 'fa',
+    label: 'فارسی',
+    flag: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAXCAMAAABODP0nAAAAVFBMVEXaAAAjn0D////wkZHkSUme1KtfunRduHOo2bTjRERYtW7xmpriPT2k17DujIzxl5f+9PT96enxnZ30sLBDrVzfJyeKy5nrd3fsfn7tg4P4y8v0s7NKuoUCAAAAkElEQVQoz+WPRxLDMAhFlSBLVrOae+5/zyCcsrAXrBPKvIH/FyBuzBA/ZRyVtlprq9QbloDdoOyhj2LuuxC6nvKF7xw+8yzu58j5Ynk2pr0+9sQwuhpLLQxjWcGtHCNsw7AB58bsfebciF+nq68XBxAhDggAR4jQgI1FAuqLmKSRHkvKBmMaDEHS1hz6JP4ynkIfCksRzajdAAAAAElFTkSuQmCC',
+    dateFns: null,
+    dictionary: null,
+  },
 
   de: {
     id: 'de',
@@ -112,8 +130,21 @@ export async function init() {
   if (currentLanguageCode === 'it') {
     await initIt();
   }
+  if (currentLanguageCode === 'ar') {
+    await initAr();
+  }
+  if (currentLanguageCode === 'fa') {
+    await initFa();
+  }
 
-
+  if (typeof document !== 'undefined') {
+    document.documentElement.dir = RTL_LANGUAGE_CODES.includes(
+      currentLanguageCode,
+    )
+      ? 'rtl'
+      : 'ltr';
+    document.documentElement.lang = currentLanguageCode;
+  }
 }
 
 async function initEs() {
@@ -245,6 +276,60 @@ async function initIt() {
   ).default;
 
   moment.locale('it', momentLocale);
+
+  if (language.dictionary.validation) {
+    setYupLocale(language.dictionary.validation);
+  }
+
+  return language;
+}
+
+async function initAr() {
+  const language = languages['ar'];
+
+  // @ts-ignore
+  const momentLocale = (await import('moment/locale/ar'))
+    .default;
+
+  language.dateFns = (
+    await import('date-fns/locale/ar')
+  ).default;
+
+  registerLocale('ar', language.dateFns);
+  setDefaultLocale('ar');
+
+  language.dictionary = (
+    await import('./ar')
+  ).default;
+
+  moment.locale('ar', momentLocale);
+
+  if (language.dictionary.validation) {
+    setYupLocale(language.dictionary.validation);
+  }
+
+  return language;
+}
+
+async function initFa() {
+  const language = languages['fa'];
+
+  // @ts-ignore
+  const momentLocale = (await import('moment/locale/fa'))
+    .default;
+
+  language.dateFns = (
+    await import('date-fns/locale/fa-IR')
+  ).default;
+
+  registerLocale('fa', language.dateFns);
+  setDefaultLocale('fa');
+
+  language.dictionary = (
+    await import('./fa')
+  ).default;
+
+  moment.locale('fa', momentLocale);
 
   if (language.dictionary.validation) {
     setYupLocale(language.dictionary.validation);

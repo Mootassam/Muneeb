@@ -15,6 +15,17 @@ const app = express();
 // Enables CORS
 app.use(cors({ origin: true }));
 
+// This is a pure JSON API where every response depends on the caller's
+// Authorization header (which browsers don't factor into their HTTP cache
+// key). Without this, a browser can serve a cached response — e.g. GET
+// /auth/me for one user's token — back to a request made moments later with
+// a different token (such as right after an admin impersonates a different
+// user), showing stale/wrong-account data even after a full page reload.
+app.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
+
 // Initializes and adds the database middleware.
 app.use(databaseMiddleware);
 

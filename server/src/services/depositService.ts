@@ -30,6 +30,20 @@ export default class DepositService {
         protocol: data.protocol,
       };
 
+      if (values.status === "pending") {
+        // Only one pending deposit at a time per user — a customer must
+        // wait for the current one to be accepted or rejected before they
+        // can submit another.
+        const pendingCount = await DepositRepository.count(
+          { user: data.user, status: "pending" },
+          this.options
+        );
+
+        if (pendingCount > 0) {
+          throw new Error400(this.options.language, "validation.pendingDepositExists");
+        }
+      }
+
       const record = await DepositRepository.create(values, {
         ...this.options,
         session,

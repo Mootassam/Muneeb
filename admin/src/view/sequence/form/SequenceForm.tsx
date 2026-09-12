@@ -67,6 +67,8 @@ function SequenceForm(props) {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [search, setSearch] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -108,14 +110,33 @@ function SequenceForm(props) {
   }, [allProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (!search.trim()) {
-      return allProducts;
+    let list = allProducts;
+
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter((p) => (p.title || '').toLowerCase().includes(q));
     }
-    const q = search.trim().toLowerCase();
-    return allProducts.filter((p) =>
-      (p.title || '').toLowerCase().includes(q),
-    );
-  }, [allProducts, search]);
+
+    const min = minPrice.trim() !== '' ? parseFloat(minPrice) : null;
+    const max = maxPrice.trim() !== '' ? parseFloat(maxPrice) : null;
+
+    if (min !== null && !isNaN(min)) {
+      list = list.filter((p) => (parseFloat(p.amount) || 0) >= min);
+    }
+
+    if (max !== null && !isNaN(max)) {
+      list = list.filter((p) => (parseFloat(p.amount) || 0) <= max);
+    }
+
+    return list;
+  }, [allProducts, search, minPrice, maxPrice]);
+
+  const hasPriceFilter = minPrice.trim() !== '' || maxPrice.trim() !== '';
+
+  const doClearPriceFilter = () => {
+    setMinPrice('');
+    setMaxPrice('');
+  };
 
   const selectedProductIds = Object.keys(selectedProducts);
   const total = selectedProductIds.reduce((sum, id) => {
@@ -340,6 +361,44 @@ function SequenceForm(props) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+      </div>
+
+      <div className="sq-price-filter">
+        <div className="sq-price-field">
+          <i className="fas fa-dollar-sign sq-price-icon" />
+          <input
+            type="number"
+            min="0"
+            step="any"
+            className="sq-price-input"
+            placeholder={i18n('entities.sequence.fields.minPrice')}
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+          />
+        </div>
+        <span className="sq-price-sep">–</span>
+        <div className="sq-price-field">
+          <i className="fas fa-dollar-sign sq-price-icon" />
+          <input
+            type="number"
+            min="0"
+            step="any"
+            className="sq-price-input"
+            placeholder={i18n('entities.sequence.fields.maxPrice')}
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+          />
+        </div>
+        {hasPriceFilter && (
+          <button
+            type="button"
+            className="sq-price-clear"
+            onClick={doClearPriceFilter}
+          >
+            <i className="fas fa-times" />
+            {i18n('entities.sequence.fields.clearPriceFilter')}
+          </button>
+        )}
       </div>
 
       <div className="sq-products-table-wrapper">
@@ -662,6 +721,71 @@ function SequenceForm(props) {
           outline: none;
           border-color: #7c6cf0;
           box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.15);
+        }
+
+        .sq-price-filter {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+        }
+
+        .sq-price-field {
+          position: relative;
+          flex: 1;
+          min-width: 120px;
+        }
+
+        .sq-price-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #a0aec0;
+          font-size: 12px;
+        }
+
+        .sq-price-input {
+          width: 100%;
+          padding: 8px 12px 8px 30px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 13px;
+          box-sizing: border-box;
+        }
+
+        .sq-price-input:focus {
+          outline: none;
+          border-color: #7c6cf0;
+          box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.15);
+        }
+
+        .sq-price-sep {
+          color: #94a3b8;
+          font-size: 13px;
+          flex-shrink: 0;
+        }
+
+        .sq-price-clear {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 8px 12px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 12.5px;
+          font-weight: 600;
+          cursor: pointer;
+          flex-shrink: 0;
+          white-space: nowrap;
+        }
+
+        .sq-price-clear:hover {
+          background: #f1f5f9;
+          color: #1a202c;
         }
 
         .sq-products-table-wrapper {

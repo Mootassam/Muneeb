@@ -460,6 +460,11 @@ const en = {
         title: "Submitted for Review",
         message: "We've received your deposit request. Your balance will be updated once an admin confirms the transaction on-chain.",
         confirm: "Got it"
+      },
+      pendingReview: {
+        title: "Deposit Under Review",
+        message: "Your deposit of {0} {1} is currently being reviewed by our team.",
+        note: "You'll be able to submit a new deposit once this one has been approved or rejected."
       }
     },
 

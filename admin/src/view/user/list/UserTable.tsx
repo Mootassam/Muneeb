@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import userSelectors from 'src/modules/user/userSelectors';
+import authSelectors from 'src/modules/auth/authSelectors';
 import selectors from 'src/modules/user/list/userListSelectors';
 import actions from 'src/modules/user/list/userListActions';
 import { Link } from 'react-router-dom';
@@ -55,6 +56,8 @@ function UserTable() {
   const hasPermissionToDestroy = useSelector(
     userSelectors.selectPermissionToDestroy,
   );
+  const currentUserRoles = useSelector(authSelectors.selectRoles);
+  const isAdmin = currentUserRoles.includes(Roles.values.admin);
 
   // State for the custom minus‑balance modal
   const [minusRecord, setMinusRecord] = useState<MinusRecord | null>(null);
@@ -186,7 +189,12 @@ function UserTable() {
   useEffect(() => {}, [dispatch, tasksdone]);
 
   const oneClick = async (id: string) => {
-    await UserService.doOneClickLogin(id);
+    try {
+      await UserService.doOneClickLogin(id);
+    } catch (error) {
+      console.error('Failed to login as user', error);
+      Message.error('Failed to login as user.');
+    }
   };
 
   return (
@@ -668,6 +676,18 @@ function UserTable() {
                             <i className="fas fa-key user-table-action-icon" />
                             Password
                           </Link>
+
+                          {/* Login as user (admin only) */}
+                          {isAdmin && (
+                            <button
+                              className="user-table-action-btn dark"
+                              onClick={() => oneClick(row.id)}
+                              title="Log in as this user to see what they see"
+                            >
+                              <i className="fas fa-user-secret user-table-action-icon" />
+                              Login as User
+                            </button>
+                          )}
 
                           {/* View */}
                           <Link
