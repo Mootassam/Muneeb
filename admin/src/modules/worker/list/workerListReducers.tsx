@@ -7,6 +7,7 @@ const initialData = {
   count: 0,
   loading: false,
   emailFilter: '',
+  refcodeFilter: '',
   pagination: {
     current: 1,
     pageSize: INITIAL_PAGE_SIZE,
@@ -21,6 +22,10 @@ export default (state = initialData, { type, payload }) => {
 
   if (type === actions.EMAIL_FILTER_CHANGED) {
     return { ...state, emailFilter: payload || '' };
+  }
+
+  if (type === actions.REFCODE_FILTER_CHANGED) {
+    return { ...state, refcodeFilter: payload || '' };
   }
 
   if (type === actions.PAGINATION_CHANGED) {

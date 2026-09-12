@@ -676,6 +676,15 @@ static async updateUser(
         });
       }
 
+      if (filter.refcode) {
+        criteriaAnd.push({
+          ["refcode"]: {
+            $regex: MongooseQueryUtils.escapeRegExp(filter.refcode),
+            $options: "i",
+          },
+        });
+      }
+
       if (filter.couponcode) {
         criteriaAnd.push({
           ["couponcode"]: {

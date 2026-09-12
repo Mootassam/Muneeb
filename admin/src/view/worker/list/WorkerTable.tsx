@@ -16,12 +16,15 @@ function WorkerTable() {
   const [recordIdToFreeze, setRecordIdToFreeze] = useState<string | null>(null);
   const [recordIdToDelete, setRecordIdToDelete] = useState<string | null>(null);
   const [emailInput, setEmailInput] = useState('');
+  const [refcodeInput, setRefcodeInput] = useState('');
 
   const loading = useSelector(selectors.selectLoading);
   const rows = useSelector(selectors.selectRows);
   const pagination = useSelector(selectors.selectPagination);
   const hasRows = useSelector(selectors.selectHasRows);
   const sorter = useSelector(selectors.selectSorter);
+  const appliedEmailFilter = useSelector(selectors.selectEmailFilter);
+  const appliedRefcodeFilter = useSelector(selectors.selectRefcodeFilter);
 
   const doFreeze = (id: string) => {
     setRecordIdToFreeze(null);
@@ -44,12 +47,17 @@ function WorkerTable() {
   };
 
   const doSearch = () => {
-    dispatch(actions.doSearchByEmail(emailInput.trim()));
+    dispatch({ type: actions.EMAIL_FILTER_CHANGED, payload: emailInput.trim() });
+    dispatch({ type: actions.REFCODE_FILTER_CHANGED, payload: refcodeInput.trim() });
+    dispatch(actions.doFetch());
   };
 
   const doClearSearch = () => {
     setEmailInput('');
-    dispatch(actions.doSearchByEmail(''));
+    setRefcodeInput('');
+    dispatch({ type: actions.EMAIL_FILTER_CHANGED, payload: '' });
+    dispatch({ type: actions.REFCODE_FILTER_CHANGED, payload: '' });
+    dispatch(actions.doFetch());
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -91,6 +99,7 @@ function WorkerTable() {
           border-bottom: 2px solid #f0f0f0; text-align: left;
         }
         .worker-table td { padding: 8px; border-bottom: 1px solid #f0f0f0; }
+        .worker-code { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; color: #64748b; }
         .worker-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .worker-btn {
           display: inline-flex; align-items: center; gap: 4px;
@@ -107,7 +116,7 @@ function WorkerTable() {
         .worker-btn.danger  { background: #ff4d4f; border-color: #ff4d4f; color: #fff; }
       `}</style>
 
-      {/* Email Search Bar */}
+      {/* Search Bar */}
       <div className="worker-search-bar">
         <input
           className="worker-search-input"
@@ -115,6 +124,14 @@ function WorkerTable() {
           placeholder="Search by email..."
           value={emailInput}
           onChange={(e) => setEmailInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <input
+          className="worker-search-input"
+          type="text"
+          placeholder="Search by invitation code..."
+          value={refcodeInput}
+          onChange={(e) => setRefcodeInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
         <button className="worker-search-btn primary" onClick={doSearch}>
@@ -136,6 +153,12 @@ function WorkerTable() {
                     <span>{sorter.order === 'ascend' ? ' ↑' : ' ↓'}</span>
                   )}
                 </th>
+                <th onClick={() => doChangeSort('refcode')} style={{ cursor: 'pointer' }}>
+                  {i18n('user.fields.refcode')}
+                  {sorter.field === 'refcode' && (
+                    <span>{sorter.order === 'ascend' ? ' ↑' : ' ↓'}</span>
+                  )}
+                </th>
                 <th>{i18n('user.fields.roles')}</th>
                 <th>{i18n('user.fields.status')}</th>
                 <th>{i18n('user.fields.country')}</th>
@@ -146,15 +169,21 @@ function WorkerTable() {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: 24 }}>
                     <Spinner />
                   </td>
                 </tr>
               )}
               {!loading && !hasRows && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>
-                    {i18n('table.noData')}
+                  <td colSpan={7} style={{ textAlign: 'center', padding: 24 }}>
+                    {appliedRefcodeFilter ? (
+                      <>No worker found with invitation code "{appliedRefcodeFilter}"</>
+                    ) : appliedEmailFilter ? (
+                      <>No worker found with email "{appliedEmailFilter}"</>
+                    ) : (
+                      i18n('table.noData')
+                    )}
                   </td>
                 </tr>
               )}
@@ -162,6 +191,7 @@ function WorkerTable() {
                 rows.map((row) => (
                   <tr key={row.id}>
                     <td>{row.email}</td>
+                    <td className="worker-code">{row.refcode || '—'}</td>
                     <td>
                       {(row.roles || []).map((roleId) => (
                         <div key={roleId}>

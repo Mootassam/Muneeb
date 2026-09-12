@@ -197,12 +197,13 @@ export default class UserService {
     return response.data;
   }
 
-  static async fetchWorkers(emailFilter, orderBy, limit, offset) {
+  static async fetchWorkers(emailFilter, orderBy, limit, offset, refcodeFilter?) {
     const params = {
       filter: {
         roles: ['agent', 'supervisor'],
         includeEmptyPermissions: true,
         ...(emailFilter ? { email: emailFilter } : {}),
+        ...(refcodeFilter ? { refcode: refcodeFilter } : {}),
       },
       orderBy,
       limit,

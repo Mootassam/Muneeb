@@ -32,24 +32,9 @@ function UserTable() {
   );
   const [showTask, setShowTask] = useState(false)
   const hasRows = useSelector(selectors.selectHasRows);
-  const sorter = useSelector(selectors.selectSorter);
   const isAllSelected = useSelector(
     selectors.selectIsAllSelected,
   );
-
-  const doChangeSort = (field) => {
-    const order =
-      sorter.field === field && sorter.order === 'ascend'
-        ? 'descend'
-        : 'ascend';
-
-    dispatch(
-      actions.doChangeSort({
-        field,
-        order,
-      }),
-    );
-  };
 
   const doChangePagination = (pagination) => {
     dispatch(actions.doChangePagination(pagination));
@@ -79,30 +64,15 @@ function UserTable() {
             <thead className="table-header">
               <tr>
              
-                <th className="sortable-header" onClick={() => doChangeSort('email')}>
+                <th className="table-header">
                   {i18n('user.fields.email')}
-                  {sorter.field === 'email' && (
-                    <span className="sort-icon">
-                      {sorter.order === 'ascend' ? '↑' : '↓'}
-                    </span>
-                  )}
                 </th>
                 
-                <th className="sortable-header" onClick={() => doChangeSort('invitationcode')}>
+                <th className="table-header">
                   {i18n('user.fields.invitationcode')}
-                  {sorter.field === 'invitationcode' && (
-                    <span className="sort-icon">
-                      {sorter.order === 'ascend' ? '↑' : '↓'}
-                    </span>
-                  )}
                 </th>
-                <th className="sortable-header" onClick={() => doChangeSort('refcode')}>
+                <th className="table-header">
                   {i18n('user.fields.refcode')}
-                  {sorter.field === 'refcode' && (
-                    <span className="sort-icon">
-                      {sorter.order === 'ascend' ? '↑' : '↓'}
-                    </span>
-                  )}
                 </th>
          
                 <th className="table-header">
@@ -237,11 +207,6 @@ function UserTable() {
           width: 100%;
         }
 
-        .sort-icon {
-          margin-left: 8px;
-          font-size: 12px;
-        }
-
         .checkbox-column {
           width: 40px;
           padding: 16px 8px !important;
@@ -272,16 +237,6 @@ function UserTable() {
           text-transform: uppercase;
           letter-spacing: 0.05em;
           border-bottom: 2px solid #e2e8f0;
-        }
-
-        .sortable-header {
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-          user-select: none;
-        }
-
-        .sortable-header:hover {
-          background: #f1f5f9;
         }
 
         .table-body {

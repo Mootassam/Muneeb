@@ -16,6 +16,7 @@ const workerListActions = {
   PAGINATION_CHANGED: `${prefix}_PAGINATION_CHANGED`,
   SORTER_CHANGED: `${prefix}_SORTER_CHANGED`,
   EMAIL_FILTER_CHANGED: `${prefix}_EMAIL_FILTER_CHANGED`,
+  REFCODE_FILTER_CHANGED: `${prefix}_REFCODE_FILTER_CHANGED`,
 
   DESTROY_STARTED: `${prefix}_DESTROY_STARTED`,
   DESTROY_SUCCESS: `${prefix}_DESTROY_SUCCESS`,
@@ -54,6 +55,14 @@ const workerListActions = {
     dispatch(workerListActions.doFetch());
   },
 
+  doSearchByRefcode: (refcode) => async (dispatch) => {
+    dispatch({
+      type: workerListActions.REFCODE_FILTER_CHANGED,
+      payload: refcode,
+    });
+    dispatch(workerListActions.doFetch());
+  },
+
   doFetchCurrentFilter: () => async (dispatch) => {
     dispatch(workerListActions.doFetch(true));
   },
@@ -70,6 +79,7 @@ const workerListActions = {
         selectors.selectOrderBy(getState()),
         selectors.selectLimit(getState()),
         selectors.selectOffset(getState()),
+        selectors.selectRefcodeFilter(getState()),
       );
 
       dispatch({

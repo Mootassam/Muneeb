@@ -25,8 +25,10 @@ export default class WithdrawService {
 
       // A withdrawPassword is only present when the customer is submitting
       // their own request (the admin panel's manual-entry form has no such
-      // field). In that case, validate the password and hold the requested
-      // amount from their balance immediately.
+      // field). In that case, validate the password. The balance itself is
+      // only deducted once an admin accepts the request (see
+      // updateWithdrawStatus) — submitting a request just puts it in
+      // "pending" status.
       const isCustomerSubmission = data.withdrawPassword !== undefined;
 
       let address = data.address;
@@ -65,12 +67,6 @@ export default class WithdrawService {
         ...this.options,
         session,
       });
-
-      if (isCustomerSubmission) {
-        // The requested amount is held immediately on submission; it's
-        // returned to the balance only if the withdrawal is later canceled.
-        await this.updateUserBalance(data.user, amount, session, "dec");
-      }
 
       await MongooseRepository.commitTransaction(session);
 
@@ -137,6 +133,24 @@ export default class WithdrawService {
       const oldStatus = withdraw.status;
       const amount = parseFloat(withdraw.amount);
 
+      const wasAccepted = oldStatus === "success";
+      const isBeingAccepted = newStatus === "success";
+
+      // The balance is only ever touched when a request crosses in or out
+      // of "success": accepting a request deducts the amount for the first
+      // time, and reversing an acceptance (moving it back to pending or
+      // canceled) refunds it. Rejecting a still-pending request never
+      // touches the balance, since nothing was deducted yet.
+      if (!wasAccepted && isBeingAccepted) {
+        if (withdraw.user.balance < amount) {
+          throw new Error400(this.options.language, "validation.exceedsBalance");
+        }
+
+        await this.updateUserBalance(withdraw.user._id, amount, session, "dec");
+      } else if (wasAccepted && !isBeingAccepted) {
+        await this.updateUserBalance(withdraw.user._id, amount, session, "inc");
+      }
+
       const updatedWithdraw = await Withdraw.findByIdAndUpdate(
         withdrawId,
         {
@@ -155,9 +169,6 @@ export default class WithdrawService {
           { ...this.options, session }
         );
       } else if (newStatus === "canceled" && oldStatus !== "canceled") {
-        // Held amount is returned since the withdrawal didn't go through.
-        await this.updateUserBalance(withdraw.user._id, amount, session, "inc");
-
         await this.createNotification(
           withdraw.user._id,
           withdrawId,
@@ -165,9 +176,6 @@ export default class WithdrawService {
           withdraw.amount,
           { ...this.options, session }
         );
-      } else if (oldStatus === "canceled" && newStatus === "pending") {
-        // Reversing a cancellation holds the amount again.
-        await this.updateUserBalance(withdraw.user._id, amount, session, "dec");
       }
 
       await MongooseRepository.commitTransaction(session);

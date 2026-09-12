@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import SubHeader from "src/view/shared/Header/SubHeader";
-import action from 'src/modules/transaction/list/transactionListActions'
-import selector from 'src/modules/transaction/list/transactionListSelectors'
-import { useDispatch, useSelector } from 'react-redux';
+import WithdrawService from "src/modules/withdraw/withdrawService";
+import DepositService from "src/modules/deposit/depositService";
+import Errors from "src/modules/shared/error/errors";
 import Dates from "src/view/shared/utils/Dates";
 import LoadingModal from "src/shared/LoadingModal";
 import { i18n } from "../../../i18n";
@@ -14,16 +14,60 @@ const FILTERS = [
 ];
 
 function Transaction() {
-  const [active, setActive] = useState("withdraw");
-  const dispatch = useDispatch();
-  const loading = useSelector(selector.selectLoading);
-  const selectHasRows = useSelector(selector.selectHasRows);
-  const record = useSelector(selector.selectRows);
+  const [active, setActive] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<Array<any>>([]);
 
   useEffect(() => {
-    const values = { type: active };
-    dispatch(action.doFetchByUser(values, values));
-  }, [dispatch, active]);
+    let isMounted = true;
+
+    const fetchHistory = async () => {
+      setLoading(true);
+
+      try {
+        const [withdrawResponse, depositResponse] = await Promise.all([
+          WithdrawService.listByUser({}, "createdAt_DESC"),
+          DepositService.listByUser({}, "createdAt_DESC"),
+        ]);
+
+        const withdrawRows = (withdrawResponse?.rows || []).map((row) => ({
+          ...row,
+          type: "withdraw",
+        }));
+        const depositRows = (depositResponse?.rows || []).map((row) => ({
+          ...row,
+          type: "deposit",
+        }));
+
+        const merged = [...withdrawRows, ...depositRows].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        if (isMounted) {
+          setRows(merged);
+        }
+      } catch (error) {
+        Errors.handle(error);
+
+        if (isMounted) {
+          setRows([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchHistory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredRows = active ? rows.filter((item) => item.type === active) : rows;
+  const hasRows = filteredRows.length > 0;
 
   const getTransactionIcon = (type) => {
     return type === "deposit" ? "fa-solid fa-arrow-down" : "fa-solid fa-arrow-up";
@@ -65,6 +109,23 @@ function Transaction() {
       : i18n("pages.transaction.types.withdrawal");
   };
 
+  const truncateAddress = (address) => {
+    if (!address) {
+      return "";
+    }
+    if (address.length <= 14) {
+      return address;
+    }
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  };
+
+  const getMetaText = (item) => {
+    if (item.type === "withdraw") {
+      return item.address ? truncateAddress(item.address) : null;
+    }
+    return item.paymentMethod || item.protocol || null;
+  };
+
   const onSelectFilter = (key) => {
     setActive(key);
   };
@@ -89,13 +150,13 @@ function Transaction() {
         </div>
 
         <div className="tx__card">
-          {!loading && record && record.length > 0 && (
+          {!loading && filteredRows.length > 0 && (
             <div className="tx__listHeader">
               <span className="tx__listTitle">
                 {i18n("pages.transaction.recentTransactions")}
               </span>
               <span className="tx__listCount">
-                {i18n("pages.transaction.transactionCount", record.length)}
+                {i18n("pages.transaction.transactionCount", filteredRows.length)}
               </span>
             </div>
           )}
@@ -108,9 +169,9 @@ function Transaction() {
             )}
 
             {!loading &&
-              record &&
-              record.map((item, index) => {
+              filteredRows.map((item, index) => {
                 const status = getStatusMeta(item.status);
+                const metaText = getMetaText(item);
 
                 return (
                   <div className="tx__row" key={item.id || index}>
@@ -129,6 +190,11 @@ function Transaction() {
                         <i className="fa-regular fa-clock"></i>
                         {Dates.Date(item?.createdAt)}
                       </div>
+                      {metaText && (
+                        <div className="tx__rowMeta" title={metaText}>
+                          {metaText}
+                        </div>
+                      )}
                     </div>
 
                     <div className="tx__rowRight">
@@ -143,7 +209,7 @@ function Transaction() {
                 );
               })}
 
-            {!loading && !selectHasRows && (
+            {!loading && !hasRows && (
               <div className="tx__empty">
                 <span className="tx__emptyIcon">
                   <i className="fa-solid fa-receipt"></i>
@@ -315,6 +381,15 @@ function Transaction() {
           font-size: 11.5px;
           color: var(--text-muted);
           margin-top: 3px;
+        }
+
+        .tx__rowMeta {
+          font-size: 11px;
+          color: var(--text-faint);
+          margin-top: 3px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .tx__rowRight {

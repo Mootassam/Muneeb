@@ -14,6 +14,8 @@ const selectSorter = createSelector([selectRaw], (raw) => raw.sorter || {});
 
 const selectEmailFilter = createSelector([selectRaw], (raw) => raw.emailFilter || '');
 
+const selectRefcodeFilter = createSelector([selectRaw], (raw) => raw.refcodeFilter || '');
+
 const selectOrderBy = createSelector([selectRaw], (raw) => {
   const sorter = raw.sorter;
   if (!sorter || !sorter.field) return null;
@@ -46,6 +48,7 @@ const workerListSelectors = {
   selectHasRows,
   selectSorter,
   selectEmailFilter,
+  selectRefcodeFilter,
 };
 
 export default workerListSelectors;

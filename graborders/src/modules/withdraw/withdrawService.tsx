@@ -16,4 +16,24 @@ export default class WithdrawService {
 
     return response.data;
   }
+
+  static async listByUser(filter?, orderBy?, limit?, offset?) {
+    const params = {
+      filter,
+      orderBy,
+      limit,
+      offset,
+    };
+
+    const tenantId = AuthCurrentTenant.get();
+
+    const response = await authAxios.get(
+      `/tenant/${tenantId}/withdraw/byUser`,
+      {
+        params,
+      },
+    );
+
+    return response.data;
+  }
 }
