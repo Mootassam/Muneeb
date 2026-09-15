@@ -1108,20 +1108,23 @@ static async findAndCountAll(
       return null;
     }
     const output = record.toObject ? record.toObject() : record;
-    output.product.photo = await FileRepository.fillDownloadUrl(
-      output?.product?.photo
-    );
 
-    if (output.product?.type === "combo" && output.product.products?.length) {
-      await Promise.all(
-        output.product.products.map(async (item) => {
-          if (item.product && !item.product.image && item.product.photo) {
-            item.product.photo = await FileRepository.fillDownloadUrl(
-              item.product.photo
-            );
-          }
-        })
+    if (output.product) {
+      output.product.photo = await FileRepository.fillDownloadUrl(
+        output.product.photo
       );
+
+      if (output.product?.type === "combo" && output.product.products?.length) {
+        await Promise.all(
+          output.product.products.map(async (item) => {
+            if (item.product && !item.product.image && item.product.photo) {
+              item.product.photo = await FileRepository.fillDownloadUrl(
+                item.product.photo
+              );
+            }
+          })
+        );
+      }
     }
 
     return output;
