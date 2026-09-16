@@ -604,7 +604,7 @@ function UserTable() {
                         </div>
                       </td>
                       <td className="table-cell">
-                        {row.balance < 0 ? (
+                        {(row.balance ?? 0) < 0 ? (
                           <span
                             style={{
                               color: '#ff4d4f',
@@ -620,10 +620,10 @@ function UserTable() {
                             }
                             title="Click to clear minus balance"
                           >
-                            {row.balance.toFixed(3)}
+                            {(row.balance ?? 0).toFixed(3)}
                           </span>
                         ) : (
-                          row.balance.toFixed(3)
+                          (row.balance ?? 0).toFixed(3)
                         )}
                       </td>
                       <td className="table-cell">
